@@ -183,8 +183,13 @@ public class Task_Task  extends AppCompatActivity {
         //Evaluate if task needs an instance of it created
         evaluateTaskInstanceCreation();
 
+        //This is a test commit to the events task branch
+        mlngTaskId = mlngTaskId;
+
         setResult(RESULT_OK);
         finish();
+
+
     }
 
     private void evaluateTaskInstanceCreation(){
