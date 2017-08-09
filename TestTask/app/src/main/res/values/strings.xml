@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">TestTask</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_session">View Sessions</string>
+    <string name="action_event">View Events</string>
+    <string name="action_tasks">View Tasks</string>
+
+    <string name="TextBox_Task">Enter a Task</string>
+    <string name="Button_NewSession">Add New Session</string>
+    <string name="Button_TimeFrom">Set Session From</string>
+    <string name="Button_TimeTo">Set Session To</string>
+    <string name="TextBox_SessionTitle">Enter a Session Title</string>
+    <string name="Button_Confirm">Confirm</string>
+    <string name="Button_Cancel">Cancel</string>
+    <string name="TextBox_Description">Add a Description</string>
+    <string-array name="TimeRange">
+        <item>No Repetition</item>
+        <item>Weekly</item>
+        <!--<item>Monthly</item>-->
+    </string-array>
+    <string-array name="Frequency">
+        <item>Set Frequency</item>
+        <item>Every</item>
+        <item>Every Other</item>
+    </string-array>
+    <string name="Monday">Monday</string>
+    <string name="Tuesday">Tuesday</string>
+    <string name="Wednesday">Wednesday</string>
+    <string name="Thursday">Thursday</string>
+    <string name="Friday">Friday</string>
+    <string name="Saturday">Saturday</string>
+    <string name="Sunday">Sunday</string>
+
+    <!--Task Viewer-->
+    <string name="Priority">Priority</string>
+    <string name="Standard">Standard</string>
+    <string name="Today">Today</string>
+
+    <!--Details View-->
+    <string name="Detail_Session">Session:</string>
+    <string name="Detail_TimeFrom">From:</string>
+    <string name="Detail_TimeTo">To:</string>
+    <string name="Detail_Repeat_DaysOfWeek">Days Of Week:</string>
+
+    <!--Activity Titles-->
+    <string name="title_activity_session_viewer">Sessions</string>
+    <string name="title_activity_task_viewer">Tasks</string>
+</resources>
