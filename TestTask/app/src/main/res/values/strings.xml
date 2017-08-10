@@ -46,4 +46,6 @@
     <!--Activity Titles-->
     <string name="title_activity_session_viewer">Sessions</string>
     <string name="title_activity_task_viewer">Tasks</string>
+    <string name="title_activity_viewer__events">Viewer_Events</string>
+    <string name="title_activity_task__event">Task_Event</string>
 </resources>

@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.testtask.Session_Viewer"
-    tools:showIn="@layout/activity_session_viewer">
+    tools:context="com.example.testtask.Viewer_Events"
+    tools:showIn="@layout/activity_viewer_events">
 
     <ListView
-        android:id="@+id/lsvSessionList"
+        android:id="@+id/lsvEventList"
         android:layout_width="0dp"
         android:layout_height="495dp"
         android:layout_marginEnd="16dp"

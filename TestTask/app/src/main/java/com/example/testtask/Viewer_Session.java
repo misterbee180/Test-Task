@@ -14,14 +14,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-public class Session_Viewer extends AppCompatActivity {
+public class Viewer_Session extends AppCompatActivity {
 
     static ArrayListContainer mSessionList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_session_viewer);
+        setContentView(R.layout.activity_viewer_session);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -36,7 +36,7 @@ public class Session_Viewer extends AppCompatActivity {
         ListView mSessionView = (ListView) findViewById(R.id.lsvSessionList);
         mSessionList = new ArrayListContainer();
         mSessionList.LinkArrayToListView(mSessionView, this);
-        //mSessionList.mListView.setOnItemClickListener(itemClickListener);
+        //mEventList.mListView.setOnItemClickListener(itemClickListener);
         mSessionList.mListView.setOnItemLongClickListener(itemLongClickListener);
     }
 
@@ -50,7 +50,7 @@ public class Session_Viewer extends AppCompatActivity {
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
             bundle.putLong("SessionID", mSessionList.GetID(position));
-            DialogFragment newFragment = new Session_Viewer.ConfirmationFragment();
+            DialogFragment newFragment = new Viewer_Session.ConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Session");
 

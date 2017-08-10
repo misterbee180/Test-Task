@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.testtask.Session_Viewer">
+    tools:context="com.example.testtask.Viewer_Session">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_session_viewer" />
+    <include layout="@layout/content_viewer_session" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

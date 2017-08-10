@@ -268,12 +268,17 @@ public class Task_Display extends AppCompatActivity {
     }
 
     public void viewTasks() {
-        Intent intent = new Intent(this, Task_Viewer.class);
+        Intent intent = new Intent(this, Viewer_Task.class);
         startActivity(intent);
     }
 
     public void viewSessions() {
-        Intent intent = new Intent(this, Session_Viewer.class);
+        Intent intent = new Intent(this, Viewer_Session.class);
+        startActivity(intent);
+    }
+
+    public void viewEvents() {
+        Intent intent = new Intent(this, Viewer_Events.class);
         startActivity(intent);
     }
 
@@ -403,6 +408,9 @@ public class Task_Display extends AppCompatActivity {
                 break;
             case R.id.action_task:
                 viewTasks();
+                break;
+            case R.id.action_event  :
+                viewEvents();
                 break;
         }
 

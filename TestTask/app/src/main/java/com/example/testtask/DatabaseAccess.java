@@ -63,6 +63,20 @@ public class DatabaseAccess {
                         "\tPRIMARY KEY(`flngID`)\n" +
                         ");";
 
+        private static final String CREATE_EVENT_TABLE =
+                "CREATE TABLE `tblEvent` (\n" +
+                        "\t`flngID`\tINTEGER,\n" +
+                        "\t`fstrTitle`\tTEXT NOT NULL,\n" +
+                        "\t`fstrDescription`\tTEXT NOT NULL,\n" +
+                        "\tPRIMARY KEY(`flngID`)\n" +
+                        ");";
+
+        private static final String CREATE_EVENT_TO_TASK_TABLE =
+                "CREATE TABLE `tblEventToTask` (\n" +
+                        "\t`flngEventID`\tINTEGER,\n" +
+                        "\t`flngTaskID`\tINTEGER\n" +
+                        ");";
+
         TblTaskOpenHelper(Context context) {
             super(context, "TaskDatabase.db", null, 1);
         }
@@ -74,6 +88,8 @@ public class DatabaseAccess {
             db.execSQL(CREATE_SESSION_TABLE);
             db.execSQL(CREATE_TIME_TABLE);
             db.execSQL(CREATE_WEEK_TABLE);
+            db.execSQL(CREATE_EVENT_TABLE);
+            db.execSQL(CREATE_EVENT_TO_TASK_TABLE);
         }
 
         @Override

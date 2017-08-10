@@ -4,11 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.testtask.Task_Viewer">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.testtask.Viewer_Session"
+    tools:showIn="@layout/activity_viewer_session">
 
     <ListView
-        android:id="@+id/lsvTaskList"
-        android:layout_width="match_parent"
+        android:id="@+id/lsvSessionList"
+        android:layout_width="0dp"
         android:layout_height="495dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
