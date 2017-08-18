@@ -150,7 +150,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void setFromTime(Long pFromMili){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
         mFromTime.setTimeInMillis(pFromMili);
+        sFromTextView.setText("From: " + dateFormat.format(mFromTime.getTime()));
     }
 
     public Long getToTime() {
@@ -159,7 +161,10 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void setToTime(Long pToMili){
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
         mToTime.setTimeInMillis(pToMili);
+        sToTextView.setText("To: " + dateFormat.format(mToTime.getTime()));
     }
 
     public Long getDayOfWeek(String pstrDow){
@@ -246,7 +251,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 "FROM tblTime tm \n" +
                 "WHERE tm.flngID = ?";
         String[] parameters = {Long.toString(mlngTimeID)};
-        cursor = Task_Display.mDataBase.rawQuery(rawGetSessions,parameters);
+        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,parameters);
 
         while(cursor.moveToNext()){
             //Set to
@@ -263,7 +268,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                         "FROM tblWeek w \n" +
                         "WHERE w.flngID = ?";
                 String[] parameters2 = {Long.toString(mlngWeekID)};
-                cursor2 = Task_Display.mDataBase.rawQuery(rawGetWeek,parameters2);
+                cursor2 = DatabaseAccess.mDatabase.rawQuery(rawGetWeek,parameters2);
 
                 while(cursor2.moveToNext()){
                     setDayOfWeek("Monday",cursor2.getLong(cursor2.getColumnIndex("fblnMonday")));
@@ -283,7 +288,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 "SET fdtmFrom = " + getFromTime() + ", \n" +
                 "fdtmTo = "  + getToTime() + " \n" +
                 "WHERE flngID = " + Long.toString(mlngTimeID);
-        Cursor c = Task_Display.mDataBase.rawQuery(rawUpdateTimeRecord,null);
+        Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateTimeRecord,null);
         c.moveToFirst();
         c.close();
         //todo: check for a change of timerange and update. Right now we only have week so it's okay.
@@ -302,7 +307,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 "fblnSaturday = " + getDayOfWeek("Saturday") + ", \n" +
                 "fblnSunday = " + getDayOfWeek("Sunday") + " \n" +
                 "WHERE flngID = " + Long.toString(mlngWeekID);
-        Cursor c = Task_Display.mDataBase.rawQuery(rawUpdateWeekRecord,null);
+        Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateWeekRecord,null);
         c.moveToFirst();
         c.close();
     }
@@ -318,14 +323,23 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             weekValues.put("fblnFriday",getDayOfWeek("Friday"));
             weekValues.put("fblnSaturday",getDayOfWeek("Saturday"));
             weekValues.put("fblnSunday",getDayOfWeek("Sunday"));
-            lngWeekKey = Task_Display.mDataBase.insertOrThrow("tblWeek",null,weekValues);
+            lngWeekKey = DatabaseAccess.mDatabase.insertOrThrow("tblWeek",null,weekValues);
         }
         ContentValues timeValues = new ContentValues();
         timeValues.put("fdtmFrom",getFromTime());
         timeValues.put("fdtmTo",getToTime());
         timeValues.put("flngWeekID",lngWeekKey);
         timeValues.put("fdtmEvaluated",Calendar.getInstance().getTimeInMillis());
-        mlngTimeID = Task_Display.mDataBase.insertOrThrow("tblTime",null,timeValues);
+        mlngTimeID = DatabaseAccess.mDatabase.insertOrThrow("tblTime",null,timeValues);
+    }
+
+    public void populateTimeFromSession(Long plngSessionID){
+        Cursor cursor = DatabaseAccess.getRecordFromTable("tblSession", plngSessionID);
+        cursor.moveToFirst();
+        cursor = DatabaseAccess.getRecordFromTable("tblTime", cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+        cursor.moveToFirst();
+        setFromTime(cursor.getLong(cursor.getColumnIndex("fdtmFrom")));
+        setToTime(cursor.getLong(cursor.getColumnIndex("fdtmTo")));
     }
 
     public static class TimePickerFragment extends DialogFragment

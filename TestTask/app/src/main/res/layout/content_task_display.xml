@@ -9,7 +9,8 @@
     tools:showIn="@layout/activity_task_display">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/llMainDisplay"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
@@ -30,8 +31,13 @@
         <ListView
             android:id="@+id/lsvPriorityList"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:id="@+id/llEventsDisplay"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:headerDividersEnabled="false" />
+            android:orientation="vertical"></LinearLayout>
 
         <TextView
             android:id="@+id/textView3"
@@ -53,9 +59,7 @@
         <ListView
             android:id="@+id/lsvStandardList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:footerDividersEnabled="false"
-            android:headerDividersEnabled="false" />
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

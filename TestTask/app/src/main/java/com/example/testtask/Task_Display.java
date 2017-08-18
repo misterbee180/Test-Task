@@ -1,22 +1,29 @@
 package com.example.testtask;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,8 +32,8 @@ public class Task_Display extends AppCompatActivity {
     static ArrayListContainer mPriorityList;
     static ArrayListContainer mStandardList;
     static ArrayListContainer mTodayList;
-    static DatabaseAccess.TblTaskOpenHelper TaskDatabase;
-    static SQLiteDatabase mDataBase;
+    static ArrayListContainer mEventsList;
+    static LinearLayout llEventDisplay;
 
     static ArrayList<ArrayListContainer> mEventList;
 
@@ -45,12 +52,23 @@ public class Task_Display extends AppCompatActivity {
             }
         });
 
+        //This sets up static classes and other details for the entire program.
+        initializeApplication();
+
+        //This sets up member variable and other details specific to this activity.
+        initializeActivity();
+    }
+
+    private void initializeApplication() {
+        DatabaseAccess.setContext(this);
+    }
+
+    private void initializeActivity() {
         //Set Member Values
         mPriorityList = new ArrayListContainer();
         mTodayList = new ArrayListContainer();
         mStandardList = new ArrayListContainer();
-        TaskDatabase = new DatabaseAccess.TblTaskOpenHelper(this);
-        mDataBase = TaskDatabase.getWritableDatabase();
+        llEventDisplay = (LinearLayout) findViewById(R.id.llEventsDisplay);
 
         ListView mPriorityView = (ListView) findViewById(R.id.lsvPriorityList);
         mPriorityList.LinkArrayToListView(mPriorityView, this);
@@ -70,7 +88,7 @@ public class Task_Display extends AppCompatActivity {
         mEventList = new ArrayList<ArrayListContainer>();
     }
 
-    private ArrayListContainer getSelectedArrayListContainer(AdapterView<?> parent){
+    private static ArrayListContainer getSelectedArrayListContainer(AdapterView<?> parent){
         ArrayListContainer tmpArrayList = null;
 
         switch (parent.getId()){
@@ -97,7 +115,7 @@ public class Task_Display extends AppCompatActivity {
         return tmpArrayList;
     }
 
-    AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+    static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long arg3) {
             ArrayListContainer tmpArrayList = getSelectedArrayListContainer(parent);
@@ -105,7 +123,8 @@ public class Task_Display extends AppCompatActivity {
             bundle.putLong("TaskID", tmpArrayList.GetID(position));
             DialogFragment newFragment = new Task_Display.ConfirmationFragment();
             newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Complete Task");
+            FragmentActivity activity = (FragmentActivity)parent.getContext();
+            newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
         }
     };
 
@@ -117,8 +136,9 @@ public class Task_Display extends AppCompatActivity {
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            completeTaskInstance(tmpTaskID);
+                            DatabaseAccess.updateTaskInstanceComplete(tmpTaskID);
                             loadTasksFromDatabase();
+                            loadEventTasks(getActivity());
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -136,30 +156,11 @@ public class Task_Display extends AppCompatActivity {
         super.onResume();
         generateTaskInstances();
         loadTasksFromDatabase();
-    }
-
-    private void addEventList(){
-        //Create a new Event
-        ArrayListContainer tmpALContainer = new ArrayListContainer();
-        ListView tmpEventListView = new ListView(this);
-        tmpALContainer.LinkArrayToListView(tmpEventListView, this);
-        tmpALContainer.mListView.setOnItemClickListener(itemClickListener);
-        mEventList.add(tmpALContainer);
+        loadEventTasks(this);
     }
 
     private void generateTaskInstances() {
-        Cursor cursor = null;
-        String rawGetRepeatingTasks = "SELECT t.flngID as flngID, IFNULL(tm.flngID,tms.flngID) as flngTimeID, IFNULL(tm.fdtmEvaluated,tms.fdtmEvaluated) as fdtmEvaluated \n" +
-                "FROM tblTask t\n" +
-                "LEFT JOIN tblTime tm\n" +
-                "ON t.flngTimeID = tm.flngID\n" +
-                "LEFT JOIN tblSession s\n" +
-                "ON s.flngID = t.flngSessionID\n" +
-                "LEFT JOIN tblTime tms\n" +
-                "ON tms.flngID = s.flngTimeID\n" +
-                "WHERE IFNULL(tm.flngWeekID,tms.flngWeekID) <> -1";
-
-        cursor = mDataBase.rawQuery(rawGetRepeatingTasks,null);
+        Cursor cursor = DatabaseAccess.getRepeatingTask();
         while (cursor.moveToNext()){
             Calendar currentCalendar = Calendar.getInstance();
             Calendar storedCalendar = Calendar.getInstance();
@@ -177,14 +178,18 @@ public class Task_Display extends AppCompatActivity {
 
             if (!storedCalendar.getTime().equals(currentCalendar.getTime())){
                 //complete any currently active task instance associated with Task ID
-                systemCompleteTaskInstance(cursor.getLong(cursor.getColumnIndex("flngID")));
-
-                if (evaluateTime((long)-1, cursor.getLong(cursor.getColumnIndex("flngTimeID")))){
-                    //create a new task instance for that task id
-                    createTaskInstance(cursor.getLong(cursor.getColumnIndex("flngID")));
+                Cursor taskInstance = DatabaseAccess.retrieveActiveTaskInstanceFromTask(cursor.getLong(cursor.getColumnIndex("flngID")));
+                while (taskInstance.moveToNext()){
+                    DatabaseAccess.updateTaskInstanceSystemComplete(taskInstance.getLong(taskInstance.getColumnIndex("flngID")));
                 }
+
+                //Evaluate repetition time and create new task instance if necessary
+                if (evaluateTime((long)-1, cursor.getLong(cursor.getColumnIndex("flngTimeID")))){
+                    DatabaseAccess.insertTaskInstance(cursor.getLong(cursor.getColumnIndex("flngID")));
+                }
+
                 //Update the evaluation date associated with the time element.
-                updateTimeEvaluated(currentCalendar.getTimeInMillis(),
+                DatabaseAccess.updateTimeEvaluated(currentCalendar.getTimeInMillis(),
                         cursor.getLong(cursor.getColumnIndex("flngTimeID")));
             }
         }
@@ -192,73 +197,51 @@ public class Task_Display extends AppCompatActivity {
 
     private boolean evaluateTime(Long plngSessionId,
                                  Long plngTimeId) {
-        Cursor cursor = null;
+        Cursor cursor;
         Calendar calendar = Calendar.getInstance();
         Boolean evaluation = false;
-        if (plngSessionId != -1) {
-            String rawGetTimeDetailsFromSession = "SELECT t.* \n" +
-                    "FROM tblTime t \n" +
-                    "JOIN tblSession s \n" +
-                    "ON s.flngTimeID = t.flngID \n" +
-                    "JOIN tblWeek w \n" +
-                    "ON w.flngID = t.flngWeekID \n" +
-                    "WHERE s.flngID = ? \n";
-            String[] parameters = {Long.toString(plngSessionId)};
-            cursor = mDataBase.rawQuery(rawGetTimeDetailsFromSession,parameters);
-        } else if (plngTimeId != -1){
-            String rawGetTimeDetailsFromSession = "SELECT w.* \n" +
-                    "FROM tblTime t \n" +
-                    "JOIN tblWeek w \n" +
-                    "ON w.flngID = t.flngWeekID \n" +
-                    "WHERE t.flngID = ?";
-            String[] parameters = {Long.toString(plngTimeId)};
-            cursor = mDataBase.rawQuery(rawGetTimeDetailsFromSession,parameters);
-        }
+        Long timeID = plngTimeId;
+        Long weekID;
 
+        if (plngSessionId != -1) {
+            cursor = DatabaseAccess.getRecordFromTable("tblSession", plngSessionId);
+            while (cursor.moveToNext()){
+                timeID = cursor.getLong(cursor.getColumnIndex("flngTimeID"));
+            }
+        }
+        cursor = DatabaseAccess.getRecordFromTable("tblTime", timeID);
         cursor.moveToFirst();
-        switch (calendar.get(Calendar.DAY_OF_WEEK)){
-            case Calendar.SUNDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnSunday")) == 1;
-                break;
-            case Calendar.MONDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnMonday")) == 1;
-                break;
-            case Calendar.TUESDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnTuesday")) == 1;
-                break;
-            case Calendar.WEDNESDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnWednesday")) == 1;
-                break;
-            case Calendar.THURSDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnThursday")) == 1;
-                break;
-            case Calendar.FRIDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnFriday")) == 1;
-                break;
-            case Calendar.SATURDAY:
-                evaluation = cursor.getInt(cursor.getColumnIndex("fblnSaturday")) == 1;
-                break;
+        weekID = cursor.getLong(cursor.getColumnIndex("flngWeekID"));
+
+        if (weekID != -1){
+            cursor = DatabaseAccess.getRecordFromTable("tblWeek", weekID);
+            cursor.moveToFirst();
+            switch (calendar.get(Calendar.DAY_OF_WEEK)){
+                case Calendar.SUNDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnSunday")) == 1;
+                    break;
+                case Calendar.MONDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnMonday")) == 1;
+                    break;
+                case Calendar.TUESDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnTuesday")) == 1;
+                    break;
+                case Calendar.WEDNESDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnWednesday")) == 1;
+                    break;
+                case Calendar.THURSDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnThursday")) == 1;
+                    break;
+                case Calendar.FRIDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnFriday")) == 1;
+                    break;
+                case Calendar.SATURDAY:
+                    evaluation = cursor.getInt(cursor.getColumnIndex("fblnSaturday")) == 1;
+                    break;
+            }
         }
 
         return evaluation;
-    }
-
-    private void updateTimeEvaluated(Long fdtmTimeMili, Long flngTimeID) {
-
-        String rawUpdateTimeEvaluated = "UPDATE tblTime " +
-                "SET fdtmEvaluated = " + Long.toString(fdtmTimeMili) + " " +
-                "WHERE flngID = " + Long.toString(flngTimeID);
-        Cursor c = mDataBase.rawQuery(rawUpdateTimeEvaluated,null);
-        c.moveToFirst();
-        c.close();
-    }
-
-    private long createTaskInstance(Long plngTaskID) {
-        ContentValues values = new ContentValues();
-        values.put("flngTaskID",plngTaskID);
-        values.put("fblnComplete",0);
-        values.put("fblnSystemComplete",0);
-        return mDataBase.insertOrThrow("tblTaskInstance",null,values);
     }
 
     /** Called when the user taps the Send button */
@@ -268,50 +251,53 @@ public class Task_Display extends AppCompatActivity {
     }
 
     public void viewTasks() {
-        Intent intent = new Intent(this, Task_Viewer.class);
+        Intent intent = new Intent(this, Viewer_Task.class);
         startActivity(intent);
     }
 
     public void viewSessions() {
-        Intent intent = new Intent(this, Session_Viewer.class);
+        Intent intent = new Intent(this, Viewer_Session.class);
         startActivity(intent);
     }
 
-    public static void completeTaskInstance(Long plngTaskId){
-        String rawCompleteTaskInstance = "UPDATE tblTaskInstance " +
-                "SET fblnComplete = 1 " +
-                "WHERE flngID = " + Long.toString(plngTaskId) + " " +
-                "AND fblnSystemComplete = 0 AND fblnComplete = 0";
-        Cursor c = mDataBase.rawQuery(rawCompleteTaskInstance,null);
-        c.moveToFirst();
-        c.close();
+    public void viewEvents() {
+        Intent intent = new Intent(this, Viewer_Events.class);
+        startActivity(intent);
     }
 
-    public static void systemCompleteTaskInstance(Long plngTaskId) {
-        String rawSystemCompleteTaskInstance = "UPDATE tblTaskInstance " +
-                "SET fblnSystemComplete = 1 " +
-                "WHERE flngID = " + Long.toString(plngTaskId) + " " +
-                "AND fblnSystemComplete = 0 AND fblnComplete = 0";
-        Cursor c = mDataBase.rawQuery(rawSystemCompleteTaskInstance,null);
-        c.moveToFirst();
-        c.close();
+    public static void loadEventTasks(Context pContext){
+        Cursor cursor = DatabaseAccess.retrieveEventTaskInstances();
+        Long lngEventId = (long)-1;
+        ListView tmpEventListView = null;
+        ArrayListContainer tmpEventALC = null;
+
+        llEventDisplay.removeAllViews();
+        mEventList.clear();
+        while(cursor.moveToNext()){
+            if (lngEventId != cursor.getLong(cursor.getColumnIndex("flngEventId"))){
+                lngEventId = cursor.getLong(cursor.getColumnIndex("flngEventId"));
+                TextView tmpEventTitle = new TextView(pContext);
+                tmpEventTitle.setText(cursor.getString(cursor.getColumnIndex("fstrEventTitle")));
+                tmpEventTitle.setTextSize(14);
+                tmpEventTitle.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT,Toolbar.LayoutParams.WRAP_CONTENT));
+                llEventDisplay.addView(tmpEventTitle);
+
+                tmpEventListView = new ListView(pContext);
+                tmpEventListView.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, ListView.LayoutParams.WRAP_CONTENT));
+                tmpEventALC = new ArrayListContainer();
+                tmpEventALC.LinkArrayToListView(tmpEventListView, pContext);
+                tmpEventALC.mListView.setOnItemClickListener(itemClickListener);
+                mEventList.add(tmpEventALC);
+                llEventDisplay.addView(tmpEventListView);
+                //llEvents.addView(tmpEventTitle);
+            }
+            tmpEventALC.Add(cursor.getString(cursor.getColumnIndex("fstrTaskTitle")), cursor.getLong(cursor.getColumnIndex("flngTaskInstanceId")));
+            tmpEventALC.mAdapter.notifyDataSetChanged();
+        }
     }
 
     public static void loadTasksFromDatabase(){
-        String rawQuery = "SELECT i.flngID, t.fstrTitle, IFNULL(tm.fdtmFrom,tms.fdtmFrom) as fdtmFrom, IFNULL(tm.fdtmTo,tms.fdtmTo) as fdtmTo, IFNULL(tm.flngWeekID, tms.flngWeekID) as flngWeekID \n" +
-                "FROM tblTask t \n" +
-                "JOIN tblTaskInstance i \n" +
-                "ON t.flngId = i.flngTaskId \n" +
-                "LEFT JOIN tblTime tm \n" +
-                "ON tm.flngID = t.flngTimeID \n" +
-                "LEFT JOIN tblSession s \n" +
-                "ON s.flngID = t.flngSessionID \n" +
-                "LEFT JOIN tblTime tms \n" +
-                "ON tms.flngID = s.flngTimeID \n" +
-                "WHERE i.fblnComplete = 0 \n" +
-                "AND i.fblnSystemComplete = 0 \n";
-
-        Cursor cursor = mDataBase.rawQuery(rawQuery,null);
+        Cursor cursor = DatabaseAccess.getTaskInstancesWithDetails();
 
         mPriorityList.Clear();
         mStandardList.Clear();
@@ -403,6 +389,9 @@ public class Task_Display extends AppCompatActivity {
                 break;
             case R.id.action_task:
                 viewTasks();
+                break;
+            case R.id.action_event  :
+                viewEvents();
                 break;
         }
 

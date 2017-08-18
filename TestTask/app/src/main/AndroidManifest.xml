@@ -19,7 +19,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -27,11 +26,20 @@
         <activity android:name=".Task_Session" />
         <activity android:name=".TimeKeeper" />
         <activity
-            android:name=".Session_Viewer"
+            android:name=".Viewer_Session"
             android:label="@string/title_activity_session_viewer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Task_Viewer"
-            android:label="@string/title_activity_task_viewer"></activity>
+        <activity
+            android:name=".Viewer_Task"
+            android:label="@string/title_activity_task_viewer" />
+        <activity
+            android:name=".Viewer_Events"
+            android:label="@string/title_activity_viewer__events"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Task_Event"
+            android:label="@string/title_activity_task__event"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

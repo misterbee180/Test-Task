@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.testtask.Session_Viewer"
-    tools:showIn="@layout/activity_session_viewer">
+    tools:context="com.example.testtask.Viewer_Session"
+    tools:showIn="@layout/activity_viewer_session">
 
     <ListView
         android:id="@+id/lsvSessionList"

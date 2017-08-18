@@ -38,16 +38,28 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="15dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/btnTaskAddSess"
             app:layout_constraintTop_toBottomOf="@+id/txbTaskDescription" />
 
-    <com.example.testtask.TimeKeeper
+        <CheckBox
+            android:id="@+id/chkSessOneOff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/OneOffSession"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spnTaskSessSel" />
+
+        <com.example.testtask.TimeKeeper
         android:id="@+id/timeKeeper"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/btnTaskAddSess">
+        app:layout_constraintTop_toBottomOf="@+id/chkSessOneOff"
+            tools:layout_editor_absoluteX="0dp"
+            android:layout_marginTop="4dp">
 
     </com.example.testtask.TimeKeeper>
 
@@ -90,7 +102,7 @@
             android:layout_marginLeft="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:onClick="ceaseTaskCreation"
+            android:onClick="confirmActivity"
             android:text="@string/Button_Confirm"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -103,7 +115,7 @@
             android:layout_marginBottom="16dp"
             android:layout_marginLeft="16dp"
             android:layout_marginStart="16dp"
-            android:onClick="ceaseTaskCreation"
+            android:onClick="cancelActivity"
             android:text="@string/Button_Cancel"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/btnTaskConfirm" />

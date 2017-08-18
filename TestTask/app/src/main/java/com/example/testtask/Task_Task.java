@@ -6,9 +6,10 @@ import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
-
 import java.util.Calendar;
 
 
@@ -17,63 +18,14 @@ public class Task_Task  extends AppCompatActivity {
     //Declare local variables
     Spinner mSession;
     Long mlngTaskId = (long)-1;
+    Long mlngEventId = (long)-1;
 
     ArrayListContainer mSessionList;
     TimeKeeper timeKeeper;
     TextView mTitle;
     TextView mDescription;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task_task);
-        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
-        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
-        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
-
-        mSession = (Spinner) findViewById(R.id.spnTaskSessSel);
-        mSessionList = new ArrayListContainer();
-        mSessionList.LinkArrayToSpinner(mSession, this);
-
-
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null){
-            mlngTaskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
-        }
-        if (mlngTaskId != -1){
-            setSessionSpinner();
-            LoadTask(mlngTaskId);
-        }
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-        setSessionSpinner();
-    }
-
-    public void setSessionSpinner(){
-        String[] projection = {"fstrTitle","flngID"};
-        String sortOrder = "fstrTitle DESC";
-
-        Cursor cursor = Task_Display.mDataBase.query("tblSession",
-                projection,
-                null,
-                null,
-                null,
-                null,
-                sortOrder);
-
-        mSessionList.Clear();
-        //Add pre-set session so that a value can be grabbed.
-        mSessionList.Add("No Session",(long)-1);
-        while(cursor.moveToNext()){
-            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngID")));
-        }
-        mSessionList.mAdapter.notifyDataSetChanged();
-    }
-
+    //region SETTER/GETTERS
     public String getTaskTitle(){
         return mTitle.getText().toString();
     }
@@ -95,48 +47,168 @@ public class Task_Task  extends AppCompatActivity {
         return mSessionList.GetID(mSession.getSelectedItemPosition());
     }
 
+    public Long getEventID() {return mlngEventId;}
+
+    public Boolean getIsOneOffFromSession() {return ((CheckBox) findViewById(R.id.chkSessOneOff)).isChecked();}
+    //endregion
+
+    //region Overridden Functions
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_task);
+        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
+        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
+        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
+
+        mSession = (Spinner) findViewById(R.id.spnTaskSessSel);
+        mSessionList = new ArrayListContainer();
+        mSessionList.LinkArrayToSpinner(mSession, this);
+        mSessionList.mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id){
+                if(mSessionList.GetID(position) != -1){
+                    (findViewById(R.id.timeKeeper)).setVisibility(View.GONE);
+                    (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
+                } else {
+                    (findViewById(R.id.timeKeeper)).setVisibility(View.VISIBLE);
+                    (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent){
+            }
+        });
+
+        retrieveExtras();
+        setupInitialVisibility();
+        setupViews();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        setSessionSpinner();
+    }
+    //endregion
+
+    private void setupViews() {
+        if (mlngEventId == -1){
+            setSessionSpinner();
+        }
+
+        if (mlngTaskId != -1){
+            LoadTask(mlngTaskId);
+        }
+    }
+
+    private void setupInitialVisibility() {
+        if (mlngEventId != -1){
+            (findViewById(R.id.spnFrequency)).setVisibility(View.GONE);
+            (findViewById(R.id.spnTaskSessSel)).setVisibility(View.GONE);
+            (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
+            (findViewById(R.id.timeKeeper)).setVisibility(View.GONE);
+        }
+        (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
+    }
+
+    private void retrieveExtras() {
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null){
+            mlngTaskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
+            mlngEventId = getIntent().getLongExtra("EXTRA_EVENT_ID",-1);
+        }
+    }
+
+    //region Initialization Functions
+    public void setSessionSpinner(){
+        String[] projection = {"fstrTitle","flngID"};
+        String sortOrder = "fstrTitle DESC";
+
+        Cursor cursor = DatabaseAccess.mDatabase.query("tblSession",
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder);
+
+        mSessionList.Clear();
+        //Add pre-set session so that a value can be grabbed.
+        mSessionList.Add("No Session",(long)-1);
+        while(cursor.moveToNext()){
+            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngID")));
+        }
+        mSessionList.mAdapter.notifyDataSetChanged();
+    }
+
     private void LoadTask(Long plngTaskId) {
         Cursor cursor;
         String rawGetTask = "SELECT * \n" +
                 "FROM tblTask t \n" +
                 "WHERE t.flngID = ?";
         String[] parameters = {Long.toString(plngTaskId)};
-        cursor = Task_Display.mDataBase.rawQuery(rawGetTask,parameters);
+        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetTask,parameters);
 
         while(cursor.moveToNext()){
             Long lngTimeID = cursor.getLong(cursor.getColumnIndex("flngTimeID"));
             Long lngSessionID = cursor.getLong(cursor.getColumnIndex("flngSessionID"));
             setTaskTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
             setTaskDesc(cursor.getString(cursor.getColumnIndex("fstrDescription")));
-            if (lngSessionID != -1){
-                mSessionList.setIDSpinner(lngSessionID);
-            } else if (lngTimeID != -1){
-                timeKeeper.loadTimeDetails(lngTimeID);
+            if (mlngEventId == -1){
+                if (lngSessionID != -1){
+                    mSessionList.setIDSpinner(lngSessionID);
+                } else if (lngTimeID != -1){
+                    timeKeeper.loadTimeDetails(lngTimeID);
+                }
             }
         }
     }
+    //endregion
 
-    public void ceaseTaskCreation(View view){
-        switch(view.getId()){
-            case R.id.btnTaskConfirm:
-                if (mlngTaskId == -1){
-                    InitializeTaskCreation();
-                } else{
-                    //TODO: Allow for going from time to session (need to inactivate time id formally associated with task)
-                    if(timeKeeper.getTimeID() != -1 && getSessionID() == -1){
-                        timeKeeper.updateTimeRecord();
-                    } else if (timeKeeper.getTimeID() == -1 && timeKeeper.blnTimeDetailsExist()){
-                        timeKeeper.createTime();
-                    }
-                    updateTaskRecord();
-                }
-                setResult(RESULT_OK);
-                finish();
-                break;
-            default:
-                setResult(RESULT_CANCELED);
-                finish();
+    public void confirmActivity(View view){
+        if (mlngEventId != -1) {
+            if (mlngTaskId != -1){
+                updateTaskRecord();
+            } else {
+                EventTaskCreation();
+            }
+        } else if (mlngTaskId == -1){
+            InitializeTaskCreation();
+        } else{
+            //TODO: Allow for going from time to session (need to inactivate time id formally associated with task)
+            if(timeKeeper.getTimeID() != -1 && getSessionID() == -1){
+                timeKeeper.updateTimeRecord();
+            } else if (timeKeeper.getTimeID() == -1 && timeKeeper.blnTimeDetailsExist()){
+                timeKeeper.createTime();
+            }
+            updateTaskRecord();
         }
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    private void EventTaskCreation() {
+        //Create time if no session provided
+        timeKeeper.createTime();
+
+        //Create task
+        mlngTaskId = createTask(getTaskTitle(),
+                getTaskDesc(),
+                getSessionID(),
+                timeKeeper.getTimeID(),
+                getEventID());
+
+        setResult(RESULT_OK);
+        finish();
+
+    }
+
+    public void cancelActivity(View view){
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
     private void updateTaskRecord() {
@@ -147,15 +219,17 @@ public class Task_Task  extends AppCompatActivity {
                 "flngSessionID = " + Long.toString(getSessionID()) + ", \n" +
                 "flngTimeID = " + Long.toString(lngNewTimeId) + " \n" +
                 "WHERE flngID = " + Long.toString(mlngTaskId);
-        Cursor c = Task_Display.mDataBase.rawQuery(rawUpdateTaskRecord,null);
+        Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateTaskRecord,null);
         c.moveToFirst();
         c.close();
 
         Long lngTaskInstanceID = getOpenTaskInstanceFromTask(mlngTaskId);
         if (lngTaskInstanceID != -1){
-            Task_Display.systemCompleteTaskInstance(lngTaskInstanceID);
+            DatabaseAccess.updateTaskInstanceSystemComplete(lngTaskInstanceID);
         }
-        evaluateTaskInstanceCreation();
+        if (mlngEventId == -1){
+            evaluateTaskInstanceCreation();
+        }
     }
 
     private long getOpenTaskInstanceFromTask(Long plngTaskId){
@@ -163,7 +237,7 @@ public class Task_Task  extends AppCompatActivity {
                 "FROM tblTaskInstance " +
                 "WHERE flngTaskID = " + Long.toString(plngTaskId) + " " +
                 "AND fblnSystemComplete = 0 AND fblnComplete = 0";
-        Cursor c = Task_Display.mDataBase.rawQuery(rawGetTaskInstance,null);
+        Cursor c = DatabaseAccess.mDatabase.rawQuery(rawGetTaskInstance,null);
         c.moveToFirst();
         if (c.getCount() != 1){ return -1; }
         return c.getLong(c.getColumnIndex("flngID"));
@@ -172,23 +246,34 @@ public class Task_Task  extends AppCompatActivity {
     public void InitializeTaskCreation() {
         //todo: add validation to session before it attempts to be created
 
+        Long lngSessionID = getSessionID();
         //Create time if no session provided
-        if (getSessionID() == -1) {timeKeeper.createTime();}
+        if (getSessionID() == -1) {
+            timeKeeper.createTime();
+        } else if (getIsOneOffFromSession()){
+            timeKeeper.populateTimeFromSession(getSessionID());
+            timeKeeper.createTime();
+            lngSessionID = (long)-1;
+        }
+
         //Create task
         mlngTaskId = createTask(getTaskTitle(),
                 getTaskDesc(),
-                getSessionID(),
-                timeKeeper.getTimeID());
+                lngSessionID,
+                timeKeeper.getTimeID(),
+                getEventID());
 
         //Evaluate if task needs an instance of it created
         evaluateTaskInstanceCreation();
 
         setResult(RESULT_OK);
         finish();
+
+
     }
 
     private void evaluateTaskInstanceCreation(){
-        if (getSessionID() == -1 && timeKeeper.getTimeRange() == "") {//no session details or repeating time details to evaluate
+        if ((getSessionID() == -1 && timeKeeper.getTimeRange() == "") || getIsOneOffFromSession()) {//no session details or repeating time details to evaluate
             createTaskInstance(mlngTaskId);
         } else if (getSessionID() != -1 && evaluateTime(getSessionID(),(long)-1)){
             createTaskInstance(mlngTaskId);
@@ -197,13 +282,14 @@ public class Task_Task  extends AppCompatActivity {
         }
     }
 
-    private long createTask(String pstrTitle, String pstrDescription, Long plngSessionId, Long plngTimeId){
+    private long createTask(String pstrTitle, String pstrDescription, Long plngSessionId, Long plngTimeId, Long plngEventId){
         ContentValues values = new ContentValues();
         values.put("fstrTitle",pstrTitle);
         values.put("fstrDescription", pstrDescription);
         values.put("flngSessionID", plngSessionId);
         values.put("flngTimeID",plngTimeId);
-        return Task_Display.mDataBase.insertOrThrow("tblTask",null,values);
+        values.put("flngEventID",plngEventId);
+        return DatabaseAccess.mDatabase.insertOrThrow("tblTask",null,values);
     }
 
     private long createTaskInstance(Long plngTaskID) {
@@ -211,7 +297,7 @@ public class Task_Task  extends AppCompatActivity {
         values.put("flngTaskID",plngTaskID);
         values.put("fblnComplete",0);
         values.put("fblnSystemComplete",0);
-        return Task_Display.mDataBase.insertOrThrow("tblTaskInstance",null,values);
+        return DatabaseAccess.mDatabase.insertOrThrow("tblTaskInstance",null,values);
     }
 
     private boolean evaluateTime(Long plngSessionId,
@@ -228,7 +314,7 @@ public class Task_Task  extends AppCompatActivity {
                     "ON w.flngID = t.flngWeekID \n" +
                     "WHERE s.flngID = ?";
             String[] parameters = {Long.toString(plngSessionId)};
-            cursor = Task_Display.mDataBase.rawQuery(rawGetTimeDetailsFromSession,parameters);
+            cursor = DatabaseAccess.mDatabase.rawQuery(rawGetTimeDetailsFromSession,parameters);
         } else if (plngTimeId != -1){
             String rawGetTimeDetailsFromSession = "SELECT w.* \n" +
                     "FROM tblTime t \n" +
@@ -236,7 +322,7 @@ public class Task_Task  extends AppCompatActivity {
                     "ON w.flngID = t.flngWeekID \n" +
                     "WHERE t.flngID = ?";
             String[] parameters = {Long.toString(plngTimeId)};
-            cursor = Task_Display.mDataBase.rawQuery(rawGetTimeDetailsFromSession,parameters);
+            cursor = DatabaseAccess.mDatabase.rawQuery(rawGetTimeDetailsFromSession,parameters);
         }
 
         cursor.moveToFirst();

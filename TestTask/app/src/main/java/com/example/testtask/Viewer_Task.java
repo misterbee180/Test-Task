@@ -12,14 +12,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-public class Task_Viewer extends AppCompatActivity {
+public class Viewer_Task extends AppCompatActivity {
 
     static ArrayListContainer mTaskList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task_viewer);
+        setContentView(R.layout.activity_viewer_task);
 
         ListView mTaskView = (ListView) findViewById(R.id.lsvTaskList);
         mTaskList = new ArrayListContainer();
@@ -38,7 +38,7 @@ public class Task_Viewer extends AppCompatActivity {
             Bundle bundle = new Bundle();
             bundle.putLong("TaskID", mTaskList.GetID(position));
             //Todo: Replace all of this with logic to select from various options associated with the item
-            DialogFragment newFragment = new Task_Viewer.TaskEditConfirmationFragment();
+            DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Task");
             return true;
@@ -84,7 +84,7 @@ public class Task_Viewer extends AppCompatActivity {
                 "\tWHERE ti.flngTaskID = t.flngID\n" +
                 "\tAND ti.fblnComplete = 0\n" +
                 "\tAND ti.fblnSystemComplete = 0)\n";
-        cursor = Task_Display.mDataBase.rawQuery(rawGetTasks,null);
+        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetTasks,null);
 
         mTaskList.Clear();
         while (cursor.moveToNext()){
