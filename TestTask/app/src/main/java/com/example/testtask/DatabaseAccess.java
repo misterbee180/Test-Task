@@ -104,7 +104,7 @@ public class DatabaseAccess {
         //endregion
 
         TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 999);
+            super(context, "TaskDatabase.db", null, 2);
         }
 
         @Override
@@ -142,15 +142,13 @@ public class DatabaseAccess {
                               int oldVersion,
                               int newVersion){
 
-            if (newVersion == 998) {
-                db.execSQL(DROP_TASK_TABLE);
-                db.execSQL(DROP_TASKINSTANCE_TABLE);
-                db.execSQL(DROP_SESSION_TABLE);
-                db.execSQL(DROP_TIME_TABLE);
-                db.execSQL(DROP_WEEK_TABLE);
-                db.execSQL(DROP_EVENT_TABLE);
-                onCreate(db);
-            }
+            db.execSQL(DROP_TASK_TABLE);
+            db.execSQL(DROP_TASKINSTANCE_TABLE);
+            db.execSQL(DROP_SESSION_TABLE);
+            db.execSQL(DROP_TIME_TABLE);
+            db.execSQL(DROP_WEEK_TABLE);
+            db.execSQL(DROP_EVENT_TABLE);
+            onCreate(db);
         }
 
         private void upgradeToV2(SQLiteDatabase db){
