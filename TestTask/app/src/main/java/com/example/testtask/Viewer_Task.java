@@ -84,7 +84,7 @@ public class Viewer_Task extends AppCompatActivity {
                 "\tWHERE ti.flngTaskID = t.flngID\n" +
                 "\tAND ti.fblnComplete = 0\n" +
                 "\tAND ti.fblnSystemComplete = 0)\n";
-        cursor = Task_Display.mDataBase.rawQuery(rawGetTasks,null);
+        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetTasks,null);
 
         mTaskList.Clear();
         while (cursor.moveToNext()){

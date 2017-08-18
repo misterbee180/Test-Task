@@ -90,7 +90,7 @@ public class Viewer_Session extends AppCompatActivity {
         Cursor cursor;
         String rawGetSessions = "SELECT * \n" +
                 "FROM tblSession s \n";
-        cursor = Task_Display.mDataBase.rawQuery(rawGetSessions,null);
+        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,null);
 
         mSessionList.Clear();
         while (cursor.moveToNext()){

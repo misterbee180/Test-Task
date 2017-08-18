@@ -35,19 +35,11 @@ public class Task_Session extends AppCompatActivity{
     }
 
     private void LoadSession(Long lngSessionId) {
-        Cursor cursor;
-        String rawGetSessions = "SELECT * \n" +
-                "FROM tblSession s \n" +
-                "WHERE s.flngID = ?";
-        String[] parameters = {Long.toString(lngSessionId)};
-        cursor = Task_Display.mDataBase.rawQuery(rawGetSessions,parameters);
+        Cursor cursor = DatabaseAccess.getRecordFromTable("tblSession",mlngSessionId);
 
         while(cursor.moveToNext()){
-            Long lngTimeID = cursor.getLong(cursor.getColumnIndex("flngTimeID"));
             setSessionTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
-            if (lngTimeID != null){
-                timeKeeper.loadTimeDetails(lngTimeID);
-            }
+            timeKeeper.loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
         }
     }
 
@@ -59,10 +51,9 @@ public class Task_Session extends AppCompatActivity{
                 long tmpTimeId = createTime();
                 createSession(getSessionTitle(), tmpTimeId);
             } else {
-                if(timeKeeper.mlngTimeID != null){
-                    timeKeeper.updateTimeRecord();
-                }
+                timeKeeper.updateTimeRecord();
                 updateSessionRecord();
+                //Todo: Reevaluate tasks associated to this session (NOT ONE OFF TASKS)
             }
 
             //use the result to determine if a session was added.
@@ -79,7 +70,7 @@ public class Task_Session extends AppCompatActivity{
             String rawUpdateSessionRecord = "UPDATE tblSession \n" +
                     "SET fstrTitle = '" + getSessionTitle() + "' \n" +
                     "WHERE flngID = " + Long.toString(mlngSessionId);
-            Cursor c = Task_Display.mDataBase.rawQuery(rawUpdateSessionRecord,null);
+            Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateSessionRecord,null);
             c.moveToFirst();
             c.close();
     }
@@ -89,7 +80,7 @@ public class Task_Session extends AppCompatActivity{
         ContentValues values = new ContentValues();
         values.put("fstrTitle", pstrTitle);
         values.put("flngTimeId", plngTimeId);
-        return Task_Display.mDataBase.insertOrThrow("tblSession",null,values);
+        return DatabaseAccess.mDatabase.insertOrThrow("tblSession",null,values);
     }
 
     private long createTime(){
@@ -103,14 +94,14 @@ public class Task_Session extends AppCompatActivity{
             weekValues.put("fblnFriday",timeKeeper.getDayOfWeek("Friday"));
             weekValues.put("fblnSaturday",timeKeeper.getDayOfWeek("Saturday"));
             weekValues.put("fblnSunday",timeKeeper.getDayOfWeek("Sunday"));
-            lngWeekKey = Task_Display.mDataBase.insertOrThrow("tblWeek",null,weekValues);
+            lngWeekKey = DatabaseAccess.mDatabase.insertOrThrow("tblWeek",null,weekValues);
         }
         ContentValues timeValues = new ContentValues();
         timeValues.put("fdtmFrom",timeKeeper.getFromTime());
         timeValues.put("fdtmTo",timeKeeper.getToTime());
         timeValues.put("flngWeekID",lngWeekKey);
         timeValues.put("fdtmEvaluated",Calendar.getInstance().getTimeInMillis());
-        return Task_Display.mDataBase.insertOrThrow("tblTime",null,timeValues);
+        return DatabaseAccess.mDatabase.insertOrThrow("tblTime",null,timeValues);
     }
 
     public String getSessionTitle() {
