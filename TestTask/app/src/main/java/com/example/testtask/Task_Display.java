@@ -637,6 +637,7 @@ public class Task_Display extends AppCompatActivity {
     public static void loadTasksFromDatabase(Context pContext){
         Cursor cursor = DatabaseAccess.getTaskInstancesWithDetails();
 
+        //Test for fun
         mPriorityList.Clear();
         mStandardList.Clear();
         mTodayList.Clear();
