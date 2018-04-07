@@ -6,101 +6,61 @@
     android:layout_height="wrap_content"
     tools:context="com.example.testtask.TimeKeeper">
 
-
-    <Button
-        android:id="@+id/btnSessFrom"
-        android:layout_width="wrap_content"
+    <Spinner
+        android:id="@+id/spnRepitition"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/Button_TimeFrom"
+        android:entries="@array/RepetitionArray"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/btnSessTo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/Button_TimeTo"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSessFrom" />
-
-    <TextView
-        android:id="@+id/textSessFrom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/btnSessFrom"
-        app:layout_constraintLeft_toRightOf="@+id/btnSessFrom" />
-
-    <TextView
-        android:id="@+id/textSessTo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/btnSessTo"
-        app:layout_constraintLeft_toRightOf="@+id/btnSessTo" />
 
     <Spinner
         android:id="@+id/spnTimeRange"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
         android:entries="@array/TimeRange"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSessTo" />
-
-    <Spinner
-        android:id="@+id/spnFrequency"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:entries="@array/Frequency"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@+id/CLayDayOfGroup"
-        android:layout_marginLeft="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginRight="16dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp" />
+        app:layout_constraintTop_toBottomOf="@+id/spnRepitition" />
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/CLayDayOfGroup"
-        android:layout_width="0dp"
+        android:id="@+id/CLayNoFrequency"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spnTimeRange">
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/CLayWeeklyDays"
+        <Button
+            android:id="@+id/Timekeeper_NoFreq_BtnFromDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_FromDate"
+            app:layout_constraintTop_toBottomOf="@+id/CLayNoFrequency" />
+
+        <Button
+            android:id="@+id/Timekeeper_NoFreq_BtnToDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_ToDate"
+            app:layout_constraintTop_toBottomOf="@+id/Timekeeper_NoFreq_BtnFromDate" />
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+            android:id="@+id/CLayWeekly"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="8dp"
+        android:visibility="gone"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/CLayNoFrequency">
 
             <CheckBox
                 android:id="@+id/chkFriday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/Friday"
                 app:layout_constraintLeft_toRightOf="@+id/chkTuesday"
                 app:layout_constraintTop_toBottomOf="@+id/chkThursday" />
@@ -109,9 +69,6 @@
                 android:id="@+id/chkTuesday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/Tuesday"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/chkMonday" />
@@ -120,8 +77,6 @@
                 android:id="@+id/chkMonday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
                 android:text="@string/Monday"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -130,10 +85,7 @@
                 android:id="@+id/chkSunday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
                 android:text="@string/Sunday"
-                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintLeft_toRightOf="@+id/chkThursday"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -142,8 +94,6 @@
                 android:id="@+id/chkThursday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
                 android:text="@string/Thursday"
                 app:layout_constraintLeft_toRightOf="@+id/chkMonday"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -152,9 +102,6 @@
                 android:id="@+id/chkSaturday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/Saturday"
                 app:layout_constraintLeft_toRightOf="@+id/chkWednesday"
                 app:layout_constraintTop_toBottomOf="@+id/chkFriday" />
@@ -163,23 +110,103 @@
                 android:id="@+id/chkWednesday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/Wednesday"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/chkTuesday" />
         </android.support.constraint.ConstraintLayout>
 
-        <CalendarView
-            android:id="@+id/calMonthlyDays"
-            android:layout_width="0dp"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/CLayMonthly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/CLayWeekly">
+
+        <RadioGroup
+            android:id="@+id/TimeKeeper_Monthly_RadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/TimeKeeper_Monthly_Gen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/TimeKeeper_Month_Gen"
+                app:layout_constraintBottom_toTopOf="@+id/TimeKeeper_Monthly_First" />
+
+            <RadioButton
+                android:id="@+id/TimeKeeper_Monthly_Spec"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/TimeKeeper_Month_Spec"
+                app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Last" />
+
+        </RadioGroup>
+
+        <CheckBox
+            android:id="@+id/TimeKeeper_Monthly_First"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:visibility="visible"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="@string/TimeKeeper_Month_Gen_First"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toRightOf="@id/TimeKeeper_Monthly_RadioGroup"/>
+
+        <CheckBox
+            android:id="@+id/TimeKeeper_Monthly_Middle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Gen_Middle"
+            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
+            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_First" />
+
+        <CheckBox
+            android:id="@+id/TimeKeeper_Monthly_Last"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Gen_Last"
+            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
+            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Middle" />
+
+        <CheckBox
+            android:id="@+id/TimeKeeper_Monthly_AfterWkn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Gen_AfterWkn"
+            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
+            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Last" />
+
+        <Button
+            android:id="@+id/TimeKeeper_Monthly_Btn_Add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Spec_Add"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toRightOf="@+id/TimeKeeper_Monthly_RadioGroup" />
+
+        <EditText
+            android:id="@+id/TimeKeeper_Monthly_Txt_Display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:enabled="false"
+            app:layout_constraintLeft_toLeftOf="@+id/TimeKeeper_Monthly_Btn_Add"
+            app:layout_constraintTop_toBottomOf="@id/TimeKeeper_Monthly_Btn_Add" />
+
     </android.support.constraint.ConstraintLayout>
+
+    <Button
+        android:id="@+id/Timekeeper_BtnFromTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_From_Time"
+        app:layout_constraintTop_toBottomOf="@+id/CLayMonthly" />
+
+    <Button
+        android:id="@+id/Timekeeper_BtnToTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_To_Time"
+        app:layout_constraintTop_toBottomOf="@+id/Timekeeper_BtnFromTime" />
+
 
 </android.support.constraint.ConstraintLayout>

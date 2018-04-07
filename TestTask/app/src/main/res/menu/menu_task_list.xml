@@ -22,4 +22,10 @@
         android:orderInCategory="200"
         android:title="@string/action_event"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_group"
+        android:orderInCategory="250"
+        android:title="@string/action_group"
+        app:showAsAction="never" />
 </menu>

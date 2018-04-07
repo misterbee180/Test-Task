@@ -80,7 +80,14 @@ public class Viewer_Events extends AppCompatActivity {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("EventID", mEventList.GetID(position));
+            switch(parent.getId()){
+                case R.id.lsvEventList:
+                    bundle.putLong("EventID", mEventList.GetID(position));
+                    break;
+                case R.id.lsvActiveList:
+                    bundle.putLong("EventID", mActiveList.GetID(position));
+                    break;
+            }
             DialogFragment newFragment = new Viewer_Events.ConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Event");
@@ -122,7 +129,9 @@ public class Viewer_Events extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(tmpEventID);
                             while (cursor.moveToNext()){
-                                DatabaseAccess.insertTaskInstance(cursor.getLong(cursor.getColumnIndex("flngID")));
+                                DatabaseAccess.addRecordToTable("tblTaskInstance",
+                                        new String[]{"flngTaskID","fblnComplete","fblnSystemComplete"},
+                                        new Object[]{cursor.getLong(cursor.getColumnIndex("flngTaskID")), false, false});
                             }
                             setEventsList();
                         }
@@ -147,7 +156,11 @@ public class Viewer_Events extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Cursor cursor = DatabaseAccess.retrieveEventTaskInstancesFromEvent(tmpEventID);
                             while (cursor.moveToNext()){
-                                DatabaseAccess.updateTaskInstanceSystemComplete(cursor.getLong(cursor.getColumnIndex("flngTaskInstanceId")));
+                                DatabaseAccess.updateRecordFromTable("tblTaskInstance",
+                                        "flngInstanceID",
+                                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
+                                        new String[]{"fblnComplete"},
+                                        new Object[]{true});
                             }
                             setEventsList();
                         }
@@ -172,9 +185,9 @@ public class Viewer_Events extends AppCompatActivity {
         String rawGetEvents = "SELECT *, \n" +
                 "CASE WHEN EXISTS(SELECT 1 FROM tblTask t \n" +
                 "JOIN tblTaskInstance ti \n" +
-                "ON t.flngID = ti.flngTaskID \n" +
+                "ON t.flngTaskID = ti.flngTaskID \n" +
                 "AND ti.fblnSystemComplete = 0 AND ti.fblnComplete = 0 \n" +
-                "WHERE t.flngEventId = e.flngID) THEN 1 ELSE 0 END as fblnActive \n" +
+                "WHERE t.flngEventId = e.flngEventID) THEN 1 ELSE 0 END as fblnActive \n" +
                 "FROM tblEvent e \n";
         cursor = DatabaseAccess.mDatabase.rawQuery(rawGetEvents,null);
 
@@ -182,9 +195,9 @@ public class Viewer_Events extends AppCompatActivity {
         mActiveList.Clear();
         while (cursor.moveToNext()){
             if (cursor.getLong(cursor.getColumnIndex("fblnActive"))==1){
-                mActiveList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngID")));
+                mActiveList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngEventID")));
             } else {
-                mEventList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngID")));
+                mEventList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngEventID")));
             }
         }
         mEventList.mAdapter.notifyDataSetChanged();

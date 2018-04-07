@@ -19,10 +19,13 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Task_Task" />
+        <activity
+            android:name=".Task_Task"
+            android:label="@string/title_activity_task_task" />
         <activity android:name=".Task_Session" />
         <activity android:name=".TimeKeeper" />
         <activity
@@ -39,7 +42,15 @@
         <activity
             android:name=".Task_Event"
             android:label="@string/title_activity_task__event"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".Viewer_Groups"
+            android:label="@string/title_activity_viewer__groups"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Task_Group"></activity>
     </application>
 
 </manifest>

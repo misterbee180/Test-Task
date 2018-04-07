@@ -14,14 +14,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-public class Viewer_Session extends AppCompatActivity {
+public class Viewer_Groups extends AppCompatActivity {
 
-    static ArrayListContainer mSessionList;
-
+    static ArrayListContainer mGroupList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_viewer_session);
+        setContentView(R.layout.activity_viewer__groups);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -29,31 +28,31 @@ public class Viewer_Session extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createNewSession();
+                createNewGroup();
             }
         });
 
-        ListView mSessionView = (ListView) findViewById(R.id.lsvSessionList);
-        mSessionList = new ArrayListContainer();
-        mSessionList.LinkArrayToListView(mSessionView, this);
-        //mEventList.mListView.setOnItemClickListener(itemClickListener);
-        mSessionList.mListView.setOnItemClickListener(itemClickListener);
-        mSessionList.mListView.setOnItemLongClickListener(itemLongClickListener);
+        ListView mGroupView = (ListView) findViewById(R.id.lsvGroupList);
+        mGroupList = new ArrayListContainer();
+        mGroupList.LinkArrayToListView(mGroupView, this);
+        mGroupList.mListView.setOnItemClickListener(itemClickListener);
+        mGroupList.mListView.setOnItemLongClickListener(itemLongClickListener);
     }
 
+    @Override
     protected void onResume(){
         super.onResume();
-        setSessionList();
+        setGroupList();
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("SessionID", mSessionList.GetID(position));
-            DialogFragment newFragment = new Viewer_Session.EditSessionFragment();
+            bundle.putLong("GroupID", mGroupList.GetID(position));
+            DialogFragment newFragment = new Viewer_Groups.EditGroupFragment();
             newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Session");
+            newFragment.show(getSupportFragmentManager(), "Edit Group");
         }
     };
 
@@ -61,25 +60,26 @@ public class Viewer_Session extends AppCompatActivity {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("SessionID", mSessionList.GetID(position));
-            DialogFragment newFragment = new Viewer_Session.DeleteSessionFragment();
+            bundle.putLong("GroupID", mGroupList.GetID(position));
+            DialogFragment newFragment = new Viewer_Groups.DeleteGroupFragment();
             newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Delete Session");
+            newFragment.show(getSupportFragmentManager(), "Delete Group");
 
             return true;
         }
     };
 
-    public static class DeleteSessionFragment extends DialogFragment {
+    public static class DeleteGroupFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpSessionID = getArguments().getLong("SessionID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Delete Session? This will delete all tasks associated with this session as well.")
+            builder.setMessage("Delete Group?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteSession(tmpSessionID);
-                            setSessionList();
+                            DatabaseAccess.deleteRecordFromTable("tblGroup",
+                                    "flngGroupID",
+                                    getArguments().getLong("GroupID"));
+                            setGroupList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -92,30 +92,16 @@ public class Viewer_Session extends AppCompatActivity {
         }
     }
 
-    private static void deleteSession(Long plngSessionId){
-        DatabaseAccess.deleteRecordFromTable("tblSession",
-                "flngSessionID",
-                plngSessionId);
-
-        Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithSession(plngSessionId);
-        while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-        }
-    }
-
-    public static class EditSessionFragment extends DialogFragment {
+    public static class EditGroupFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpSessionID = getArguments().getLong("SessionID");
+            final Long tmpGroupID = getArguments().getLong("GroupID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Session")
+            builder.setMessage("Edit Group")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Session.class);
-                            intent.putExtra("EXTRA_SESSION_ID", tmpSessionID);
+                            Intent intent = new Intent(getActivity(), Task_Group.class);
+                            intent.putExtra("EXTRA_GROUP_ID", tmpGroupID);
                             startActivity(intent);
                         }
                     })
@@ -129,22 +115,18 @@ public class Viewer_Session extends AppCompatActivity {
         }
     }
 
-    public  void createNewSession() {
-        Intent intent = new Intent(this, Task_Session.class);
+    public  void createNewGroup() {
+        Intent intent = new Intent(this, Task_Group.class);
         startActivity(intent);
     }
 
-    public static void setSessionList(){
-        Cursor cursor;
-        String rawGetSessions = "SELECT * \n" +
-                "FROM tblSession s \n";
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,null);
+    public static void setGroupList(){
+        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblGroup");
 
-        mSessionList.Clear();
+        mGroupList.Clear();
         while (cursor.moveToNext()){
-            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngSessionID")));
+            mGroupList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngGroupID")));
         }
-        mSessionList.mAdapter.notifyDataSetChanged();
+        mGroupList.mAdapter.notifyDataSetChanged();
     }
-
 }

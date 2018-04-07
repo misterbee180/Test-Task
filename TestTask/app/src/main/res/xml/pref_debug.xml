@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="enable_debug"
+        android:summary="@string/pref_description_enable_debug"
+        android:title="@string/pref_title_enable_debug" />
+
+    <com.example.testtask.DatePreference android:key="DatePref"
+        android:dependency="enable_debug"
+        android:title="Date Preference"
+        android:summary="DateSummary"
+        xmlns:android="http://schemas.android.com/apk/res/android" />
+
+    <SwitchPreference
+        android:dependency="enable_debug"
+        android:defaultValue="false"
+        android:key="enable_time"
+        android:summary="@string/pref_description_enable_time"
+        android:title="@string/pref_title_enable_Time" />
+
+    <com.example.testtask.TimePreference android:key="TimePref"
+        android:dependency="enable_time"
+        android:title="Time Preference"
+        android:summary="TimeSummary"
+        xmlns:android="http://schemas.android.com/apk/res/android" />
+
+</PreferenceScreen>
