@@ -21,7 +21,7 @@ public class DatabaseAccess {
 
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
         //region TABLE CREATE SCRIPTS
-        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER , fblnActive INTEGER )";
+        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER, flngGroupID INTEGER, fblnOneOff INTEGER, fblnActive INTEGER )";
 
         private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY , flngTaskID INTEGER , fblnComplete INTEGER , fblnSystemComplete INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000))";
 
