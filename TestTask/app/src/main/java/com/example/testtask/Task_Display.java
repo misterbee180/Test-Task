@@ -1,6 +1,7 @@
 package com.example.testtask;
 
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,23 +15,23 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.TreeSet;
 
 public class Task_Display extends AppCompatActivity {
-    static ArrayListContainer mPriorityList;
-    static ArrayListContainer mStandardList;
-    static ArrayListContainer mTodayList;
-    static LinearLayout llEventDisplay;
-    static ArrayList<ArrayListContainer> mEventList;
+    static ListView mDisplayListView;
+    static CustomAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,84 +52,173 @@ public class Task_Display extends AppCompatActivity {
         initializeApplication();
 
         //This sets up member variable and other details specific to this activity.
-        initializeActivity();
+        mDisplayListView = (ListView) findViewById(R.id.lsvDisplayList);
+    }
+
+    public static class CustomAdapter extends BaseAdapter {
+
+        private static final int TYPE_ITEM = 0;
+        private static final int TYPE_SEPARATOR = 1;
+        private static final int TYPE_GROUP = 2;
+        private static final int TYPE_MAX_COUNT = TYPE_GROUP + 1;
+
+        private ArrayList<itemDetail> mData = new ArrayList<>();
+        private LayoutInflater mInflater;
+
+        private TreeSet mSeparatorsSet = new TreeSet();
+        private TreeSet mGroupsSet = new TreeSet();
+
+        private class itemDetail{
+            private String mName;
+            private Long mId;
+
+            private itemDetail(String pName, Long pId){
+                mName = pName;
+                mId = pId;
+            }
+        }
+
+        private CustomAdapter(Context pContext) {
+            mInflater = (LayoutInflater)pContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        private void  addItem(final String pName, Long pId) {
+            mData.add(new itemDetail(pName, pId));
+            notifyDataSetChanged();
+        }
+
+        private void addSeparatorItem(final String pName) {
+            mData.add(new itemDetail(pName, (long)-1));
+            // save separator position
+            mSeparatorsSet.add(mData.size() - 1);
+            notifyDataSetChanged();
+        }
+
+        private void addGroupItem(final String pName, final Long pSession){
+            mData.add(new itemDetail(pName, pSession));
+            //save group position
+            mGroupsSet.add(mData.size() - 1);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            int result = TYPE_ITEM;
+            result = mSeparatorsSet.contains(position) ? TYPE_SEPARATOR : result;
+            result = mGroupsSet.contains(position) ? TYPE_GROUP : result;
+
+            return result;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return TYPE_MAX_COUNT;
+        }
+
+        @Override
+        public int getCount() {
+            return mData.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mData.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public boolean isEnabled(int position){
+            int type = getItemViewType(position);
+            switch (type) {
+                case TYPE_ITEM:
+                    return true;
+                case TYPE_SEPARATOR:
+                    return false;
+                case TYPE_GROUP:
+                    return true;
+            }
+            return false;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            int type = getItemViewType(position);
+            System.out.println("getView " + position + " " + convertView + " type = " + type);
+            if (convertView == null) {
+                holder = new ViewHolder();
+                switch (type) {
+                    case TYPE_ITEM:
+                        convertView = mInflater.inflate(R.layout.task_item1, null);
+                        holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+                        holder.id = (TextView)convertView.findViewById(R.id.taskId);
+                        break;
+                    case TYPE_SEPARATOR:
+                        convertView = mInflater.inflate(R.layout.seperator_item1, null);
+                        holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+                        holder.id = new TextView(convertView.getContext());
+                        break;
+                    case TYPE_GROUP:
+                        convertView = mInflater.inflate(R.layout.task_group1, null);
+                        holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+                        holder.id = new TextView(convertView.getContext());
+                        break;
+                }
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.textView.setText(mData.get(position).mName);
+            holder.id.setText(mData.get(position).mId.toString());
+            return convertView;
+        }
+    }
+
+    public static class ViewHolder {
+        public TextView textView;
+        public TextView id;
     }
 
     private void initializeApplication() {
         DatabaseAccess.setContext(this);
     }
 
-    private void initializeActivity() {
-        //Set Member Values
-        mPriorityList = new ArrayListContainer();
-        mTodayList = new ArrayListContainer();
-        mStandardList = new ArrayListContainer();
-        llEventDisplay = (LinearLayout) findViewById(R.id.llEventsDisplay);
-
-        ListView mPriorityView = (ListView) findViewById(R.id.lsvPriorityList);
-        mPriorityList.LinkArrayToListView(mPriorityView, this);
-        mPriorityList.mListView.setOnItemClickListener(itemClickListener);
-        mPriorityList.mListView.setOnItemLongClickListener(itemLongClickListener);
-
-        ListView mStandardView = (ListView) findViewById(R.id.lsvStandardList);
-        mStandardList.LinkArrayToListView(mStandardView, this);
-        mStandardList.mListView.setOnItemClickListener(itemClickListener);
-        mStandardList.mListView.setOnItemLongClickListener(itemLongClickListener);
-
-        ListView mTodayView = (ListView) findViewById(R.id.lsvTodayList);
-        mTodayList.LinkArrayToListView(mTodayView, this);
-        mTodayList.mListView.setOnItemClickListener(itemClickListener);
-        mTodayList.mListView.setOnItemLongClickListener(itemLongClickListener);
-
-        mEventList = new ArrayList<ArrayListContainer>();
-    }
-
-    private static ArrayListContainer getSelectedArrayListContainer(AdapterView<?> parent){
-        ArrayListContainer tmpArrayList = null;
-
-        switch (parent.getId()){
-            case R.id.lsvPriorityList:
-                tmpArrayList = mPriorityList;
-                break;
-            case R.id.lsvTodayList:
-                tmpArrayList = mTodayList;
-                break;
-            case R.id.lsvStandardList:
-                tmpArrayList = mStandardList;
-                break;
-            default:
-                //search array of ArrayListContainers
-                for (int i=0; i<mEventList.size(); i++){
-                    if (mEventList.get(i).mListView.getId() == parent.getId()){
-                        tmpArrayList = mEventList.get(i);
-                        break;
-                    }
-                }
-                break;
-        }
-
-        return tmpArrayList;
-    }
 
     static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long arg3) {
-            ArrayListContainer tmpArrayList = getSelectedArrayListContainer(parent);
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", tmpArrayList.GetID(position));
-            DialogFragment newFragment = new Task_Display.ConfirmationFragment();
-            newFragment.setArguments(bundle);
-            FragmentActivity activity = (FragmentActivity)parent.getContext();
-            newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
+            int type = mAdapter.getItemViewType(position);
+            DialogFragment newFragment;
+            FragmentActivity activity;
+            switch (type) {
+                case 0:
+                    bundle.putLong("InstanceID", Long.valueOf(((ViewHolder)v.getTag()).id.getText().toString()));
+                    newFragment = new Task_Display.CompleteInstanceConfirmationFragment();
+                    newFragment.setArguments(bundle);
+                    activity = (FragmentActivity)parent.getContext();
+                    newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
+                    break;
+                case 2:
+                    bundle.putLong("SessionID", Long.valueOf(((ViewHolder)v.getTag()).id.getText().toString()));
+                    newFragment = new Task_Display.CompleteSessionConfirmationFragment();
+                    newFragment.setArguments(bundle);
+                    activity = (FragmentActivity)parent.getContext();
+                    newFragment.show(activity.getSupportFragmentManager(), "Complete Session Task");
+                    break;
+            }
         }
     };
 
     static AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
-        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
             Bundle bundle = new Bundle();
-            Long tmpInstanceID = getSelectedArrayListContainer(parent).GetID(position);
-            Cursor tmpCursor = DatabaseAccess.getRecordsFromTable("tblTaskInstance","flngInstanceID", tmpInstanceID);
+            Cursor tmpCursor = DatabaseAccess.getRecordsFromTable("tblTaskInstance","flngInstanceID", Long.valueOf(((ViewHolder)v.getTag()).id.getText().toString()));
             tmpCursor.moveToFirst();
             bundle.putLong("TaskID", tmpCursor.getLong(tmpCursor.getColumnIndex("flngTaskID")));
             DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
@@ -138,22 +228,53 @@ public class Task_Display extends AppCompatActivity {
             return true;
         }
     };
-
-    public static class ConfirmationFragment extends DialogFragment {
+//
+    public static class CompleteInstanceConfirmationFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpTaskID = getArguments().getLong("TaskID");
+            final Long tmpInstanceID = getArguments().getLong("InstanceID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             DatabaseAccess.updateRecordFromTable("tblTaskInstance",
                                     "flngInstanceID",
-                                    tmpTaskID,
+                                    tmpInstanceID,
                                     new String[]{"fblnComplete"},
                                     new Object[]{true});
                             loadTasksFromDatabase(getContext());
-                            loadEventTasks(getActivity());
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    public static class CompleteSessionConfirmationFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final Long tmpSessionID = getArguments().getLong("SessionID");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("Complete Session Tasks?")
+                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            String rawSessionTasksComplete = "Update tblTaskInstance " +
+                                    "set fblnComplete = 1 " +
+                                    "WHERE flngTaskID IN (SELECT t.flngTaskID " +
+                                    "FROM tblTask t " +
+                                    "WHERE t.flngSessionID = ? " +
+                                    "and t.fblnOneOff <> 1)";
+                            String[] parameters = {Long.toString(tmpSessionID)};
+                            Cursor cursor = DatabaseAccess.mDatabase.rawQuery(rawSessionTasksComplete, parameters);
+                            cursor.moveToFirst();
+                            while(cursor.moveToNext()){}
+
+                            loadTasksFromDatabase(getContext());
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -171,7 +292,6 @@ public class Task_Display extends AppCompatActivity {
         super.onResume();
         generateTaskInstances();
         loadTasksFromDatabase(this);
-        loadEventTasks(this);
     }
 
     public static Calendar getCurrentCalendar(Context pContext){
@@ -603,43 +723,26 @@ public class Task_Display extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public static void loadEventTasks(Context pContext){
-        Cursor cursor = DatabaseAccess.retrieveEventTaskInstances();
-        Long lngEventId = (long)-1;
-        ListView tmpEventListView = null;
-        ArrayListContainer tmpEventALC = null;
-
-        llEventDisplay.removeAllViews();
-        mEventList.clear();
-        while(cursor.moveToNext()){
-            if (lngEventId != cursor.getLong(cursor.getColumnIndex("flngEventID"))){
-                lngEventId = cursor.getLong(cursor.getColumnIndex("flngEventID"));
-                TextView tmpEventTitle = new TextView(pContext);
-                tmpEventTitle.setText(cursor.getString(cursor.getColumnIndex("fstrEventTitle")));
-                tmpEventTitle.setTextSize(14);
-                tmpEventTitle.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT,Toolbar.LayoutParams.WRAP_CONTENT));
-                llEventDisplay.addView(tmpEventTitle);
-
-                tmpEventListView = new ListView(pContext);
-                tmpEventListView.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, ListView.LayoutParams.WRAP_CONTENT));
-                tmpEventALC = new ArrayListContainer();
-                tmpEventALC.LinkArrayToListView(tmpEventListView, pContext);
-                tmpEventALC.mListView.setOnItemClickListener(itemClickListener);
-                mEventList.add(tmpEventALC);
-                llEventDisplay.addView(tmpEventListView);
-                //llEvents.addView(tmpEventTitle);
-            }
-            tmpEventALC.Add(cursor.getString(cursor.getColumnIndex("fstrTaskTitle")), cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
-            tmpEventALC.mAdapter.notifyDataSetChanged();
-        }
-    }
-
-    public static void loadTasksFromDatabase(Context pContext){
+    static void loadTasksFromDatabase(Context pContext){
         Cursor cursor = DatabaseAccess.getTaskInstancesWithDetails();
+        class taskInstances{
+            private String mTitle;
+            private Long mId;
+            private Long mSession;
+            private String mSessionTitle;
 
-        mPriorityList.Clear();
-        mStandardList.Clear();
-        mTodayList.Clear();
+            private taskInstances(String pTitle, Long pId, Long pSession, String pSessionTitle){
+                mTitle = pTitle;
+                mId = pId;
+                mSession = pSession;
+                mSessionTitle = pSessionTitle;
+            }
+        }
+
+        ArrayList<taskInstances> priorityList = new ArrayList();
+        ArrayList<taskInstances> todayList = new ArrayList();
+        ArrayList<taskInstances> standardList = new ArrayList();
+
         while(cursor.moveToNext()){
             Boolean blnRepeat = cursor.getLong(cursor.getColumnIndex("flngRepetition")) != 0;
             char result = determineListForTask(cursor.getLong(cursor.getColumnIndex("fdtmFrom")),
@@ -647,16 +750,75 @@ public class Task_Display extends AppCompatActivity {
                     cursor.getLong(cursor.getColumnIndex("fdtmCreated")),
                     blnRepeat, pContext);
             if (result == 'P') {
-                mPriorityList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
+                priorityList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
+                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             } else if (result == 'T') {
-                mTodayList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
+                todayList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
+                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             } else {
-                mStandardList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
+                standardList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
+                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             }
         }
-        mPriorityList.mAdapter.notifyDataSetChanged();
-        mStandardList.mAdapter.notifyDataSetChanged();
-        mTodayList.mAdapter.notifyDataSetChanged();
+
+        mAdapter = new CustomAdapter(pContext);
+
+        //Load Events
+        cursor = DatabaseAccess.retrieveEventTaskInstances();
+        Long lngEventId = (long)-1;
+        while(cursor.moveToNext()){
+            if (lngEventId != cursor.getLong(cursor.getColumnIndex("flngEventID"))) {
+                lngEventId = cursor.getLong(cursor.getColumnIndex("flngEventID"));
+                mAdapter.addSeparatorItem(cursor.getString(cursor.getColumnIndex("fstrEventTitle")));
+            }
+            mAdapter.addItem(cursor.getString(cursor.getColumnIndex("fstrTaskTitle")),
+                    cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
+        }
+
+        //Load Regular Tasks
+        mAdapter.addSeparatorItem("Priority");
+        int i = 0;
+        Long lngSessionId = (long)-1;
+        while (i < priorityList.size()){
+            if (lngSessionId != priorityList.get(i).mSession){
+                mAdapter.addGroupItem("Session: " + priorityList.get(i).mSessionTitle, priorityList.get(i).mSession);
+                lngSessionId = priorityList.get(i).mSession;
+            }
+            mAdapter.addItem(priorityList.get(i).mTitle, priorityList.get(i).mId);
+            i++;
+        }
+        mAdapter.addSeparatorItem("Today");
+        i = 0;
+        lngSessionId = (long)-1;
+        while (i < todayList.size()){
+            if (lngSessionId != todayList.get(i).mSession){
+                mAdapter.addGroupItem("Session: " + todayList.get(i).mSessionTitle, todayList.get(i).mSession);
+                lngSessionId = todayList.get(i).mSession;
+            }
+            mAdapter.addItem(todayList.get(i).mTitle, todayList.get(i).mId);
+            i++;
+        }
+        mAdapter.addSeparatorItem("Standard");
+        i = 0;
+        lngSessionId = (long)-1;
+        while (i < standardList.size()){
+            if (lngSessionId != standardList.get(i).mSession){
+                mAdapter.addGroupItem("Session: " + standardList.get(i).mSessionTitle, standardList.get(i).mSession);
+                lngSessionId = standardList.get(i).mSession;
+            }
+            mAdapter.addItem(standardList.get(i).mTitle, standardList.get(i).mId);
+            i++;
+        }
+
+        mDisplayListView.setAdapter(mAdapter);
+        mDisplayListView.setOnItemClickListener(itemClickListener);
+        mDisplayListView.setOnItemLongClickListener(itemLongClickListener);
     }
 
     private static char determineListForTask(Long pdtmFrom, Long pdtmTo, Long pdtmCreated, Boolean fblnRepeat, Context pContext) {

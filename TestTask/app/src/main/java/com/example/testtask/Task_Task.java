@@ -86,9 +86,11 @@ public class Task_Task  extends AppCompatActivity {
                 if(mSessionList.GetID(position) != -1){
                     (findViewById(R.id.timeKeeper)).setVisibility(View.GONE);
                     (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
+                    setIsOneOff(true);
                 } else {
                     (findViewById(R.id.timeKeeper)).setVisibility(View.VISIBLE);
                     (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
+                    setIsOneOff(false);
                 }
             }
 
@@ -240,17 +242,17 @@ public class Task_Task  extends AppCompatActivity {
                 new String[] {"fstrTitle", "fstrDescription", "flngSessionID", "flngTimeID", "flngGroupID"},
                 new Object[] {getTaskTitle(), getTaskDesc(), getSessionID(), lngNewTimeId, getGroupID()});
 
-        Long lngTaskInstanceID =  getOpenTaskInstanceFromTask();
-        if (lngTaskInstanceID != -1){
-            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    lngTaskInstanceID,
-                    new String[]{"fblnComplete"},
-                    new Object[]{true});
-        }
-        if (mlngEventId == -1){
-            Task_Display.evaluateTaskInstanceCreation(getSessionID(),timeKeeper.getTimeID(), mlngTaskId, this);
-        }
+//        Long lngTaskInstanceID =  getOpenTaskInstanceFromTask();
+//        if (lngTaskInstanceID != -1){
+//            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
+//                    "flngInstanceID",
+//                    lngTaskInstanceID,
+//                    new String[]{"fblnSystemComplete"},
+//                    new Object[]{true});
+//        }
+//        if (mlngEventId == -1){
+//            Task_Display.evaluateTaskInstanceCreation(getSessionID(),timeKeeper.getTimeID(), mlngTaskId, this);
+//        }
     }
 
     private long getOpenTaskInstanceFromTask(){

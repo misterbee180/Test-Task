@@ -7,49 +7,8 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.testtask.Task_Display"
     tools:showIn="@layout/activity_task_display">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Priority" />
-
     <ListView
-        android:id="@+id/lsvPriorityList"
+        android:id="@+id/lsvDisplayList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/textView"/>
-
-    <LinearLayout
-        android:id="@+id/llEventsDisplay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@+id/lsvPriorityList"/>
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Today"
-        app:layout_constraintTop_toBottomOf="@+id/llEventsDisplay"/>
-
-    <ListView
-        android:id="@+id/lsvTodayList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/textView3"/>
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Standard"
-        app:layout_constraintTop_toBottomOf="@+id/lsvTodayList"/>
-
-    <ListView
-        android:id="@+id/lsvStandardList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"/>
+        android:layout_height="wrap_content"/>
 </android.support.constraint.ConstraintLayout>
