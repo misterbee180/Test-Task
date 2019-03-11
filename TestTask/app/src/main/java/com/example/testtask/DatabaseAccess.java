@@ -21,7 +21,7 @@ public class DatabaseAccess {
 
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
         //region TABLE CREATE SCRIPTS
-        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER , fblnActive INTEGER )";
+        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER, flngGroupID INTEGER, fblnOneOff INTEGER, fblnActive INTEGER )";
 
         private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY , flngTaskID INTEGER , fblnComplete INTEGER , fblnSystemComplete INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000))";
 
@@ -827,7 +827,8 @@ public class DatabaseAccess {
     }
 
     public static Cursor getTaskInstancesWithDetails(){
-        String rawQuery = "SELECT i.flngInstanceID, t.fstrTitle, tm.fdtmFrom, tm.fdtmTo, tm.flngDayID, tm.flngWeekID, tm.flngMonthID, tm.flngYearID, tm.flngRepetition, i.fdtmCreated \n" +
+        String rawQuery = "SELECT i.flngInstanceID, t.fstrTitle, tm.fdtmFrom, tm.fdtmTo, tm.flngDayID, tm.flngWeekID, tm.flngMonthID, tm.flngYearID, " +
+                " tm.flngRepetition, i.fdtmCreated, CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END as flngSessionID, s.fstrTitle as fstrSessionTitle  \n" +
                 "FROM tblTask t \n" +
                 "JOIN tblTaskInstance i \n" +
                 "ON t.flngTaskId = i.flngTaskId \n" +
@@ -837,7 +838,8 @@ public class DatabaseAccess {
                 "ON tm.flngTimeID = IFNULL(s.flngTimeID, t.flngTimeID) \n" +
                 "WHERE i.fblnComplete = 0 \n" +
                 "AND i.fblnSystemComplete = 0 \n" +
-                "AND t.flngEventId = -1";
+                "AND t.flngEventId = -1\n" +
+                "ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
 
         return mDatabase.rawQuery(rawQuery,null);
     }

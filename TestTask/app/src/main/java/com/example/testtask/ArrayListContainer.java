@@ -47,18 +47,6 @@ public class ArrayListContainer {
         mArrayList.add(pstrListItem);
     }
 
-    public void Remove(Integer plngLocation){
-        //Everything with a Item Number > than the item number passed in needs to be moved down one.
-        Decoder tmpDecoder;
-        for (int i = 0; i < mDecoderList.size(); i++){
-            tmpDecoder = mDecoderList.get(i);
-            if (tmpDecoder.mItemNumber > plngLocation){
-                tmpDecoder.mItemNumber--;
-            }
-        }
-        mArrayList.remove(plngLocation);
-    }
-
     //This function could just be replaced with an array of Ints. We just need to make sure that this list is ordered the same way as the array list.
     public long GetID(Integer plngLocation){
         Decoder tmpDecoder;
