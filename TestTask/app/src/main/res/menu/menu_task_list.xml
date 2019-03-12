@@ -28,4 +28,10 @@
         android:orderInCategory="250"
         android:title="@string/action_group"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_longTerm"
+        android:orderInCategory="250"
+        android:title="@string/action_LongTerm"
+        app:showAsAction="never" />
 </menu>

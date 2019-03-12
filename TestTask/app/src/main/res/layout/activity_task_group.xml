@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/TextBox_GroupTitle"
-        android:inputType="textPersonName"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <ListView

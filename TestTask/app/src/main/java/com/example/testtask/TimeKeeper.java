@@ -238,6 +238,10 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     }
 
+    public void hideRepetition(){
+        findViewById(R.id.spnRepitition).setVisibility(View.GONE);
+    }
+
     public void setUpForSession(){
         repititionSpinner.Clear();
         repititionSpinner.Add("Repeat Every", (long)1);
@@ -462,7 +466,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
         mFromTime = Calendar.getInstance();
         mFromTime.setTimeInMillis(pFromMili);
-        btnFromTime.setText("From: " + dateFormat.format(mFromTime.getTime()));
+        if(pFromMili != -1){
+            btnFromTime.setText("From: " + dateFormat.format(mFromTime.getTime()));
+        }
     }
 
     public Long getToTime() {
@@ -475,7 +481,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
         mToTime = Calendar.getInstance();
         mToTime.setTimeInMillis(pToMili);
-        btnToTime.setText("To: " + dateFormat.format(mToTime.getTime()));
+        if(pToMili != -1) {
+            btnToTime.setText("To: " + dateFormat.format(mToTime.getTime()));
+        }
     }
 
     public Long getFromDate() {
@@ -483,12 +491,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         return null;
     }
 
-    public void setsFromDate(Long pToMili){
+    public void setsFromDate(Long pFromMili){
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
         sFromDate = Calendar.getInstance();
-        sFromDate.setTimeInMillis(pToMili);
-        btnFromDate.setText("From: " + dateFormat.format(sFromDate.getTime()));
+        sFromDate.setTimeInMillis(pFromMili);
+        if(pFromMili != -1) {
+            btnFromDate.setText("From: " + dateFormat.format(sFromDate.getTime()));
+        }
     }
 
     public Long getToDate() {
@@ -501,7 +511,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
         sToDate = Calendar.getInstance();
         sToDate.setTimeInMillis(pToMili);
-        btnToDate.setText("To: " + dateFormat.format(sFromDate.getTime()));
+        if (pToMili != -1) {
+            btnToDate.setText("To: " + dateFormat.format(sFromDate.getTime()));
+        }
     }
 
     public Boolean getDayOfWeek(String pstrDow){

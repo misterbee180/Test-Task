@@ -21,6 +21,7 @@ public class Task_Task  extends AppCompatActivity {
     Spinner mGroup;
     Long mlngTaskId = (long)-1;
     Long mlngEventId = (long)-1;
+    Long mlngLongTermId = (long)-1;
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
@@ -56,6 +57,8 @@ public class Task_Task  extends AppCompatActivity {
 
     public Long getEventID() {return mlngEventId;}
 
+    public Long getLongTermID() {return mlngLongTermId;}
+
     public Boolean getIsOneOffFromSession() {return ((CheckBox) findViewById(R.id.chkSessOneOff)).isChecked();}
 
     public void setIsOneOff(Boolean pblnOneOff){
@@ -89,7 +92,7 @@ public class Task_Task  extends AppCompatActivity {
                     setIsOneOff(true);
                 } else {
                     (findViewById(R.id.timeKeeper)).setVisibility(View.VISIBLE);
-                    (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
+                    (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
                     setIsOneOff(false);
                 }
             }
@@ -100,6 +103,7 @@ public class Task_Task  extends AppCompatActivity {
         });
 
         retrieveExtras();
+        retrieveNecessaryData();
         setupInitialVisibility();
         setupViews();
     }
@@ -127,7 +131,13 @@ public class Task_Task  extends AppCompatActivity {
         if (mlngEventId != -1){
             (findViewById(R.id.spnTaskSessSel)).setVisibility(View.GONE);
             (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
+            (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
             (findViewById(R.id.timeKeeper)).setVisibility(View.GONE);
+        } else if (mlngLongTermId != -1){
+            (findViewById(R.id.spnTaskSessSel)).setVisibility(View.GONE);
+            (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
+            (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
+            timeKeeper.hideRepetition();
         }
         (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
     }
@@ -138,6 +148,16 @@ public class Task_Task  extends AppCompatActivity {
         if (extras != null){
             mlngTaskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
             mlngEventId = getIntent().getLongExtra("EXTRA_EVENT_ID",-1);
+            mlngLongTermId = getIntent().getLongExtra("EXTRA_LONGTERM_ID",-1);
+        }
+    }
+
+    private void retrieveNecessaryData() {
+        if (mlngTaskId != -1){
+            Cursor tmpCursor = DatabaseAccess.getRecordsFromTable("tblTask","flngTaskID", mlngTaskId);
+            tmpCursor.moveToNext();
+            mlngEventId = tmpCursor.getLong(tmpCursor.getColumnIndex("flngEventID"));
+            mlngLongTermId = tmpCursor.getLong(tmpCursor.getColumnIndex("flngLongTermID"));
         }
     }
 
@@ -221,7 +241,26 @@ public class Task_Task  extends AppCompatActivity {
                 getSessionID(),
                 timeKeeper.getTimeID(),
                 getEventID(),
-                getGroupID());
+                getGroupID(),
+                getLongTermID());
+
+        setResult(RESULT_OK);
+        finish();
+
+    }
+
+    private void LongTermTaskCreation() {
+        //Create time if no session provided
+        timeKeeper.createTimeDetails();
+
+        //Create task
+        mlngTaskId = createTask(getTaskTitle(),
+                getTaskDesc(),
+                getSessionID(),
+                timeKeeper.getTimeID(),
+                getEventID(),
+                getGroupID(),
+                getLongTermID());
 
         setResult(RESULT_OK);
         finish();
@@ -279,10 +318,11 @@ public class Task_Task  extends AppCompatActivity {
                 lngSessionID,
                 timeKeeper.getTimeID(),
                 getEventID(),
-                getGroupID());
+                getGroupID(),
+                getLongTermID());
 
         //Evaluate if task needs an instance of it created
-        if (Task_Display.evaluateTaskInstanceCreation(getSessionID(),timeKeeper.getTimeID(), mlngTaskId, this)){
+        if (Task_Display.evaluateTaskInstanceCreation(getSessionID(),timeKeeper.getTimeID(), mlngTaskId, mlngLongTermId, this)){
             DatabaseAccess.addRecordToTable("tblTaskInstance",
                     new String[]{"flngTaskID","fblnComplete","fblnSystemComplete", "fdtmCreated"},
                     new Object[]{mlngTaskId, false, false, Task_Display.getCurrentCalendar(this).getTimeInMillis()});
@@ -294,7 +334,7 @@ public class Task_Task  extends AppCompatActivity {
 
 
 
-    private long createTask(String pstrTitle, String pstrDescription, Long plngSessionId, Long plngTimeId, Long plngEventId, Long plngGroupID){
+    private long createTask(String pstrTitle, String pstrDescription, Long plngSessionId, Long plngTimeId, Long plngEventId, Long plngGroupID, Long plngLongTermID){
         ContentValues values = new ContentValues();
         values.put("fstrTitle",pstrTitle);
         values.put("fstrDescription", pstrDescription);
@@ -302,6 +342,7 @@ public class Task_Task  extends AppCompatActivity {
         values.put("flngTimeID",plngTimeId);
         values.put("flngEventID",plngEventId);
         values.put("flngGroupID",plngGroupID);
+        values.put("flngLongTermID",plngLongTermID);
         values.put("fblnOneOff",getIsOneOffFromSession());
         values.put("fblnActive",1);
         return DatabaseAccess.mDatabase.insertOrThrow("tblTask",null,values);

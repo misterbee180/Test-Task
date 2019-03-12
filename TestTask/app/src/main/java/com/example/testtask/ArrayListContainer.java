@@ -59,6 +59,17 @@ public class ArrayListContainer {
         return (long)-1;
     }
 
+    //This function could just be replaced with an array of Ints. We just need to make sure that this list is ordered the same way as the array list.
+    public Integer FindID(Long plngID){
+        Decoder tmpDecoder;
+        for (int i = 0; i < mDecoderList.size(); i++){
+            tmpDecoder = mDecoderList.get(i);
+            if (tmpDecoder.mIndexNumber == plngID)
+                return tmpDecoder.mItemNumber;
+        }
+        return -1;
+    }
+
     public void setIDListView(Long plngID){
         Decoder tmpDecoder;
         for (int i = 0; i < mDecoderList.size(); i++){

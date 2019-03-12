@@ -20,7 +20,7 @@ import android.widget.TextView;
 public class Task_Event extends AppCompatActivity {
 
     static ArrayListContainer mEventTasks = new ArrayListContainer();
-    static Long mlngEventID = (long)-1;;
+    static Long mlngEventID = (long)-1;
 
     FloatingActionButton fab;
 
