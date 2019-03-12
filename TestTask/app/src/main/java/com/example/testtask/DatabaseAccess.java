@@ -20,6 +20,11 @@ public class DatabaseAccess {
     }
 
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
+
+        TaskDatabaseHelper(Context context) {
+            super(context, "TaskDatabase.db", null, 9);
+        }
+
         //region TABLE CREATE SCRIPTS
         private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER, flngGroupID INTEGER, fblnOneOff INTEGER, fblnActive INTEGER )";
 
@@ -40,6 +45,8 @@ public class DatabaseAccess {
         private static final String CREATE_YEAR_TABLE = "CREATE TABLE `tblYear` ( `flngYearID` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`flngYearID`))";
 
         private static final String CREATE_GROUP_TABLE = "CREATE TABLE tblGroup (flngGroupID INTEGER PRIMARY KEY , fstrTitle TEXT )";
+
+        private static final String CREATE_LONGTERM_TABLE = "CREATE TABLE tblLongTerm (flngLongTermID INTEGER PRIMARY KEY, fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
         //endregion
 
         //region TABLE DROP SCRIPTS
@@ -60,6 +67,12 @@ public class DatabaseAccess {
 
         private static final String DROP_EVENT_TABLE=
                 "DROP TABLE IF EXISTS tblEvent";
+
+        private static final String DROP_GROUP_TABLE=
+                "DROP TABLE IF EXISTS tblGroup";
+
+        private static final String DROP_LONGTERM_TABLE=
+                "DROP TABLE IF EXISTS tblLongTerm";
         //endregion
 
         //region TABLE TRUNCATE SCRIPTS
@@ -92,12 +105,10 @@ public class DatabaseAccess {
 
         private static final String TRUNCATE_GROUP_TABLE=
                 "DELETE FROM tblGroup";
+
+        private static final String TRUNCATE_LONGTERM_TABLE=
+                "DELETE FROM tblLongTerm";
         //endregion
-
-
-        TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 8);
-        }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
@@ -111,6 +122,7 @@ public class DatabaseAccess {
             db.execSQL(CREATE_MONTH_TABLE);
             db.execSQL(CREATE_YEAR_TABLE);
             db.execSQL(CREATE_GROUP_TABLE);
+            db.execSQL(CREATE_LONGTERM_TABLE);
         }
 
         @Override
@@ -129,6 +141,7 @@ public class DatabaseAccess {
             db.execSQL(TRUNCATE_MONTH_TABLE);
             db.execSQL(TRUNCATE_YEAR_TABLE);
             db.execSQL(TRUNCATE_GROUP_TABLE);
+            db.execSQL(TRUNCATE_LONGTERM_TABLE);
             //onCreate(db);
             } else {
                 db.beginTransaction();
@@ -153,6 +166,9 @@ public class DatabaseAccess {
                     }
                     if (oldVersion < 8) {
                         upgradeToV8(db);
+                    }
+                    if (oldVersion < 9) {
+                        upgradeToV9(db);
                     }
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
@@ -179,6 +195,7 @@ public class DatabaseAccess {
                 db.execSQL(TRUNCATE_MONTH_TABLE);
                 db.execSQL(TRUNCATE_YEAR_TABLE);
                 db.execSQL(TRUNCATE_GROUP_TABLE);
+                db.execSQL(TRUNCATE_LONGTERM_TABLE);
                 //onCreate(db);
             }
         }
@@ -393,8 +410,19 @@ public class DatabaseAccess {
                     "-1");
         }
 
+        private void upgradeToV9(SQLiteDatabase db) throws Exception {
+
+            db.execSQL(CREATE_LONGTERM_TABLE);
+            addColumn(db,
+                    "tblTask",
+                    "flngLongTermID",
+                    7,
+                    true,
+                    "-1");
+        }
+
         /** @param pintPosition starts at 0 */
-        private void addColumn(SQLiteDatabase db,
+        private void addColumn(SQLiteDatabase db ,
                                 String pstrTableName,
                                 String pstrColumnName,
                                 Integer pintPosition,
@@ -933,6 +961,19 @@ public class DatabaseAccess {
     public static Cursor retrieveTasksAssociatedWithEvent(Long plngEventId){
         String selection = "flngEventID = ?";
         String[] selectionArgs = {Long.toString(plngEventId)};
+
+        return mDatabase.query("tblTask",
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null);
+    }
+
+    public static Cursor retrieveTasksAssociatedWithLongTerm(Long plngLongTermId){
+        String selection = "flngLongTermID = ?";
+        String[] selectionArgs = {Long.toString(plngLongTermId)};
 
         return mDatabase.query("tblTask",
                 null,

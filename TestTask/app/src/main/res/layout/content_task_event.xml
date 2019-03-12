@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/TextBox_Task"
-        android:inputType="textPersonName"
+
         android:selectAllOnFocus="false"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/TextBox_Description"
-        android:inputType="textPersonName"
+
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -52,7 +52,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/btnLongTermConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -70,6 +70,6 @@
         android:onClick="cancelActivity"
         android:text="@string/Button_Cancel"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/button2" />
+        app:layout_constraintLeft_toRightOf="@+id/btnLongTermConfirm" />
 
 </android.support.constraint.ConstraintLayout>

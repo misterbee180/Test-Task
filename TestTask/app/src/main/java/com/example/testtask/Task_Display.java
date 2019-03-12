@@ -324,7 +324,9 @@ public class Task_Display extends AppCompatActivity {
     }
 
     private void generateTaskInstances() {
-        String rawGetRepeatingTasks = "SELECT t.flngTaskID, tm.flngTimeID, tm.fdtmEvaluated, t.fblnOneOff, t.fstrTitle, tm.fdtmToDate, tm.fdtmFromDate, t.flngSessionID, tm.flngWeekID, tm.flngDayID, tm.flngMonthID, tm.flngYearID \n" +
+        String rawGetRepeatingTasks = "SELECT t.flngTaskID, tm.flngTimeID, tm.fdtmEvaluated, t.fblnOneOff" +
+                ", t.fstrTitle, tm.fdtmToDate, tm.fdtmFromDate, t.flngSessionID, t.flngLongTermID" +
+                ", tm.flngWeekID, tm.flngDayID, tm.flngMonthID, tm.flngYearID \n" +
                 "FROM tblTask t\n" +
                 "LEFT JOIN tblSession s\n" +
                     "ON s.flngSessionID = t.flngSessionID\n" +
@@ -369,6 +371,7 @@ public class Task_Display extends AppCompatActivity {
                 if (evaluateTaskInstanceCreation((long) -1,
                         cursor.getLong(cursor.getColumnIndex("flngTimeID")),
                         cursor.getLong(cursor.getColumnIndex("flngTaskID")),
+                        cursor.getLong(cursor.getColumnIndex("flngLongTermID")),
                         this)){
 
                     //complete any currently active task instance associated with Task ID
@@ -396,8 +399,8 @@ public class Task_Display extends AppCompatActivity {
         }
     }
 
-    public static boolean evaluateTaskInstanceCreation(Long plngSessionId, Long plngTimeId, Long plngTaskId, Context pContext){
-        if (evaluateTime(plngSessionId,plngTimeId, pContext)){
+    public static boolean evaluateTaskInstanceCreation(Long plngSessionId, Long plngTimeId, Long plngTaskId, Long plngLongTermId, Context pContext){
+        if (evaluateTime(plngSessionId,plngTimeId, plngLongTermId, pContext)){
             if(plngSessionId != -1 || !excludeOneOffTasks(plngTaskId)){
                 return true;
             }
@@ -420,6 +423,7 @@ public class Task_Display extends AppCompatActivity {
 
     public static boolean evaluateTime(Long plngSessionId,
                                        Long plngTimeId,
+                                       Long plngLongTermId,
                                        Context pContext) {
         Cursor cursor;
         Boolean evaluation = false;
@@ -457,7 +461,7 @@ public class Task_Display extends AppCompatActivity {
                 cursor.getLong(cursor.getColumnIndex("fdtmToDate")),
                 cursor.getLong(cursor.getColumnIndex("flngRepetition")),
                 pContext);
-        else if (fromDate == -1 && toDate == -1) return true;
+        else if (fromDate == -1 && toDate == -1 && plngLongTermId == -1) return true;
         else evaluation = evaluateDate(fromDate, toDate, pContext);
 
         return evaluation;
@@ -713,6 +717,11 @@ public class Task_Display extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void viewLongTerm() {
+        Intent intent = new Intent(this, Viewer_LongTerm.class);
+        startActivity(intent);
+    }
+
     public void viewEvents() {
         Intent intent = new Intent(this, Viewer_Events.class);
         startActivity(intent);
@@ -918,6 +927,9 @@ public class Task_Display extends AppCompatActivity {
                 break;
             case R.id.action_group:
                 viewGroups();
+                break;
+            case R.id.action_longTerm:
+                viewLongTerm();
                 break;
         }
 

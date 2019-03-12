@@ -50,7 +50,7 @@ public class Viewer_Groups extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
             bundle.putLong("GroupID", mGroupList.GetID(position));
-            DialogFragment newFragment = new Viewer_Groups.EditGroupFragment();
+            DialogFragment newFragment = new EditGroupFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Group");
         }
@@ -61,7 +61,7 @@ public class Viewer_Groups extends AppCompatActivity {
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
             bundle.putLong("GroupID", mGroupList.GetID(position));
-            DialogFragment newFragment = new Viewer_Groups.DeleteGroupFragment();
+            DialogFragment newFragment = new DeleteGroupFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Delete Group");
 
