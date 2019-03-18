@@ -1,40 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.testtask.Task_Session">
 
-        <EditText
-            android:id="@+id/txbSessionTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/TextBox_SessionTitle"
+    <EditText
+        android:id="@+id/txbSessionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/TextBox_SessionTitle"
+        app:layout_constraintTop_toTopOf="parent"/>
 
-            app:layout_constraintTop_toTopOf="parent"/>
+    <com.example.testtask.TimeKeeper
+        android:id="@+id/timeKeeper"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/txbSessionTitle"
+        tools:ignore="MissingConstraints"/>
 
-        <com.example.testtask.TimeKeeper
-            android:id="@+id/timeKeeper"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/txbSessionTitle"
-            tools:ignore="MissingConstraints"/>
+    <ListView
+        android:id="@+id/lsvSessionTaskList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_weight="1"
+        app:layout_constraintTop_toBottomOf="@+id/btnSessionConfirm"/>
 
-        <Button
-            android:id="@+id/btnSessionConfirm"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="ceaseSessionCreation"
-            android:text="@string/Button_Confirm"
-            app:layout_constraintTop_toBottomOf="@+id/timeKeeper" />
+    <Button
+        android:id="@+id/btnSessionConfirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="ceaseSessionCreation"
+        android:layout_gravity="right"
+        android:text="@string/Button_Confirm"/>
 
-        <ListView
-            android:id="@+id/lsvSessionTaskList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/btnSessionConfirm"/>
 
-    </android.support.constraint.ConstraintLayout>
+
+    </LinearLayout>

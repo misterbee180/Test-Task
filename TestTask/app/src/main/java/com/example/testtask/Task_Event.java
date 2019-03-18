@@ -171,9 +171,11 @@ public class Task_Event extends AppCompatActivity {
             fab.setVisibility(View.GONE);
             findViewById(R.id.lsvEventTaskList).setVisibility(View.GONE);
             findViewById(R.id.txtEventAddReq).setVisibility(View.GONE);
+            findViewById(R.id.btnLongTermConfirm).setVisibility(View.VISIBLE);
         } else {
             //No Tasks Associated with Event
             fab.setVisibility(View.VISIBLE);
+            findViewById(R.id.btnLongTermConfirm).setVisibility(View.GONE);
             if (mEventTasks.mArrayList.size() == 0){
                 findViewById(R.id.txtEventAddReq).setVisibility(View.VISIBLE);
                 findViewById(R.id.lsvEventTaskList).setVisibility(View.GONE);
