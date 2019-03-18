@@ -223,7 +223,7 @@ public class Task_Display extends AppCompatActivity {
 
         while (cursor.moveToNext()){
             Calendar currentCalendar = getCurrentCalendar(this);
-            Calendar storedCalendar = Calendar.getInstance();
+            Calendar storedCalendar = getCurrentCalendar(this);
             storedCalendar.setTimeInMillis(cursor.getLong(cursor.getColumnIndexOrThrow("fdtmEvaluated")));
 
             //Need to clear out unnecessary date time details before comparison
@@ -340,9 +340,9 @@ public class Task_Display extends AppCompatActivity {
 
     private static boolean evaluateDate(Long plngFromDate, Long plngToDate, Context pContext){
         Calendar calNow = getCurrentCalendar(pContext);
-        Calendar calFrom = Calendar.getInstance();
+        Calendar calFrom = getCurrentCalendar(pContext);
         if (plngFromDate != -1) calFrom.setTimeInMillis(plngFromDate);
-        Calendar calTo = Calendar.getInstance();
+        Calendar calTo = getCurrentCalendar(pContext);
         if (plngToDate != -1) calTo.setTimeInMillis(plngToDate);
 
         if (plngFromDate != -1 && plngToDate != -1){
@@ -362,7 +362,7 @@ public class Task_Display extends AppCompatActivity {
 
     private static boolean evaluateWeekGeneration(Long plngWeekID, Long pdtmCreated, Long pintRepetition, Context pContext){
         Cursor cursor;
-        Calendar calCreate = Calendar.getInstance();
+        Calendar calCreate = getCurrentCalendar(pContext);
         Calendar calNow = getCurrentCalendar(pContext);
         calCreate.setTimeInMillis(pdtmCreated);
 
@@ -402,7 +402,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     private static boolean evaluateDayGeneration(Long pdtmCreated, Long pintRepetition, Context pContext) {
-        Calendar calCreate = Calendar.getInstance();
+        Calendar calCreate = getCurrentCalendar(pContext);
         Calendar calNow = getCurrentCalendar(pContext);
         calCreate.setTimeInMillis(pdtmCreated);
 
@@ -418,7 +418,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     private static boolean evaluateMonthGeneration(Long plngMonthID, Long pdtmCreated, Long pintRepetition, Context pContext) {
-        Calendar calCreate = Calendar.getInstance();
+        Calendar calCreate = getCurrentCalendar(pContext);
         Calendar calNow = getCurrentCalendar(pContext);
         calCreate.setTimeInMillis(pdtmCreated);
 
@@ -540,7 +540,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     private static boolean evaluateYearGeneration(Long pdtmCreated, Long pdtmFromDate, Long pdtmToDate, Long pintRepetition, Context pContext) {
-        Calendar calCreate = Calendar.getInstance();
+        Calendar calCreate = getCurrentCalendar(pContext);
         Calendar calNow = getCurrentCalendar(pContext);
         calCreate.setTimeInMillis(pdtmCreated);
 
@@ -552,7 +552,7 @@ public class Task_Display extends AppCompatActivity {
         int diffYear = calNow.get(Calendar.YEAR) - calCreate.get(Calendar.YEAR);
         if (diffYear % (pintRepetition) != 0) return false;
 
-        Calendar calFrom = Calendar.getInstance(), calTo = Calendar.getInstance();
+        Calendar calFrom = Calendar.getInstance(), calTo = getCurrentCalendar(pContext);
         calFrom.setTimeInMillis(pdtmFromDate);
         if (pdtmToDate != -1){
             calTo.setTimeInMillis(pdtmToDate);
@@ -704,8 +704,8 @@ public class Task_Display extends AppCompatActivity {
     private static char determineListForTask(Long pdtmFrom, Long pdtmTo, Long pdtmCreated, Boolean fblnRepeat, Context pContext) {
         char result = ' ';
         Calendar calNow = getCurrentCalendar(pContext);
-        Calendar calInt = Calendar.getInstance();
-        Calendar calCreate = Calendar.getInstance();
+        Calendar calInt = getCurrentCalendar(pContext);
+        Calendar calCreate = getCurrentCalendar(pContext);
         Calendar calTo = null;
         Calendar calFrom = null;
         Calendar calFromBefore = null;

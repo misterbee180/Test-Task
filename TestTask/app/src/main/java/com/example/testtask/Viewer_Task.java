@@ -25,7 +25,6 @@ import static com.example.testtask.DatabaseAccess.mDatabase;
 
 public class Viewer_Task extends AppCompatActivity {
 
-    //static ArrayListContainer mTaskList;
     static ListView mTaskView;
     static Sorting mSorting;
     static CustomAdapter mAdapter;
@@ -43,11 +42,6 @@ public class Viewer_Task extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mTaskView = (ListView) findViewById(R.id.lsvTaskList);
-//        mTaskList = new ArrayListContainer();
-//        mTaskList.LinkArrayToListView(mTaskView, this);
-//        mTaskList.mListView.setOnItemClickListener(itemClickListener);
-//        mTaskList.mListView.setOnItemLongClickListener(itemLongClickListener);
-
         mSorting = Sorting.Ascending;
     }
 
