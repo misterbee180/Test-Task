@@ -6,31 +6,49 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Switch;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import static com.example.testtask.DatabaseAccess.mDatabase;
 
 public class Viewer_Task extends AppCompatActivity {
 
-    static ArrayListContainer mTaskList;
+    //static ArrayListContainer mTaskList;
+    static ListView mTaskView;
+    static Sorting mSorting;
+    static CustomAdapter mAdapter;
+
+    enum Sorting
+    {
+        Ascending, Created, Group, Session;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer_task);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        ListView mTaskView = (ListView) findViewById(R.id.lsvTaskList);
-        mTaskList = new ArrayListContainer();
-        mTaskList.LinkArrayToListView(mTaskView, this);
-        mTaskList.mListView.setOnItemClickListener(itemClickListener);
-        mTaskList.mListView.setOnItemLongClickListener(itemLongClickListener);
+        mTaskView = (ListView) findViewById(R.id.lsvTaskList);
+//        mTaskList = new ArrayListContainer();
+//        mTaskList.LinkArrayToListView(mTaskView, this);
+//        mTaskList.mListView.setOnItemClickListener(itemClickListener);
+//        mTaskList.mListView.setOnItemLongClickListener(itemLongClickListener);
+
+        mSorting = Sorting.Ascending;
     }
 
     protected void onResume(){
@@ -38,25 +56,34 @@ public class Viewer_Task extends AppCompatActivity {
         setTaskList(this);
     }
 
-    AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+    public static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mTaskList.GetID(position));
-            DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Task");
+            FragmentActivity activity;
+            int type = mAdapter.getItemViewType(position);
+            switch (type) {
+                case 0:
+                    bundle.putLong("TaskID", Long.valueOf(((CustomAdapter.ViewHolder)view.getTag()).id.getText().toString()));
+                    DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
+                    newFragment.setArguments(bundle);
+                    activity = (FragmentActivity)parent.getContext();
+                    newFragment.show(activity.getSupportFragmentManager(), "Edit Task");
+                    break;
+            }
         }
     };
 
-    AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
+    public static AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mTaskList.GetID(position));
+            FragmentActivity activity;
+            bundle.putLong("TaskID", Long.valueOf(((CustomAdapter.ViewHolder)view.getTag()).id.getText().toString()));
             DialogFragment newFragment = new Viewer_Task.TaskDeleteConfirmationFragment();
             newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Delete Task");
+            activity = (FragmentActivity)parent.getContext();
+            newFragment.show(activity.getSupportFragmentManager(), "Delete Task");
             return true;
         }
     };
@@ -124,9 +151,15 @@ public class Viewer_Task extends AppCompatActivity {
 
     public static void setTaskList(Context pContext){
         Cursor cursor;
-        String rawGetTasks = "SELECT t.*\n" +
+        String rawGetTasks = "SELECT t.*, tm.fdtmCreated, g.fstrTitle as fstrGroup, s.fstrTitle as fstrSession\n" +
                 "FROM tblTask t\n" +
-                "WHERE ((flngSessionID <> -1 \n" +
+                "LEFT JOIN tblTime tm\n" +
+                "ON tm.flngTimeID = t.flngTimeID\n" +
+                "LEFT JOIN tblGroup g\n" +
+                "ON g.flngGroupID = t.flngGroupID\n" +
+                "LEFT JOIN tblSession s\n" +
+                "ON s.flngSessionID = t.flngSessionID\n" +
+                "WHERE ((t.flngSessionID <> -1 \n" +
                     "\tAND (t.fblnOneOff = 0\n" +
                     "\tOR NOT EXISTS (SELECT 1\n" +
                         "\t\tFROM tblTaskInstance ti\n" +
@@ -154,14 +187,146 @@ public class Viewer_Task extends AppCompatActivity {
                     "\tAND ti.fblnComplete = 0\n" +
                     "\tAND ti.fblnSystemComplete = 0))\n" + //Has an active task instance
                 "AND t.flngEventID = -1\n" +
-                "AND t.fblnActive = 1\n" +
-                "ORDER BY t.fstrTitle";
-        cursor = mDatabase.rawQuery(rawGetTasks,null);
-
-        mTaskList.Clear();
-        while (cursor.moveToNext()){
-            mTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                "AND t.fblnActive = 1\n";
+        switch(mSorting) {
+            case Ascending:
+                rawGetTasks += "ORDER BY t.fstrTitle";
+                break;
+            case Created:
+                rawGetTasks += "ORDER BY tm.fdtmCreated Desc";
+                break;
+            case Group:
+                rawGetTasks += "ORDER BY ifNULL(g.fstrTitle,\"z\"), t.fstrTitle";
+                break;
+            case Session:
+                rawGetTasks += "ORDER BY ifNULL(s.fstrTitle,\"z\"), t.fstrTitle";
+                break;
+//            case Group:
+//                rawGetTasks += "ORDER BY g.fstrTitle, t.fstrTitle";
+//                break;
+//            case Session:
+//                rawGetTasks += "ORDER BY s.fstrTitle, t.fstrTitle";
+//                break;
         }
-        mTaskList.mAdapter.notifyDataSetChanged();
+        cursor = mDatabase.rawQuery(rawGetTasks,null);
+        mAdapter = new CustomAdapter(pContext);
+        Calendar calCreated = Task_Display.getCurrentCalendar(pContext);
+        calCreated.add(Calendar.DAY_OF_YEAR,1);
+        Calendar calNewCreated;
+        String fstrSession = "";
+        String fstrGroup = "";
+
+        while(cursor.moveToNext())
+        {
+            switch(mSorting) {
+                case Ascending:
+                    mAdapter.addItem(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                    break;
+                case Created:
+                    calNewCreated = Task_Display.getCurrentCalendar(pContext);
+                    calNewCreated.setTimeInMillis(cursor.getLong(cursor.getColumnIndex("fdtmCreated")));
+                    if (calNewCreated.get(Calendar.DAY_OF_YEAR) != calCreated.get(Calendar.DAY_OF_YEAR) ||
+                    calNewCreated.get(Calendar.YEAR) != calCreated.get(Calendar.YEAR)){
+                        calCreated = calNewCreated;
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+                        mAdapter.addSeparatorItem(dateFormat.format(calCreated.getTime()));
+                    }
+                    mAdapter.addItem(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                    break;
+                case Group:
+                    if (cursor.getString(cursor.getColumnIndex("fstrGroup")) != null &&
+                            fstrGroup.compareTo(cursor.getString(cursor.getColumnIndex("fstrGroup"))) != 0){
+                        fstrGroup = cursor.getString(cursor.getColumnIndex("fstrGroup"));
+                        mAdapter.addSeparatorItem(fstrGroup);
+                    } else if (cursor.getString(cursor.getColumnIndex("fstrGroup")) == null && fstrGroup != null){
+                        fstrGroup = null;
+                        mAdapter.addSeparatorItem("No Group");
+                    }
+                    mAdapter.addItem(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                    break;
+                case Session:
+                    if (cursor.getString(cursor.getColumnIndex("fstrSession")) != null &&
+                            fstrSession.compareTo(cursor.getString(cursor.getColumnIndex("fstrSession"))) != 0){
+                        fstrSession = cursor.getString(cursor.getColumnIndex("fstrSession"));
+                        mAdapter.addSeparatorItem(fstrSession);
+                    } else if (cursor.getString(cursor.getColumnIndex("fstrSession")) == null && fstrSession != null){
+                        fstrSession = null;
+                        mAdapter.addSeparatorItem("No Session");
+                    }
+                    mAdapter.addItem(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                    break;
+            }
+        }
+
+        mTaskView.setAdapter(mAdapter);
+        mTaskView.setOnItemClickListener(itemClickListener);
+        mTaskView.setOnItemLongClickListener(itemLongClickListener);
+
+        //ORIGINAL
+//        mTaskList.Clear();
+//        while (cursor.moveToNext()){
+//            mTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+//        }
+//        mTaskList.mAdapter.notifyDataSetChanged();
+    }
+
+    public void viewComplete() {
+        Intent intent = new Intent(this, Viewer_Task.class);
+        startActivity(intent);
+    }
+
+    public void sortCreated() {
+        mSorting = Sorting.Created;
+        setTaskList(this);
+    }
+
+    public void sortGroup() {
+        mSorting = Sorting.Group;
+        setTaskList(this);
+    }
+
+    public void sortSession() {
+        mSorting = Sorting.Session;
+        setTaskList(this);
+    }
+
+    public void sortAscending() {
+        mSorting = Sorting.Ascending;
+        setTaskList(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.task_viewer_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        //noinspection SimplifiableIfStatement
+        switch (item.getItemId()){
+            case R.id.action_completed:
+                viewComplete();
+                break;
+            case R.id.action_sort_created:
+                sortCreated();
+                break;
+            case R.id.action_sort_group:
+                sortGroup();
+                break;
+            case R.id.action_sort_session:
+                sortSession();
+                break;
+            case R.id.action_sort_ascending:
+                sortAscending();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

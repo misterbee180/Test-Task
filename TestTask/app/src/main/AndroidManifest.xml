@@ -42,7 +42,8 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".Viewer_Task"
-            android:label="@string/title_activity_task_viewer" />
+            android:label="@string/title_activity_task_viewer"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".Viewer_Events"
             android:label="@string/title_activity_viewer__events"
