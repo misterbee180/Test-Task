@@ -280,27 +280,6 @@ public class Task_Task  extends AppCompatActivity {
                 mlngTaskId,
                 new String[] {"fstrTitle", "fstrDescription", "flngSessionID", "flngTimeID", "flngGroupID"},
                 new Object[] {getTaskTitle(), getTaskDesc(), getSessionID(), lngNewTimeId, getGroupID()});
-
-//        Long lngTaskInstanceID =  getOpenTaskInstanceFromTask();
-//        if (lngTaskInstanceID != -1){
-//            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-//                    "flngInstanceID",
-//                    lngTaskInstanceID,
-//                    new String[]{"fblnSystemComplete"},
-//                    new Object[]{true});
-//        }
-//        if (mlngEventId == -1){
-//            Task_Display.evaluateTaskInstanceCreation(getSessionID(),timeKeeper.getTimeID(), mlngTaskId, this);
-//        }
-    }
-
-    private long getOpenTaskInstanceFromTask(){
-        Cursor c = DatabaseAccess.getRecordsFromTable("tblTaskInstance",
-                "flngTaskID",
-                mlngTaskId);
-        c.moveToNext();
-        if (c.getCount() != 1) return -1;
-        return c.getLong(c.getColumnIndex("flngInstanceID"));
     }
 
     public void InitializeTaskCreation() {

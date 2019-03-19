@@ -571,7 +571,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
         chbDow.setChecked(pblnOn == 1 ? true: false);
     }
-   
+
     public String getTimeRange(){
         String result = "";
         if (!repititionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
