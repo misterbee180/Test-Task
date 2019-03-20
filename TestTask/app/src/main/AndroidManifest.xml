@@ -59,7 +59,9 @@
             android:name=".Viewer_Groups"
             android:label="@string/title_activity_viewer__groups"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Task_Group" />
+        <activity android:name=".Task_Group"
+            android:label="@string/title_activity_task_group"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

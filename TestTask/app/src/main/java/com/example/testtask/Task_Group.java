@@ -3,6 +3,7 @@ package com.example.testtask;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,13 +14,23 @@ import android.widget.TextView;
 
 public class Task_Group extends AppCompatActivity {
 
-    static ArrayListContainer mGroupTaskList;
+    static ArrayListContainer mGroupTask;
     Long mlngGroupId = (long)-1;
+
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_group);
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BeginAddTaskToGroup();
+            }
+        });
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -28,9 +39,9 @@ public class Task_Group extends AppCompatActivity {
         }
 
         ListView mGroupView = (ListView) findViewById(R.id.lsvGroupTaskList);
-        mGroupTaskList = new ArrayListContainer();
-        mGroupTaskList.LinkArrayToListView(mGroupView, this);
-        mGroupTaskList.mListView.setOnItemClickListener(itemClickListener);
+        mGroupTask = new ArrayListContainer();
+        mGroupTask.LinkArrayToListView(mGroupView, this);
+        mGroupTask.mListView.setOnItemClickListener(itemClickListener);
     }
 
     protected void onResume(){
@@ -38,18 +49,45 @@ public class Task_Group extends AppCompatActivity {
         if (mlngGroupId != -1){
             LoadGroup();
         }
+        setupInitialVisibility();
+
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mGroupTaskList.GetID(position));
+            bundle.putLong("TaskID", mGroupTask.GetID(position));
             DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Task");
         }
     };
+
+    private void setupInitialVisibility() {
+        //New Event Add - Force adding the event before the ability to add tasks is available
+        if (mlngGroupId == -1){
+            fab.setVisibility(View.GONE);
+            findViewById(R.id.lsvGroupTaskList).setVisibility(View.GONE);
+            findViewById(R.id.btnGroupConfirm).setVisibility(View.VISIBLE);
+        } else {
+            //No Tasks Associated with Event
+            fab.setVisibility(View.VISIBLE);
+            findViewById(R.id.btnGroupConfirm).setVisibility(View.GONE);
+            if (mGroupTask.mArrayList.size() == 0){
+                //TODO: Add text to request addition of tasks to group (see event)
+                findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    public  void BeginAddTaskToGroup() {
+        Intent intent = new Intent(this, Task_Task.class);
+        intent.putExtra("EXTRA_GROUP_ID", mlngGroupId);
+        startActivity(intent);
+    }
 
     private void LoadGroup() {
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblGroup", "flngGroupID", mlngGroupId);
@@ -58,12 +96,12 @@ public class Task_Group extends AppCompatActivity {
             setGroupTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
         }
 
-        cursor = DatabaseAccess.getRecordsFromTable("tblTask","flngGroupID", mlngGroupId);
-        mGroupTaskList.Clear();
+        cursor = DatabaseAccess.getRecordsFromTable("tblTask","flngGroupID", mlngGroupId,"fstrTitle");
+        mGroupTask.Clear();
         while (cursor.moveToNext()){
-            mGroupTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            mGroupTask.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
         }
-        mGroupTaskList.mAdapter.notifyDataSetChanged();
+        mGroupTask.mAdapter.notifyDataSetChanged();
     }
 
     public void ceaseGroupCreation(View view) {

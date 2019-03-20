@@ -22,6 +22,7 @@ public class Task_Task  extends AppCompatActivity {
     Long mlngTaskId = (long)-1;
     Long mlngEventId = (long)-1;
     Long mlngLongTermId = (long)-1;
+    Long mlngGroupId = (long)-1;
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
@@ -51,9 +52,7 @@ public class Task_Task  extends AppCompatActivity {
         return mSessionList.GetID(mSession.getSelectedItemPosition());
     }
 
-    public Long getGroupID(){
-        return mGroupList.GetID(mGroup.getSelectedItemPosition());
-    }
+    public Long getGroupID(){return mlngGroupId;}
 
     public Long getEventID() {return mlngEventId;}
 
@@ -149,6 +148,7 @@ public class Task_Task  extends AppCompatActivity {
             mlngTaskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
             mlngEventId = getIntent().getLongExtra("EXTRA_EVENT_ID",-1);
             mlngLongTermId = getIntent().getLongExtra("EXTRA_LONGTERM_ID",-1);
+            mlngGroupId = getIntent().getLongExtra("EXTRA_GROUP_ID",-1);
         }
     }
 
@@ -157,6 +157,7 @@ public class Task_Task  extends AppCompatActivity {
             Cursor tmpCursor = DatabaseAccess.getRecordsFromTable("tblTask","flngTaskID", mlngTaskId);
             tmpCursor.moveToNext();
             mlngEventId = tmpCursor.getLong(tmpCursor.getColumnIndex("flngEventID"));
+            mlngGroupId = tmpCursor.getLong(tmpCursor.getColumnIndex("flngGroupID"));
             mlngLongTermId = tmpCursor.getLong(tmpCursor.getColumnIndex("flngLongTermID"));
         }
     }
@@ -183,6 +184,9 @@ public class Task_Task  extends AppCompatActivity {
         while(cursor.moveToNext()){
             mGroupList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngGroupID")));
         }
+        if(mlngGroupId != -1){
+            mGroupList.setIDSpinner(mlngGroupId);
+        }
         mGroupList.mAdapter.notifyDataSetChanged();
     }
 
@@ -192,13 +196,12 @@ public class Task_Task  extends AppCompatActivity {
         while(cursor.moveToNext()){
             Long lngTimeID = cursor.getLong(cursor.getColumnIndex("flngTimeID"));
             Long lngSessionID = cursor.getLong(cursor.getColumnIndex("flngSessionID"));
-            Long lngGroupID = cursor.getLong(cursor.getColumnIndex("flngGroupID"));
             setIsOneOff(cursor.getLong(cursor.getColumnIndex("fblnOneOff")) == 1 ? true:false);
             setTaskTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
             setTaskDesc(cursor.getString(cursor.getColumnIndex("fstrDescription")));
             if (mlngEventId == -1){
-                if (lngGroupID != -1){
-                    mGroupList.setIDSpinner(lngGroupID);
+                if (mlngGroupId != -1){
+                    mGroupList.setIDSpinner(mlngGroupId);
                 }
                 if (lngSessionID != -1){
                     mSessionList.setIDSpinner(lngSessionID);

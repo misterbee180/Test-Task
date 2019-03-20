@@ -748,6 +748,22 @@ public class DatabaseAccess {
                 null);
     }
 
+    public static Cursor getRecordsFromTable(String pstrTableName,
+                                             String pstrIDColumn,
+                                             Long plngID,
+                                             String pstrOrderBy){
+        String selection = pstrIDColumn + " = ?";
+        String[] selectionArgs = {Long.toString(plngID)};
+
+        return mDatabase.query(pstrTableName,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                pstrOrderBy);
+    }
+
     public static Cursor getRecordsFromTable(String pstrTableName){
         return mDatabase.query(pstrTableName,
                 null,

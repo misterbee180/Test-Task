@@ -23,6 +23,7 @@
     <string name="title_activity_viewer__events">Event List</string>
     <string name="title_activity_viewer__LongTerm">Long Term List</string>
     <string name="title_activity_task__event">Event</string>
+    <string name="title_activity_task_group">Group</string>
     <string name="title_activity_task_task">Add A Task</string>
     <string name="title_activity_viewer__groups">Task Groups</string>
     <string name="title_activity_viewer__long_term">Long Term Tasks</string>
