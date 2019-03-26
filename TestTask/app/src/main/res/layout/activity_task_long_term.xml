@@ -20,7 +20,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_task_long_term" />
+    <include layout="@layout/content_task_longterm" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

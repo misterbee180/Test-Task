@@ -21,7 +21,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_viewer__long_term);
+        setContentView(R.layout.activity_viewer_longterm);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 

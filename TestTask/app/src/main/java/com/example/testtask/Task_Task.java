@@ -214,14 +214,16 @@ public class Task_Task  extends AppCompatActivity {
     }
     //endregion
 
+    //todo: Create process to remove existing instance in case where date is pushed to the future.
+
     public void confirmActivity(View view){
         if (mlngEventId != -1) {
             if (mlngTaskId != -1){
-                updateTaskRecord();
+                updateTaskRecord(); //Updating event task
             } else {
-                EventTaskCreation();
+                EventTaskCreation(); //New event task creation
             }
-        } else if (mlngTaskId == -1){
+        } else if (mlngTaskId == -1){ //New Task Creation
             InitializeTaskCreation();
         } else{
             //TODO: Allow for going from time to session (need to inactivate time id formally associated with task)

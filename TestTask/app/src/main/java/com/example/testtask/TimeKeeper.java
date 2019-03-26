@@ -28,11 +28,11 @@ import java.util.Calendar;
 
 public class TimeKeeper extends ConstraintLayout implements View.OnClickListener {
 
-    static Calendar mFromTime;
-    static Calendar mToTime;
-    static Calendar sToDate;
-    static Calendar sFromDate;
-    static int sSetIndicator = -1;
+    static Calendar mToDate;
+    static Calendar mFromDate;
+    static boolean mFromTimeSet = false;
+    static boolean mToTimeSet = false;
+    static int mSetIndicator = -1; //Used to determine which time button was selected
     static int[] arrSpecificDays;
     static int intArrayCounter;
     static ArrayListContainer repititionSpinner;
@@ -130,19 +130,19 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.Timekeeper_BtnFromTime:
-                sSetIndicator = 1;
+                mSetIndicator = 1;
                 instantiateTimeFragment();
                 break;
             case R.id.Timekeeper_BtnToTime:
-                sSetIndicator = 2;
+                mSetIndicator = 2;
                 instantiateTimeFragment();
                 break;
             case R.id.Timekeeper_NoFreq_BtnFromDate:
-                sSetIndicator = 3;
+                mSetIndicator = 3;
                 instantiateDateFragment();
                 break;
             case R.id.Timekeeper_NoFreq_BtnToDate:
-                sSetIndicator = 4;
+                mSetIndicator = 4;
                 instantiateDateFragment();
                 break;
             case R.id.TimeKeeper_Monthly_Gen:
@@ -180,11 +180,18 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,parameters);
 
         while(cursor.moveToNext()){
-            //Set to & from
-            setFromTime(cursor.getLong(cursor.getColumnIndex("fdtmFrom")));
-            setToTime(cursor.getLong(cursor.getColumnIndex("fdtmTo")));
-            setsFromDate(cursor.getLong(cursor.getColumnIndex("fdtmFromDate")));
-            setsToDate(cursor.getLong(cursor.getColumnIndex("fdtmToDate")));
+            //Set from details
+            long created = cursor.getLong(cursor.getColumnIndex("fdtmCreated"));
+            long temp = cursor.getLong(cursor.getColumnIndex("fdtmFrom"));
+            if (temp != -1) {
+                setFromDateAndTime(temp, cursor.getLong(cursor.getColumnIndex("fblnFromTimeSet")) == 1);
+            }
+
+            //Set to details
+            temp = cursor.getLong(cursor.getColumnIndex("fdtmTo"));
+            if (temp != -1) {
+                setToDateAndTime(temp, cursor.getLong(cursor.getColumnIndex("fblnToTimeSet")) == 1);
+            }
 
             //Set repeat
             if (cursor .getInt(cursor.getColumnIndex("flngRepetition")) != -1){
@@ -335,11 +342,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 break;
         }
 
-        arrColumns = new String[]{"fdtmFrom","fdtmTo","fdtmFromDate","fdtmToDate","flngDayID","flngWeekID","flngMonthID","flngYearID","flngRepetition","fdtmEvaluated","fdtmCreated"};
-        arrValues = new Object[]{getFromTime(),
-                getToTime(),
-                getFromDate(),
-                getToDate(),
+        arrColumns = new String[]{"fdtmFrom","fdtmTo","fblnFromTimeSet","fblnToTimeSet","flngDayID","flngWeekID","flngMonthID","flngYearID","flngRepetition","fdtmEvaluated","fdtmCreated"};
+        arrValues = new Object[]{getFromDateAndTime(),
+                getToDateAndTime(),
+                mFromTimeSet,
+                mToTimeSet,
                 lngDayKey,
                 lngWeekKey,
                 lngMonthKey,
@@ -394,10 +401,10 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         mlngMonthID = (long)-1;
         mlngYearID = (long)-1;
 
-        mFromTime = null;
-        mToTime = null;
-        sFromDate = null;
-        sToDate = null;
+        mFromTimeSet = false;
+        mToTimeSet = false;
+        mFromDate = null;
+        mToDate = null;
 
         //Set visibility
     }
@@ -451,68 +458,40 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public Boolean blnTimeDetailsExist(){
-        if (getFromTime() != null || getToTime() != null || getTimeRange() != ""){
-          return true;
-        }
-        return false;
+        return (mFromTimeSet || mToTimeSet || getTimeRange() != "");
     }
 
-    public Long getFromTime() {
-        if (mFromTime != null) {return mFromTime.getTimeInMillis();}
+    public Long getFromDateAndTime() {
+        if (mFromDate != null) {return mFromDate.getTimeInMillis();}
         return null;
     }
 
-    public void setFromTime(Long pFromMili){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-        mFromTime = Task_Display.getCurrentCalendar(getContext());
-        mFromTime.setTimeInMillis(pFromMili);
-        if(pFromMili != -1){
-            btnFromTime.setText("From: " + dateFormat.format(mFromTime.getTime()));
-        }
-    }
-
-    public Long getToTime() {
-        if (mToTime != null) {return mToTime.getTimeInMillis();}
+    public Long getToDateAndTime() {
+        if (mToDate != null) {return mToDate.getTimeInMillis();}
         return null;
     }
 
-    public void setToTime(Long pToMili){
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-        mToTime = Task_Display.getCurrentCalendar(getContext());
-        mToTime.setTimeInMillis(pToMili);
-        if(pToMili != -1) {
-            btnToTime.setText("To: " + dateFormat.format(mToTime.getTime()));
-        }
-    }
-
-    public Long getFromDate() {
-        if (sFromDate != null) {return sFromDate.getTimeInMillis();}
-        return null;
-    }
-
-    public void setsFromDate(Long pFromMili){
-
+    public void setFromDateAndTime(Long pFromMili, Boolean pblnTimeSet){
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
-        sFromDate = Task_Display.getCurrentCalendar(getContext());
-        sFromDate.setTimeInMillis(pFromMili);
-        if(pFromMili != -1) {
-            btnFromDate.setText("From: " + dateFormat.format(sFromDate.getTime()));
+        mFromDate = Task_Display.getCurrentCalendar(getContext());
+        mFromDate.setTimeInMillis(pFromMili);
+        btnFromDate.setText("From: " + dateFormat.format(mFromDate.getTime()));
+        if (pblnTimeSet){
+            mFromTimeSet = true;
+            dateFormat = new SimpleDateFormat("h:mm a");
+            btnFromTime.setText("From: " + dateFormat.format(mFromDate.getTime()));
         }
     }
 
-    public Long getToDate() {
-        if (sToDate != null) {return sToDate.getTimeInMillis();}
-        return null;
-    }
-
-    public void setsToDate(Long pToMili){
-
+    public void setToDateAndTime(Long pToMili, Boolean pblnTimeSet){
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
-        sToDate = Task_Display.getCurrentCalendar(getContext());
-        sToDate.setTimeInMillis(pToMili);
-        if (pToMili != -1) {
-            btnToDate.setText("To: " + dateFormat.format(sFromDate.getTime()));
+        mToDate = Task_Display.getCurrentCalendar(getContext());
+        mToDate.setTimeInMillis(pToMili);
+        btnToDate.setText("To: " + dateFormat.format(mToDate.getTime()));
+        if (pblnTimeSet){
+            mToTimeSet = true;
+            dateFormat = new SimpleDateFormat("h:mm a");
+            btnToTime.setText("To: " + dateFormat.format(mToDate.getTime()));
         }
     }
 
@@ -664,9 +643,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             // Use the current time as the default values for the picker
             int hour = Task_Display.getCurrentCalendar(getContext()).get(Calendar.HOUR_OF_DAY);
             int minute = Task_Display.getCurrentCalendar(getContext()).get(Calendar.MINUTE);
-            if (mFromTime != null){
-                hour = mFromTime.get(Calendar.HOUR_OF_DAY);
-                minute = mFromTime.get(Calendar.MINUTE);
+            if (mFromTimeSet){
+                hour = mFromDate.get(Calendar.HOUR_OF_DAY);
+                minute = mFromDate.get(Calendar.MINUTE);
             }
 
             // Create a new instance of TimePickerDialog and return it
@@ -676,17 +655,34 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             // Do something with the time chosen by the user
-            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-            if (sSetIndicator == 1) {
-                mFromTime = Task_Display.getCurrentCalendar(getContext());
-                mFromTime .set(Calendar.HOUR_OF_DAY,hourOfDay);
-                mFromTime .set(Calendar.MINUTE,minute);
-                btnFromTime.setText("From Time: " + dateFormat.format(mFromTime.getTime()));
-            } else if (sSetIndicator == 2) {
-                mToTime = Task_Display.getCurrentCalendar(getContext());
-                mToTime .set(Calendar.HOUR_OF_DAY,hourOfDay);
-                mToTime .set(Calendar.MINUTE,minute);
-                btnToTime.setText("To Time: " + dateFormat.format(mToTime.getTime()));
+            if (mSetIndicator == 1) {
+                mFromTimeSet = true;
+                if(mFromDate == null){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+                    mFromDate = Task_Display.getCurrentCalendar(getContext());
+                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));;
+                }
+                SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+                mFromDate.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                mFromDate.set(Calendar.MINUTE,minute);
+                btnFromTime.setText("From Time: " + dateFormat.format(mFromDate.getTime()));
+            } else if (mSetIndicator == 2) {
+                mToTimeSet = true;
+                //Curent logic is that if a to date is set a from date must also be set.
+                if(mFromDate == null){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+                    mFromDate = Task_Display.getCurrentCalendar(getContext());
+                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
+                }
+                if(mToDate == null){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+                    mToDate = Task_Display.getCurrentCalendar(getContext());
+                    btnToDate.setText("To Date: " + dateFormat.format(mToDate.getTime()));
+                }
+                SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+                mToDate.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                mToDate.set(Calendar.MINUTE,minute);
+                btnToTime.setText("To Time: " + dateFormat.format(mToDate.getTime()));
             }
         }
     }
@@ -696,14 +692,15 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            int year = Task_Display.getCurrentCalendar(getContext()).get(Calendar.YEAR);
-            int month = Task_Display.getCurrentCalendar(getContext()).get(Calendar.MONTH);
-            int day = Task_Display.getCurrentCalendar(getContext()).get(Calendar.DAY_OF_MONTH);
+            Calendar temp = Task_Display.getCurrentCalendar(getContext());
+            int year = temp.get(Calendar.YEAR);
+            int month = temp.get(Calendar.MONTH);
+            int day = temp.get(Calendar.DAY_OF_MONTH);
 
-            if(sFromDate != null){
-                year = sFromDate.get(Calendar.YEAR);
-                month = sFromDate.get(Calendar.MONTH);
-                day = sFromDate.get(Calendar.DAY_OF_MONTH);
+            if(mFromDate != null){
+                year = mFromDate.get(Calendar.YEAR);
+                month = mFromDate.get(Calendar.MONTH);
+                day = mFromDate.get(Calendar.DAY_OF_MONTH);
             }
 
             // Create a new instance of TimePickerDialog and return it
@@ -711,23 +708,33 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            // Do something with the time chosen by the user
+            //Todo: Remove mSetIndicator and use View
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-            switch (sSetIndicator) {
+            switch (mSetIndicator) {
                 case 3:
-                    sFromDate = Task_Display.getCurrentCalendar(getContext());
-                    sFromDate.set(Calendar.YEAR, year);
-                    sFromDate.set(Calendar.MONTH, month);
-                    sFromDate.set(Calendar.DAY_OF_MONTH, day);
-                    btnFromDate.setText("From Date: " + dateFormat.format(sFromDate.getTime()));
+                    if(mFromDate == null){
+                        mFromDate = Task_Display.getCurrentCalendar(getContext());
+                    }
+                    mFromDate.set(Calendar.YEAR, year);
+                    mFromDate.set(Calendar.MONTH, month);
+                    mFromDate.set(Calendar.DAY_OF_MONTH, day);
+                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
                     break;
-
                 case 4:
-                    sToDate = Task_Display.getCurrentCalendar(getContext());
-                    sToDate.set(Calendar.YEAR, year);
-                    sToDate.set(Calendar.MONTH, month);
-                    sToDate.set(Calendar.DAY_OF_MONTH, day);
-                    btnToDate.setText("To Date: " + dateFormat.format(sToDate.getTime()));
+                    if(mToDate == null){
+                        if(mFromDate == null){
+                            mFromDate = Task_Display.getCurrentCalendar(getContext());
+                            mFromDate.set(Calendar.YEAR, year);
+                            mFromDate.set(Calendar.MONTH, month);
+                            mFromDate.set(Calendar.DAY_OF_MONTH, day);
+                            btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
+                        }
+                        mToDate = Task_Display.getCurrentCalendar(getContext());
+                    }
+                    mToDate.set(Calendar.YEAR, year);
+                    mToDate.set(Calendar.MONTH, month);
+                    mToDate.set(Calendar.DAY_OF_MONTH, day);
+                    btnToDate.setText("To Date: " + dateFormat.format(mToDate.getTime()));
                     break;
             }
         }

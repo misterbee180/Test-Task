@@ -79,24 +79,19 @@
 
     <com.example.testtask.TimeKeeper
         android:id="@+id/timeKeeper"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/spnTaskGroupSel"
         android:layout_weight="1"
-        android:layout_gravity="top"
-        tools:ignore="MissingConstraints"/>
+        android:layout_gravity="top"/>
 
     <Button
         android:id="@+id/btnTaskConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:onClick="confirmActivity"
         android:layout_gravity="right"
-        android:text="@string/Button_Confirm"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeKeeper" />
+        android:onClick="confirmActivity"
+        android:text="@string/Button_Confirm"/>
 
     <!--<Button-->
         <!--android:id="@+id/bntTaskCancel"-->

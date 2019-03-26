@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -44,7 +45,7 @@ public class Task_Display extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createTask(view);
+                createTask();
             }
         });
 
@@ -195,8 +196,11 @@ public class Task_Display extends AppCompatActivity {
     }
 
     private void generateTaskInstances() {
+        //gathers session'd and repeating tasks,
+        //one offs that don't already have a task instance
+        //and tasks that either have a from or a to date set
         String rawGetRepeatingTasks = "SELECT t.flngTaskID, tm.flngTimeID, tm.fdtmEvaluated, t.fblnOneOff" +
-                ", t.fstrTitle, tm.fdtmToDate, tm.fdtmFromDate, t.flngSessionID, t.flngLongTermID" +
+                ", t.fstrTitle, tm.fdtmTo, tm.fdtmFrom, t.flngSessionID, t.flngLongTermID" +
                 ", tm.flngWeekID, tm.flngDayID, tm.flngMonthID, tm.flngYearID \n" +
                 "FROM tblTask t\n" +
                 "LEFT JOIN tblSession s\n" +
@@ -214,16 +218,15 @@ public class Task_Display extends AppCompatActivity {
                 "FROM tblTaskInstance ti\n" +
                 "WHERE ti.flngTaskID = t.flngTaskID\n" +
                 "AND ti.fblnComplete = 1))\n" + //One off and not yet complete
-                "OR tm.fdtmFromDate >= " + Task_Display.getCurrentCalendar(this).getTimeInMillis() + "\n" +
-                "OR tm.fdtmToDate >= " + Task_Display.getCurrentCalendar(this).getTimeInMillis() + ")\n" +
+                "OR tm.fdtmFrom >= " + Task_Display.getCurrentCalendar(this).getTimeInMillis() + "\n" +
+                "OR tm.fdtmTo >= " + Task_Display.getCurrentCalendar(this).getTimeInMillis() + ")\n" +
                 "AND t.flngEventID = -1\n" +
                 "AND t.fblnActive = 1";
-
         Cursor cursor = DatabaseAccess.mDatabase.rawQuery(rawGetRepeatingTasks,null);
 
         while (cursor.moveToNext()){
-            Calendar currentCalendar = getCurrentCalendar(this);
-            Calendar storedCalendar = getCurrentCalendar(this);
+            Calendar currentCalendar = getCurrentCalendar(this); //represents current date
+            Calendar storedCalendar = getCurrentCalendar(this); //represents date the task was last evaluated
             storedCalendar.setTimeInMillis(cursor.getLong(cursor.getColumnIndexOrThrow("fdtmEvaluated")));
 
             //Need to clear out unnecessary date time details before comparison
@@ -271,7 +274,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     public static boolean evaluateTaskInstanceCreation(Long plngSessionId, Long plngTimeId, Long plngTaskId, Long plngLongTermId, Context pContext){
-        if (evaluateTime(plngSessionId,plngTimeId, plngLongTermId, pContext)){
+        if (evaluateTime(plngTaskId, plngSessionId,plngTimeId, plngLongTermId, pContext)){
             if(plngSessionId != -1 || !excludeOneOffTasks(plngTaskId)){
                 return true;
             }
@@ -292,7 +295,8 @@ public class Task_Display extends AppCompatActivity {
         return false;
     }
 
-    public static boolean evaluateTime(Long plngSessionId,
+    public static boolean evaluateTime(Long plngTaskId,
+                                       Long plngSessionId,
                                        Long plngTimeId,
                                        Long plngLongTermId,
                                        Context pContext) {
@@ -307,15 +311,29 @@ public class Task_Display extends AppCompatActivity {
                 timeID = cursor.getLong(cursor.getColumnIndex("flngTimeID"));
             }
         }
+
+        //todo: fix for repeat every day
+        //see if exists task instance created since upcoming threshold for task
+        cursor = DatabaseAccess.retrieveMostRecentTaskInstanceFromTask(plngTaskId);
+        if(cursor.moveToFirst()){
+            Calendar calUpcomingThreshold = getCurrentCalendar(pContext);
+            calUpcomingThreshold.add(Calendar.DAY_OF_MONTH, -1); //todo: replace upcoming threshold w/ system setting
+            Calendar calCreate = getCurrentCalendar(pContext);
+            calCreate.setTimeInMillis(cursor.getLong(cursor.getColumnIndex("fdtmCreated")));
+            if(calUpcomingThreshold.before(calCreate)){
+                return false;
+            }
+        }
+
+        //establish what repetition tasks associated w/ and whether current date fits
         cursor = DatabaseAccess.getRecordsFromTable("tblTime", "flngTimeID", timeID);
         cursor.moveToFirst();
         weekID = cursor.getLong(cursor.getColumnIndex("flngWeekID"));
         dayID = cursor.getLong(cursor.getColumnIndex("flngDayID"));
         monthID = cursor.getLong(cursor.getColumnIndex("flngMonthID"));
         yearID = cursor.getLong(cursor.getColumnIndex("flngYearID"));
-        fromDate =  cursor.getLong(cursor.getColumnIndex("fdtmFromDate"));
-        toDate =  cursor.getLong(cursor.getColumnIndex("fdtmToDate"));
-
+        fromDate =  cursor.getLong(cursor.getColumnIndex("fdtmFrom"));
+        toDate =  cursor.getLong(cursor.getColumnIndex("fdtmTo"));
         if (weekID != -1) evaluation = evaluateWeekGeneration(weekID,
                 cursor.getLong(cursor.getColumnIndex("fdtmCreated")),
                 cursor.getLong(cursor.getColumnIndex("flngRepetition")),
@@ -328,8 +346,8 @@ public class Task_Display extends AppCompatActivity {
                 cursor.getLong(cursor.getColumnIndex("flngRepetition")),
                 pContext);
         else if (yearID != -1) evaluation = evaluateYearGeneration(cursor.getLong(cursor.getColumnIndex("fdtmCreated")),
-                cursor.getLong(cursor.getColumnIndex("fdtmFromDate")),
-                cursor.getLong(cursor.getColumnIndex("fdtmToDate")),
+                cursor.getLong(cursor.getColumnIndex("fdtmFrom")),
+                cursor.getLong(cursor.getColumnIndex("fdtmTo")),
                 cursor.getLong(cursor.getColumnIndex("flngRepetition")),
                 pContext);
         else if (fromDate == -1 && toDate == -1 && plngLongTermId == -1) return true;
@@ -350,8 +368,9 @@ public class Task_Display extends AppCompatActivity {
                 return true;
             }
         } else if (plngFromDate != -1){
-            if(calNow.get(Calendar.DAY_OF_YEAR) == calFrom.get(Calendar.DAY_OF_YEAR) &&
-                    calNow.get(Calendar.YEAR) == calFrom.get(Calendar.YEAR)){
+            if(calNow.get(Calendar.YEAR) == calFrom.get(Calendar.YEAR) &&
+                    calFrom.get(Calendar.DAY_OF_YEAR) - calNow.get(Calendar.DAY_OF_YEAR) >= 0  &&
+                    calFrom.get(Calendar.DAY_OF_YEAR) - calNow.get(Calendar.DAY_OF_YEAR) <= 1){
                 return true;
             }
         }
@@ -380,23 +399,46 @@ public class Task_Display extends AppCompatActivity {
         Long diffInWeeks = diffInMillisec / (7 * 24 * 60 * 60 * 1000);
         if (diffInWeeks % (pintRepetition) != 0) return false;
 
+        int daydiff = 8;
+        int temp = 8;
         cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", plngWeekID);
         cursor.moveToFirst();
-        switch (calNow.get(Calendar.DAY_OF_WEEK)){
-            case Calendar.SUNDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnSunday")) == 1;
-            case Calendar.MONDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnMonday")) == 1;
-            case Calendar.TUESDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnTuesday")) == 1;
-            case Calendar.WEDNESDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnWednesday")) == 1;
-            case Calendar.THURSDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnThursday")) == 1;
-            case Calendar.FRIDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnFriday")) == 1;
-            case Calendar.SATURDAY:
-                return cursor.getInt(cursor.getColumnIndex("fblnSaturday")) == 1;
+        if(cursor.getInt(cursor.getColumnIndex("fblnSunday")) == 1){
+            if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
+                daydiff = 0;
+            } else{
+                temp = 7 - calNow.get(Calendar.DAY_OF_WEEK);
+            }
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnMonday")) == 1){
+            temp = Calendar.MONDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnTuesday")) == 1){
+            temp = Calendar.TUESDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnWednesday")) == 1){
+            temp = Calendar.WEDNESDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnThursday")) == 1){
+            temp = Calendar.THURSDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnFriday")) == 1){
+            temp = Calendar.FRIDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+        if(cursor.getInt(cursor.getColumnIndex("fblnSaturday")) == 1){
+            temp = Calendar.SATURDAY - calNow.get(Calendar.DAY_OF_WEEK);
+            if (temp < daydiff && temp >= 0) daydiff = temp;
+        }
+
+        //Todo: Swap general day dif compare w/ repetion specific compare
+        if (daydiff == 0 || daydiff <= 1){
+            return true;
         }
         return false;
     }
@@ -413,7 +455,9 @@ public class Task_Display extends AppCompatActivity {
 
         Long diffInMillisec = calNow.getTimeInMillis() - calCreate.getTimeInMillis();
         Long diffInDays = diffInMillisec / (24 * 60 * 60 * 1000);
-        return diffInDays % (pintRepetition) == 0;
+
+        //Todo: Swap general day dif compare w/ repetion specific compare
+        return (diffInDays % (pintRepetition) >= 0 && diffInDays % (pintRepetition) == 1);
 
     }
 
@@ -449,7 +493,16 @@ public class Task_Display extends AppCompatActivity {
                             default: break;
                         }
                     }
-                    if (calNow.get(Calendar.DAY_OF_MONTH) == dayOfMonth) {
+
+                    //Establish Last Day of Month
+                    Calendar lastDayOfMonth = getCurrentCalendar(pContext);
+                    lastDayOfMonth.set(Calendar.DAY_OF_MONTH, 1);
+                    lastDayOfMonth.add(Calendar.MONTH, 1);
+                    lastDayOfMonth.add(Calendar.DAY_OF_YEAR,-1);
+
+                    //Todo: Get system value for upcoming month range
+                    if (calNow.get(Calendar.DAY_OF_MONTH) - dayOfMonth == 0 ||
+                    lastDayOfMonth.get(Calendar.DAY_OF_MONTH) - calNow.get(Calendar.DAY_OF_MONTH) <= 0) {
                         return true;
                     }
                 }
@@ -461,23 +514,25 @@ public class Task_Display extends AppCompatActivity {
                     lastDayOfMonth.add(Calendar.MONTH, 1);
                     lastDayOfMonth.add(Calendar.DAY_OF_YEAR,-1);
 
-                    //Establish Prior Last Day of Month
-                    Calendar priorLastDayOfMonth = getCurrentCalendar(pContext);
-                    priorLastDayOfMonth.set(Calendar.DAY_OF_MONTH, 1);
-                    priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,-1);
-                    switch (priorLastDayOfMonth.get(Calendar.DAY_OF_WEEK)){
-                        case 1:
-                            priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,1);
-                            break;
-                        case 7:
-                            priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,2);
-                            break;
-                        default:
-                            break;
-                    }
-
                     Integer dayOfMonth = 0;
                     if(cursor.getLong(cursor.getColumnIndex("fblnAfterWkn")) == 1){
+                        //todo: finish design of this. Thrown out during upcoming
+                        //Establish Prior Last Day of Month
+                        //This is so that if "after weekend" is checked it will generate tasks for the prior month in the next month
+                        Calendar priorLastDayOfMonth = getCurrentCalendar(pContext);
+                        priorLastDayOfMonth.set(Calendar.DAY_OF_MONTH, 1);
+                        priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,-1);
+                        switch (priorLastDayOfMonth.get(Calendar.DAY_OF_WEEK)){
+                            case 1:
+                                priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,1);
+                                break;
+                            case 7:
+                                priorLastDayOfMonth.add(Calendar.DAY_OF_YEAR,2);
+                                break;
+                            default:
+                                break;
+                        }
+
                         dayOfMonth = priorLastDayOfMonth.get(Calendar.DAY_OF_MONTH);
                         if (calNow.get(Calendar.DAY_OF_MONTH) == dayOfMonth) {
                             return true;
@@ -501,13 +556,16 @@ public class Task_Display extends AppCompatActivity {
                         }
                     } else {
                         dayOfMonth = lastDayOfMonth.get(Calendar.DAY_OF_MONTH);
-                        if (calNow.get(Calendar.DAY_OF_MONTH) == dayOfMonth) {
+                        //todo: generate system value for month rep upcoming range
+                        if (dayOfMonth - calNow.get(Calendar.DAY_OF_MONTH) >= 0 &&
+                                dayOfMonth - calNow.get(Calendar.DAY_OF_MONTH) <= 1) {
                             return true;
                         }
                     }
                 }
 
                 if (cursor.getLong(cursor.getColumnIndex("fblnMiddle")) == 1) {
+                    //todo: make fblnMiddle system value
                     Integer dayOfMonth = 15;
                     if (cursor.getLong(cursor.getColumnIndex("fblnAfterWkn")) == 1) {
                         Calendar calProject = getCurrentCalendar(pContext);
@@ -523,14 +581,16 @@ public class Task_Display extends AppCompatActivity {
                                 break;
                         }
                     }
-                    if (calNow.get(Calendar.DAY_OF_MONTH) == dayOfMonth) {
+                    if (dayOfMonth - calNow.get(Calendar.DAY_OF_MONTH) >= 0 &&
+                            dayOfMonth - calNow.get(Calendar.DAY_OF_MONTH) <= 1) {
                         return true;
                     }
                 }
             } else {
                 String strSpecificDays[] = cursor.getString(cursor.getColumnIndex("fstrSpecific")).split(",");
                 for (int i = 0; i < strSpecificDays.length; i++){
-                    if (calNow.get(Calendar.DAY_OF_MONTH) == Long.parseLong(strSpecificDays[i].trim())){
+                    if (Long.parseLong(strSpecificDays[i].trim()) - calNow.get(Calendar.DAY_OF_MONTH) >= 0 &&
+                            Long.parseLong(strSpecificDays[i].trim()) - calNow.get(Calendar.DAY_OF_MONTH) <= 1){
                         return true;
                     }
                 }
@@ -568,7 +628,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     /** Called when the user taps the Send button */
-    public void createTask(View view) {
+    public void createTask() {
         Intent intent = new Intent(this, Task_Task.class);
         startActivity(intent);
     }
@@ -622,11 +682,14 @@ public class Task_Display extends AppCompatActivity {
         ArrayList<taskInstances> priorityList = new ArrayList();
         ArrayList<taskInstances> todayList = new ArrayList();
         ArrayList<taskInstances> standardList = new ArrayList();
+        ArrayList<taskInstances> upcomingList = new ArrayList();
 
         while(cursor.moveToNext()){
             Boolean blnRepeat = cursor.getLong(cursor.getColumnIndex("flngRepetition")) != 0;
             char result = determineListForTask(cursor.getLong(cursor.getColumnIndex("fdtmFrom")),
                     cursor.getLong(cursor.getColumnIndex("fdtmTo")),
+                    cursor.getLong(cursor.getColumnIndex("fblnFromTimeSet")) == 1,
+                    cursor.getLong(cursor.getColumnIndex("fblnToTimeSet")) == 1,
                     cursor.getLong(cursor.getColumnIndex("fdtmCreated")),
                     blnRepeat, pContext);
             if (result == 'P') {
@@ -639,8 +702,13 @@ public class Task_Display extends AppCompatActivity {
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
                         cursor.getLong(cursor.getColumnIndex("flngSessionID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
-            } else {
+            } else if (result == 'S') {
                 standardList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
+                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
+            } else if (result == 'U') {
+                upcomingList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
                         cursor.getLong(cursor.getColumnIndex("flngSessionID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
@@ -695,77 +763,151 @@ public class Task_Display extends AppCompatActivity {
             mAdapter.addItem(standardList.get(i).mTitle, standardList.get(i).mId);
             i++;
         }
-
+        mAdapter.addSeparatorItem("Upcoming");
+        i = 0;
+        lngSessionId = (long)-1;
+        while (i < upcomingList.size()){
+            if (lngSessionId != upcomingList.get(i).mSession){
+                mAdapter.addGroupItem("Session: " + upcomingList.get(i).mSessionTitle, upcomingList.get(i).mSession);
+                lngSessionId = upcomingList.get(i).mSession;
+            }
+            mAdapter.addItem(upcomingList.get(i).mTitle, upcomingList.get(i).mId);
+            i++;
+        }
         mDisplayListView.setAdapter(mAdapter);
         mDisplayListView.setOnItemClickListener(itemClickListener);
         mDisplayListView.setOnItemLongClickListener(itemLongClickListener);
     }
 
-    private static char determineListForTask(Long pdtmFrom, Long pdtmTo, Long pdtmCreated, Boolean fblnRepeat, Context pContext) {
+    private static char determineListForTask(Long pdtmFrom, Long pdtmTo, Boolean pblnFromTimeSet, Boolean pblnToTimeSet, Long pdtmCreated, Boolean fblnRepeat, Context pContext) {
         char result = ' ';
-        Calendar calNow = getCurrentCalendar(pContext);
-        Calendar calInt = getCurrentCalendar(pContext);
-        Calendar calCreate = getCurrentCalendar(pContext);
-        Calendar calTo = null;
-        Calendar calFrom = null;
-        Calendar calFromBefore = null;
-        Calendar calToBefore = null;
+        Calendar calNow = getCurrentCalendar(pContext); //represents the time now
+//        Calendar calInt = getCurrentCalendar(pContext); //represents an intermediary calender. Not really used except while generating others
 
+
+//        Calendar calFromBefore = null; //represents 1 day before from calendar
+//
+//        Calendar calToBefore = null;  //represents 1 day before to calendar
+
+        Calendar calFromWithTime = null;
+        Calendar calToWithTime = null;
+        Calendar calFrom = null; //represents the from time of a task
+        Calendar calTo = null; //represents the to time of a task
+        Calendar calCreate = getCurrentCalendar(pContext); //represents when the task was created
         calCreate.setTimeInMillis(pdtmCreated);
 
+        //Start: Set General From Details
         if (pdtmFrom != -1) {
             calFrom = getCurrentCalendar(pContext);
-            calInt.setTimeInMillis(pdtmFrom);
-            //it'll retain today's date but take the time
-            calFrom.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
-            calFrom.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
-            calFromBefore = (Calendar) calFrom.clone();
-            calFromBefore.add(Calendar.DAY_OF_YEAR, -1);
-
+            calFrom.setTimeInMillis(pdtmFrom);
+        }else{
+            calFrom = (Calendar)calCreate.clone();
         }
+
+        //Start: Set General To Details
         if (pdtmTo != -1) {
             calTo = getCurrentCalendar(pContext);
-            calInt.setTimeInMillis(pdtmTo);
-            calTo.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
-            calTo.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
-            calToBefore = (Calendar) calTo.clone();
-            calToBefore.add(Calendar.DAY_OF_YEAR, -1);
+            calTo.setTimeInMillis(pdtmTo);
+        } else {
+            //Set to beginning of next day of From
+            calTo = (Calendar)calFrom.clone();
         }
 
+        //if time details exists we need to make sure from and to w/ time details are populated
+        if(pblnFromTimeSet || pblnToTimeSet){
+            calFromWithTime = (Calendar) calFrom.clone();
+            if(pblnToTimeSet) {
+                calToWithTime = (Calendar) calTo.clone();
+            } else {
+                calToWithTime = (Calendar) calFrom.clone();
+                //Must have been from time that was set so assume till end of day
+                calToWithTime.add(Calendar.DAY_OF_YEAR,1);
+                calToWithTime.set(Calendar.HOUR_OF_DAY, 0);
+                calToWithTime.set(Calendar.MINUTE,0);
+            }
+        }
+
+        //End: Set General From Details
+        calFrom.set(Calendar.HOUR_OF_DAY,0);
+        calFrom.set(Calendar.MINUTE, 0);
+
+        //End: Set General To Details
+        calTo.add(Calendar.DAY_OF_YEAR,1);
+        calTo.set(Calendar.HOUR_OF_DAY, 0);
+        calTo.set(Calendar.MINUTE,0);
+
+
+            //calInt.setTimeInMillis(pdtmFrom);
+//            calFromTime.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
+//            calFromTime.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
+//            calFromBefore = (Calendar) calFromTime.clone();
+//            calFromBefore.add(Calendar.DAY_OF_YEAR, -1);
+        //}
+
+//            calInt.setTimeInMillis(pdtmToTime);
+//            calToTime.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
+//            calToTime.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
+//            calToBefore = (Calendar) calToTime.clone();
+//            calToBefore.add(Calendar.DAY_OF_YEAR, -1);
+        //}
+
+        //if either of the time settings is set and the from and the to dates surround now then it's a priority
+        //this will handle cases both are set and where only one or the other is set
+
         //Evaluate Time Details
-        if (calFrom != null && calTo != null){
-            //Handles where time is between from and to
-            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-                if (calNow.after(calFrom) && calNow.before(calTo)){
-                    result = 'P';
-                } else result = 'T';
-            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
-                if (calNow.after(calFrom) && calNow.before(calTo)){
-                    result = 'P';
-                } else result = 'T';
-            } else result = 'S';
-        } else if (calFrom != null) {
-            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-                if(calNow.after(calFrom)) {
-                    result = 'P';
-                } else result = 'T';
-            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
-                if (calNow.after(calFrom)){
-                    result = 'P';
-                } else result = 'T';
-            } else result = 'S';
-        } else if (calTo != null) {
-            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-                if(calNow.before(calTo)) {
-                    result = 'P';
-                } else result = 'T';
-            } else if (calCreate.after(calToBefore) && !fblnRepeat){
-                if (calNow.after(calTo)){
-                    result = 'P';
-                } else result = 'T';
-            } else result = 'S';
-        } else if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)) result = 'T';
-        else result = 'S';
+        if((pblnFromTimeSet || pblnToTimeSet) && //Time details exist
+                calNow.after(calFromWithTime) && calNow.before(calToWithTime)){ //Exists w/i time bounds
+            result = 'P';
+        } else if (calNow.after(calFrom) && calNow.before(calTo)) {
+            result = 'T';
+        } else //At this point it will either be past happening (S) or not yet ready (U)
+            if(calNow.after(calTo)) {
+                result = 'S';
+        } else {
+                result = 'U';
+            }
+
+//        if(calNow.after(calFrom) && calNow.before(calTo)){ //Task associated w/ today
+//
+//        }
+//        if (calFromTime != null && calToTime != null){
+//            //Handles where time is between from and to
+//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
+//                if (calNow.after(calFromTime) && calNow.before(calToTime)){
+//                    result = 'P';
+//                } else result = 'T';
+//                //Handles circumstance where task was created w/i time window but meant for next day
+//            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
+//                if (calNow.after(calFromTime) && calNow.before(calToTime)){
+//                    result = 'P';
+//                } else result = 'T';
+//            } else result = 'S';
+//            //Same as previous but w/ only from date set
+//        } else if (calFromTime != null) {
+//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
+//                if(calNow.after(calFromTime)) {
+//                    result = 'P';
+//                } else result = 'T';
+//            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
+//                if (calNow.after(calFromTime)){
+//                    result = 'P';
+//                } else result = 'T';
+//            } else result = 'S';
+//            //same as previous but w/ only to date set
+//        } else if (calToTime != null) {
+//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
+//                if(calNow.before(calToTime)) {
+//                    result = 'P';
+//                } else result = 'T';
+//            } else if (calCreate.after(calToBefore) && !fblnRepeat){
+//                if (calNow.after(calToTime)){
+//                    result = 'P';
+//                } else result = 'T';
+//            } else result = 'S';
+//            //no from or to date but task was created today
+//        } else if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)) result = 'T';
+//        //task left over from previous days.
+//        else result = 'S';
         return result;
     }
 

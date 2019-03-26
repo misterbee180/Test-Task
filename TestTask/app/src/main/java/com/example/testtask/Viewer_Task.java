@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
@@ -40,6 +41,14 @@ public class Viewer_Task extends AppCompatActivity {
         setContentView(R.layout.activity_viewer_task);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createTask();
+            }
+        });
 
         mTaskView = (ListView) findViewById(R.id.lsvTaskList);
         mSorting = Sorting.Ascending;
@@ -143,6 +152,11 @@ public class Viewer_Task extends AppCompatActivity {
         }
     }
 
+    public void createTask() {
+        Intent intent = new Intent(this, Task_Task.class);
+        startActivity(intent);
+    }
+
     public static void setTaskList(Context pContext){
         Cursor cursor;
         String rawGetTasks = "SELECT t.*, tm.fdtmCreated, g.fstrTitle as fstrGroup, s.fstrTitle as fstrSession\n" +
@@ -173,8 +187,8 @@ public class Viewer_Task extends AppCompatActivity {
                 "OR EXISTS (SELECT 1\n " +
                     "\tFROM tblTime tm\n" +
                     "\tWHERE tm.flngTimeID = t.flngTimeID\n" +
-                    "\tAND (tm.fdtmFromDate >= " + Task_Display.getCurrentCalendar(pContext).getTimeInMillis() + " \n" +
-                    "\tOR tm.fdtmToDate >= " + Task_Display.getCurrentCalendar(pContext).getTimeInMillis() + "))\n" + //There's a future task available
+                    "\tAND (tm.fdtmFrom >= " + Task_Display.getCurrentCalendar(pContext).getTimeInMillis() + " \n" +
+                    "\tOR tm.fdtmTo >= " + Task_Display.getCurrentCalendar(pContext).getTimeInMillis() + "))\n" + //There's a future task available
                 "OR EXISTS (SELECT 1\n" +
                     "\tFROM tblTaskInstance ti\n" +
                     "\tWHERE ti.flngTaskID = t.flngTaskID\n" +
