@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.Calendar;
+
 /**
  * Created by Misterbee180 on 8/10/2017.
  */
@@ -22,25 +24,32 @@ public class DatabaseAccess {
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
 
         TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 9);
+            super(context, "TaskDatabase.db", null, 11);
         }
 
         //region TABLE CREATE SCRIPTS
-        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , flngSessionID INTEGER , flngTimeID INTEGER , flngEventID INTEGER, flngGroupID INTEGER, fblnOneOff INTEGER, fblnActive INTEGER )";
+        private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , fstrTitle TEXT , fstrDescription TEXT , " +
+                "flngSessionID INTEGER NOT NULL DEFAULT -1, flngTimeID INTEGER NOT NULL DEFAULT -1, flngEventID INTEGER NOT NULL DEFAULT -1, flngGroupID INTEGER NOT NULL DEFAULT -1, " +
+                "flngLongTermID INTEGER NOT NULL DEFAULT -1, fblnOneOff INTEGER, fblnActive INTEGER )";
 
-        private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY , flngTaskID INTEGER , fblnComplete INTEGER , fblnSystemComplete INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000))";
+        private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY , flngTaskID INTEGER , fblnComplete INTEGER , " +
+                "fblnSystemComplete INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000))";
 
         private static final String CREATE_SESSION_TABLE = "CREATE TABLE tblSession (flngSessionID INTEGER PRIMARY KEY , fstrTitle TEXT , flngTimeID INTEGER )";
 
-        private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY , fdtmFrom INTEGER NOT NULL DEFAULT -1 , fdtmTo INTEGER NOT NULL DEFAULT -1 , fdtmFromDate INTEGER NOT NULL DEFAULT -1 , fdtmToDate INTEGER NOT NULL DEFAULT -1 , flngDayID INTEGER NOT NULL DEFAULT -1 , flngWeekID INTEGER , flngMonthID INTEGER NOT NULL DEFAULT -1 , flngYearID INTEGER NOT NULL DEFAULT -1 , flngRepetition INTEGER NOT NULL DEFAULT -1 , fdtmEvaluated INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000) )";
+        private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY , fdtmFrom INTEGER NOT NULL DEFAULT -1 , fdtmTo INTEGER NOT NULL DEFAULT -1 , " +
+                "fblnFromTimeSet INTEGER, fblnToTimeSet INTEGER, flngDayID INTEGER NOT NULL DEFAULT -1 , flngWeekID INTEGER NOT NULL DEFAULT -1, flngMonthID INTEGER NOT NULL DEFAULT -1 , " +
+                "flngYearID INTEGER NOT NULL DEFAULT -1 , flngRepetition INTEGER NOT NULL DEFAULT -1 , fdtmEvaluated INTEGER , fdtmCreated NOT NULL DEFAULT (strftime('%s','now')*1000) )";
 
-        private static final String CREATE_WEEK_TABLE = "CREATE TABLE tblWeek (flngWeekID INTEGER PRIMARY KEY , fblnMonday INTEGER , fblnTuesday INTEGER , fblnWednesday INTEGER , fblnThursday INTEGER , fblnFriday INTEGER , fblnSaturday INTEGER , fblnSunday INTEGER )";
+        private static final String CREATE_WEEK_TABLE = "CREATE TABLE tblWeek (flngWeekID INTEGER PRIMARY KEY , fblnMonday INTEGER , fblnTuesday INTEGER , fblnWednesday INTEGER , " +
+                "fblnThursday INTEGER , fblnFriday INTEGER , fblnSaturday INTEGER , fblnSunday INTEGER )";
 
         private static final String CREATE_EVENT_TABLE = "CREATE TABLE tblEvent (flngEventID INTEGER PRIMARY KEY , fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
 
         private static final String CREATE_DAY_TABLE = "CREATE TABLE `tblDay` ( `flngDayID` INTEGER NOT NULL DEFAULT 0, `fdtmFromDate` INTEGER, `fdtmToDate` INTEGER, PRIMARY KEY(`flngDayID`))";
 
-        private static final String CREATE_MONTH_TABLE = "CREATE TABLE tblMonth (flngMonthID INTEGER NOT NULL DEFAULT 0 PRIMARY KEY , fblnFirst INTEGER , fblnMiddle INTEGER , fblnLast INTEGER , fblnAfterWkn INTEGER NOT NULL DEFAULT 0, fstrSpecific TEXT )";
+        private static final String CREATE_MONTH_TABLE = "CREATE TABLE tblMonth (flngMonthID INTEGER NOT NULL DEFAULT 0 PRIMARY KEY , fblnFirst INTEGER , fblnMiddle INTEGER , fblnLast INTEGER , " +
+                "fblnAfterWkn INTEGER NOT NULL DEFAULT 0, fstrSpecific TEXT )";
 
         private static final String CREATE_YEAR_TABLE = "CREATE TABLE `tblYear` ( `flngYearID` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`flngYearID`))";
 
@@ -130,6 +139,7 @@ public class DatabaseAccess {
                               int oldVersion,
                               int newVersion) {
 
+            mDatabase = db;
             if (newVersion == 999){
             db.execSQL(TRUNCATE_TASK_TABLE);
             db.execSQL(TRUNCATE_TASKINSTANCE_TABLE);
@@ -169,6 +179,12 @@ public class DatabaseAccess {
                     }
                     if (oldVersion < 9) {
                         upgradeToV9(db);
+                    }
+                    if (oldVersion < 10) {
+                        upgradeToV10(db);
+                    }
+                    if (oldVersion < 11) {
+                        upgradeToV11(db);
                     }
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
@@ -421,7 +437,116 @@ public class DatabaseAccess {
                     "-1");
         }
 
-        /** @param pintPosition starts at 0 */
+        private void upgradeToV10(SQLiteDatabase db) throws Exception {
+            addColumn(db,
+                    "tblTime",
+                    "fblnToTimeSet",
+                    3,
+                    false,
+                    "0");
+            addColumn(db,
+                    "tblTime",
+                    "fblnFromTimeSet",
+                    3,
+                    false,
+                    "0");
+
+            Cursor cursor = db.query("tblTime",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+            while (cursor.moveToNext()){
+                Long dtmFromTime = cursor.getLong(cursor.getColumnIndex("fdtmFrom"));
+                Long dtmFromDate = cursor.getLong(cursor.getColumnIndex("fdtmFromDate"));
+                Long dtmToTime = cursor.getLong(cursor.getColumnIndex("fdtmTo"));
+                Long dtmToDate = cursor.getLong(cursor.getColumnIndex("fdtmToDate"));
+                Long fdtmCreated = cursor.getLong(cursor.getColumnIndex("fdtmCreated"));
+                Boolean blnFromTime = false;
+                Boolean blnToTime = false;
+                Boolean blnFromDate = false;
+                Boolean blnToDate = false;
+                Calendar calFromDate = Calendar.getInstance();
+                Calendar calToDate = Calendar.getInstance();
+
+                //Merging dates into single date field
+                if(dtmFromDate != -1){
+                    blnFromDate = true;
+                    calFromDate.setTimeInMillis(dtmFromDate);
+                }
+
+                if(dtmFromTime != -1) {
+                    blnFromTime = true;
+                    Calendar calTime = Calendar.getInstance();
+                    calTime.setTimeInMillis(dtmFromTime);
+                    //Use create date if time but no date provided
+                    if (!blnFromDate) {
+                        blnFromDate = true;
+                        calFromDate.setTimeInMillis(fdtmCreated);
+                    }
+                    calFromDate.set(Calendar.HOUR, calTime.get(Calendar.HOUR));
+                    calFromDate.set(Calendar.MINUTE, calTime.get(Calendar.MINUTE));
+                    calFromDate.set(Calendar.AM_PM, calTime.get(Calendar.AM_PM));
+                }
+
+                if(dtmToDate != -1){
+                    blnToDate = true;
+                    calToDate.setTimeInMillis(dtmToDate);
+                }
+
+                if(dtmToTime != -1) {
+                    blnToTime = true;
+                    Calendar calTime = Calendar.getInstance();
+                    calTime.setTimeInMillis(dtmToTime);
+                    if (!blnToDate) {
+                        blnToDate = true;
+                        //If no to date exists, use from date if one exists, otherwise, use create date
+                        if(blnFromDate){
+                            calToDate = (Calendar)calFromDate.clone();
+                        } else{
+                            calToDate.setTimeInMillis(fdtmCreated);
+                        }
+                    }
+                    calToDate.set(Calendar.HOUR, calTime.get(Calendar.HOUR));
+                    calToDate.set(Calendar.MINUTE, calTime.get(Calendar.MINUTE));
+                    calToDate.set(Calendar.AM_PM, calTime.get(Calendar.AM_PM));
+                }
+
+                Long lngDateFrom = (long) -1;
+                Long lngDateTo = (long) -1;
+                if(blnFromDate){
+                    lngDateFrom = calFromDate.getTimeInMillis();
+                }
+                if(blnToDate){
+                    lngDateTo = calToDate.getTimeInMillis();
+                }
+                updateRecordFromTable("tblTime", "flngTimeID", cursor.getLong(cursor.getColumnIndex("flngTimeID"))
+                        , new String[]{"fdtmFrom",
+                                "fdtmTo",
+                                "fblnFromTimeSet",
+                                "fblnToTimeSet"}
+                        , new Object[]{lngDateFrom,
+                                lngDateTo,
+                                blnFromTime,
+                                blnToTime});
+            }
+        }
+
+        private void upgradeToV11(SQLiteDatabase db) throws Exception {
+            deleteColumn(mDatabase
+                    ,"tblTime"
+                    , returnColumnPosition(db
+                            ,"tblTime"
+                            ,"fdtmFromDate"));
+            deleteColumn(mDatabase
+                    ,"tblTime"
+                    , returnColumnPosition(db
+                            , "tblTime"
+                            , "fdtmToDate"));
+        }
+
         private void addColumn(SQLiteDatabase db ,
                                 String pstrTableName,
                                 String pstrColumnName,
@@ -680,6 +805,19 @@ public class DatabaseAccess {
             db.execSQL("DROP TABLE " + strTempTable);
         }
 
+        private Integer returnColumnPosition(SQLiteDatabase db,
+                                             String pstrTableName,
+                                             String pstrColumnName){
+            Cursor cursor = db.rawQuery("PRAGMA table_info(" + pstrTableName + ")",new String[]{});
+            Integer position = 0;
+            while(cursor.moveToNext()) {
+                String strCurrentColName = cursor.getString(cursor.getColumnIndex("name"));
+                if (strCurrentColName == pstrColumnName) return position;
+                position++;
+            }
+            return -1;
+        }
+
         private Cursor returnCurrentTable(SQLiteDatabase db,
                                      String pstrTable){
             return db.query(pstrTable,
@@ -871,8 +1009,9 @@ public class DatabaseAccess {
     }
 
     public static Cursor getTaskInstancesWithDetails(){
-        String rawQuery = "SELECT i.flngInstanceID, t.fstrTitle, tm.fdtmFrom, tm.fdtmTo, tm.flngDayID, tm.flngWeekID, tm.flngMonthID, tm.flngYearID, " +
-                " tm.flngRepetition, i.fdtmCreated, CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END as flngSessionID, s.fstrTitle as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.flngInstanceID, t.fstrTitle, tm.fdtmFrom, tm.fdtmTo, tm.flngDayID, tm.flngWeekID, tm.flngMonthID, tm.flngYearID," +
+                " tm.flngRepetition, i.fdtmCreated, tm.fdtmFrom, tm.fdtmTo, tm.fblnFromTimeSet, tm.fblnToTimeSet," +
+                " CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END as flngSessionID, s.fstrTitle as fstrSessionTitle  \n" +
                 "FROM tblTask t \n" +
                 "JOIN tblTaskInstance i \n" +
                 "ON t.flngTaskId = i.flngTaskId \n" +
@@ -887,6 +1026,23 @@ public class DatabaseAccess {
 
         return mDatabase.rawQuery(rawQuery,null);
     }
+
+    public static Cursor retrieveMostRecentTaskInstanceFromTask(Long plngTaskId){
+        //Returns the most recent task instance by created date
+        String selection = "flngTaskID = ?";
+        String[] selectionArgs = {Long.toString(plngTaskId)};
+        String orderBy = "fdtmCreated desc";
+
+        return mDatabase.query("tblTaskInstance",
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                orderBy);
+    }
+
+
 
     public static Cursor retrieveActiveTaskInstanceFromTask(Long plngTaskId){
         String selection = "flngTaskID = ? AND fblnComplete = 0 and fblnSystemComplete = 0";
