@@ -14,8 +14,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-
 public class Viewer_Events extends AppCompatActivity {
 
     static ArrayListContainer mEventList;
@@ -63,11 +61,11 @@ public class Viewer_Events extends AppCompatActivity {
             DialogFragment newFragment = null;
             switch(parent.getId()){
                 case R.id.lsvEventList:
-                    bundle.putLong("EventID", mEventList.GetID(position));
+                    bundle.putLong("EventID", mEventList.getID(position));
                     newFragment = new Viewer_Events.ActivateTaskFragment();
                     break;
                 case R.id.lsvActiveList:
-                    bundle.putLong("EventID", mActiveList.GetID(position));
+                    bundle.putLong("EventID", mActiveList.getID(position));
                     newFragment = new Viewer_Events.CancelActiveTaskFragment();
                     break;
             }
@@ -82,10 +80,10 @@ public class Viewer_Events extends AppCompatActivity {
             Bundle bundle = new Bundle();
             switch(parent.getId()){
                 case R.id.lsvEventList:
-                    bundle.putLong("EventID", mEventList.GetID(position));
+                    bundle.putLong("EventID", mEventList.getID(position));
                     break;
                 case R.id.lsvActiveList:
-                    bundle.putLong("EventID", mActiveList.GetID(position));
+                    bundle.putLong("EventID", mActiveList.getID(position));
                     break;
             }
             DialogFragment newFragment = new Viewer_Events.ConfirmationFragment();
@@ -130,7 +128,7 @@ public class Viewer_Events extends AppCompatActivity {
                             Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(tmpEventID);
                             while (cursor.moveToNext()){
                                 DatabaseAccess.addRecordToTable("tblTaskInstance",
-                                        new String[]{"flngTaskID","fblnComplete","fblnSystemComplete"},
+                                        new String[]{"flngTaskID","fblnComplete","fblnSystemCompleted"},
                                         new Object[]{cursor.getLong(cursor.getColumnIndex("flngTaskID")), false, false});
                             }
                             setEventsList();

@@ -62,7 +62,7 @@ public class Task_Event extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mEventTasks.GetID(position));
+            bundle.putLong("TaskID", mEventTasks.getID(position));
             bundle.putLong("EventID",mlngEventID);
             DialogFragment newFragment = new Task_Event.TaskEditConfirmationFragment();
             newFragment.setArguments(bundle);
@@ -74,7 +74,7 @@ public class Task_Event extends AppCompatActivity {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mEventTasks.GetID(position));
+            bundle.putLong("TaskID", mEventTasks.getID(position));
             bundle.putLong("EventID",mlngEventID);
             DialogFragment newFragment = new Task_Event.TaskDeleteConfirmationFragment();
             newFragment.setArguments(bundle);
@@ -92,7 +92,7 @@ public class Task_Event extends AppCompatActivity {
             builder.setMessage("Edit Event Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Task.class);
+                            Intent intent = new Intent(getActivity(), Details_Task.class);
                             intent.putExtra("EXTRA_EVENT_ID", lngEventId);
                             intent.putExtra("EXTRA_TASK_ID", lngTaskId);
                             startActivity(intent);
@@ -213,7 +213,7 @@ public class Task_Event extends AppCompatActivity {
     }
 
     public  void BeginAddTaskToEvent() {
-        Intent intent = new Intent(this, Task_Task.class);
+        Intent intent = new Intent(this, Details_Task.class);
         intent.putExtra("EXTRA_EVENT_ID", mlngEventID);
         startActivity(intent);
     }

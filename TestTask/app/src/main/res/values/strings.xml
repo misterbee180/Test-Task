@@ -16,7 +16,12 @@
     <string name="action_sort_created">Sort By Create Date</string>
     <string name="action_sort_ascending">Sort Ascending</string>
 
-        <!--Activity Titles-->
+    <!--Instance Detail Menu Options-->
+    <string name="action_task_view">View Parent Task</string>
+    <string name="action_delete">Delete Instance</string>
+
+
+    <!--Activity Titles-->
     <string name="title_activity_session_viewer">Session List</string>
     <string name="title_activity_group_viewer">Group List</string>
     <string name="title_activity_task_viewer">Tasks List</string>
@@ -55,13 +60,6 @@
 
     <string-array name="RepetitionArray">
         <item>No Repetition</item>
-        <item>Repetes Every </item>
-        <item>Repetes Every Other</item>
-        <item>Repetes Every Third</item>
-        <item>Repetes Every Forth</item>
-    </string-array>
-
-    <string-array name="RepetitionArraySession">
         <item>Repetes Every </item>
         <item>Repetes Every Other</item>
         <item>Repetes Every Third</item>

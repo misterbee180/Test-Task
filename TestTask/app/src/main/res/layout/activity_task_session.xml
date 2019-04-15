@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.testtask.Task_Session">
+    tools:context="com.example.testtask.Details_Session">
 
     <EditText
         android:id="@+id/txbSessionTitle"
@@ -35,7 +35,7 @@
         android:id="@+id/btnSessionConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="ceaseSessionCreation"
+        android:onClick="createSession"
         android:layout_gravity="right"
         android:text="@string/Button_Confirm"/>
 

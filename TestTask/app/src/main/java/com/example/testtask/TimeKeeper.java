@@ -28,34 +28,29 @@ import java.util.Calendar;
 
 public class TimeKeeper extends ConstraintLayout implements View.OnClickListener {
 
-    static Calendar mToDate;
-    static Calendar mFromDate;
-    static boolean mFromTimeSet = false;
-    static boolean mToTimeSet = false;
     static int mSetIndicator = -1; //Used to determine which time button was selected
     static int[] arrSpecificDays;
     static int intArrayCounter;
-    static ArrayListContainer repititionSpinner;
+    static Time mTime = new Time();
+    static long mdtmFrom = -1;
+    static long mdtmTo = -1;
+    static boolean mblnFromTime;
+    static boolean mblnToTime;
+    static boolean mblnToDate;
+    static int mintMode = 1; //Used for visability 1: Normal 2: Session 3: Task Instance
 
-    static ConstraintLayout cLayMonthly;
-    static ConstraintLayout cLayWeekly;
-    static ConstraintLayout cLayNoRep;
 
-    static Spinner timeRangeSpinner;
-    //static Spinner repititionSpinner;
+    //View objects
+    Spinner timerangeSpinner;
+    ArrayListContainer repetitionSpinner;
+    ConstraintLayout cLayMonthly;
+    ConstraintLayout cLayWeekly;
+    ConstraintLayout cLayNoRep;
     static Button btnFromDate;
     static Button btnToDate;
     static Button btnFromTime;
     static Button btnToTime;
     static EditText txtMonthlyDays;
-
-
-    Long mlngTimeID;
-    Long mlngDayID;
-    Long mlngWeekID;
-    Long mlngMonthID;
-    Long mlngYearID;
-    String mstrOrigFrequency;
 
     public TimeKeeper(Context context){
         super(context);
@@ -68,8 +63,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         //Set member access
         arrSpecificDays = new int[31];
         intArrayCounter = 0;
-        mstrOrigFrequency = "";
-        repititionSpinner = new ArrayListContainer();
+        repetitionSpinner = new ArrayListContainer();
+        timerangeSpinner = (Spinner) findViewById(R.id.spnTimeRange);
+        timerangeSpinner.setOnItemSelectedListener(timeframeListener);
 
         //Target View Groups
         cLayNoRep = (ConstraintLayout) findViewById(R.id.CLayNoFrequency);
@@ -77,9 +73,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         cLayMonthly = (ConstraintLayout) findViewById(R.id.CLayMonthly);
 
         //Target Generic Fields
-        timeRangeSpinner = (Spinner) findViewById(R.id.spnTimeRange);
-        repititionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.spnRepitition), getContext());
-        repititionSpinner.mSpinner.setOnItemSelectedListener(selectedListener);
+        repetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.spnRepitition), getContext());
+        repetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
         btnFromTime = (Button) findViewById(R.id.Timekeeper_BtnFromTime);
         btnToTime = (Button) findViewById(R.id.Timekeeper_BtnToTime);
 
@@ -95,7 +90,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         btnToTime.setOnClickListener(this);
         btnFromDate.setOnClickListener(this);
         btnToDate.setOnClickListener(this);
-        timeRangeSpinner.setOnItemSelectedListener(selectedListener);
         findViewById(R.id.TimeKeeper_Monthly_Gen).setOnClickListener(this);
         findViewById(R.id.TimeKeeper_Monthly_Spec).setOnClickListener(this);
         findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setOnClickListener(this);
@@ -114,11 +108,21 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     };*/
 
-    Spinner.OnItemSelectedListener selectedListener = new Spinner.OnItemSelectedListener() {
+    Spinner.OnItemSelectedListener repetitionListener = new Spinner.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            String selection = (String)parent.getItemAtPosition(position);
-            evaluateTimeView(selection);
+            evaluateRepetitionView(repetitionSpinner.getID(position));
+        }
+
+        public void onNothingSelected(AdapterView parent){
+
+        }
+    };
+
+    Spinner.OnItemSelectedListener timeframeListener = new Spinner.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            evaluateTimeframeView(position);
         }
 
         public void onNothingSelected(AdapterView parent){
@@ -169,115 +173,125 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     }
 
-    public void loadTimeDetails(Long plngTimeID,
-                                Boolean pblnSession) {
-        mlngTimeID = plngTimeID;
-        Cursor cursor;
-        String rawGetSessions = "SELECT * \n" +
-                "FROM tblTime tm \n" +
-                "WHERE tm.flngTimeID = ?";
-        String[] parameters = {Long.toString(mlngTimeID)};
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,parameters);
+    public void loadTimeDetails(long pdtmFrom,
+                                long pdtmTo,
+                                boolean pblnFromTime,
+                                boolean pblnToTime,
+                                boolean pblnToDate){
+        setFromDate(pdtmFrom);
+        if(pblnToDate){
+            setToDate(pdtmTo);
+        }
+        if(pblnFromTime){
+            setFromTime(pdtmFrom);
+        }
+        if(pblnToTime){
+            setToTime(pdtmTo);
+        }
+    }
 
-        while(cursor.moveToNext()){
-            //Set from details
-            long created = cursor.getLong(cursor.getColumnIndex("fdtmCreated"));
-            long temp = cursor.getLong(cursor.getColumnIndex("fdtmFrom"));
-            if (temp != -1) {
-                setFromDateAndTime(temp, cursor.getLong(cursor.getColumnIndex("fblnFromTimeSet")) == 1);
-            }
+    public void loadTimeDetails(Long plngTimeID) {
+        mTime = new Time(plngTimeID);
 
-            //Set to details
-            temp = cursor.getLong(cursor.getColumnIndex("fdtmTo"));
-            if (temp != -1) {
-                setToDateAndTime(temp, cursor.getLong(cursor.getColumnIndex("fblnToTimeSet")) == 1);
-            }
+        setFromDate(mTime.mdtmFrom);
+        if(mTime.mblnToDate) setToDate(mTime.mdtmTo);
+        if(mTime.mblnFromTime) setFromTime(mTime.mdtmFrom);
+        if(mTime.mblnToTime) setToTime(mTime.mdtmTo);
+        mblnFromTime = mTime.mblnFromTime;
+        mblnToTime = mTime.mblnToTime;
+        mblnToDate = mTime.mblnToDate;
 
-            //Set repeat
-            if (cursor .getInt(cursor.getColumnIndex("flngRepetition")) != -1){
-                repititionSpinner.setIDSpinner(cursor.getLong(cursor.getColumnIndex("flngRepetition")));
-            }
+        //Set repetition spinner
+        if (mTime.mlngRepetition != -1){
+            repetitionSpinner.setIDSpinner(mTime.mlngRepetition);
+        }
 
-            //Set days
-            mlngDayID = cursor .getLong(cursor.getColumnIndex("flngDayID"));
-            mlngWeekID = cursor.getLong(cursor.getColumnIndex("flngWeekID"));
-            mlngMonthID = cursor.getLong(cursor.getColumnIndex("flngMonthID"));
-            mlngYearID = cursor.getLong(cursor.getColumnIndex("flngYearID"));
-            if(mlngDayID != -1){
-                mstrOrigFrequency = "D";
-            } else if (mlngWeekID != -1){
-                mstrOrigFrequency = "W";
-            } else if (mlngMonthID != -1){
-                mstrOrigFrequency = "M";
-            } else if (mlngYearID != -1){
-                mstrOrigFrequency = "Y";
-            }
+        //Set timeframe spinner
+        if (mTime.mlngTimeframeID != -1) {
+            Cursor cursor;
+            timerangeSpinner.setSelection(mTime.mintTimeframe);
+            switch (mTime.mintTimeframe) {
+                case 0: //Day
+                    //Dont need to do anything
+                    break;
+                case 1: //Week
+                    cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", mTime.mlngTimeframeID);
+                    while(cursor.moveToNext()){
+                        setDayOfWeek("Monday",cursor.getLong(cursor.getColumnIndex("fblnMonday")));
+                        setDayOfWeek("Tuesday",cursor.getLong(cursor.getColumnIndex("fblnTuesday")));
+                        setDayOfWeek("Wednesday",cursor.getLong(cursor.getColumnIndex("fblnWednesday")));
+                        setDayOfWeek("Thursday",cursor.getLong(cursor.getColumnIndex("fblnThursday")));
+                        setDayOfWeek("Friday",cursor.getLong(cursor.getColumnIndex("fblnFriday")));
+                        setDayOfWeek("Saturday",cursor.getLong(cursor.getColumnIndex("fblnSaturday")));
+                        setDayOfWeek("Sunday",cursor.getLong(cursor.getColumnIndex("fblnSunday")));
+                    }
+                    break;
+                case 2: //Month
+                    cursor = DatabaseAccess.getRecordsFromTable("tblMonth", "flngMonthID", mTime.mlngTimeframeID);
 
-            if (mlngDayID != -1){
-                setTimeRange("D");
-            } else if (mlngWeekID != -1){
-                setTimeRange("W");
-                Cursor cursor2 = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", mlngWeekID);
-
-                while(cursor2.moveToNext()){
-                    setDayOfWeek("Monday",cursor2.getLong(cursor2.getColumnIndex("fblnMonday")));
-                    setDayOfWeek("Tuesday",cursor2.getLong(cursor2.getColumnIndex("fblnTuesday")));
-                    setDayOfWeek("Wednesday",cursor2.getLong(cursor2.getColumnIndex("fblnWednesday")));
-                    setDayOfWeek("Thursday",cursor2.getLong(cursor2.getColumnIndex("fblnThursday")));
-                    setDayOfWeek("Friday",cursor2.getLong(cursor2.getColumnIndex("fblnFriday")));
-                    setDayOfWeek("Saturday",cursor2.getLong(cursor2.getColumnIndex("fblnSaturday")));
-                    setDayOfWeek("Sunday",cursor2.getLong(cursor2.getColumnIndex("fblnSunday")));
-                }
-            } else if (mlngMonthID != -1){
-                setTimeRange("M");
-                Cursor cursor2 = DatabaseAccess.getRecordsFromTable("tblMonth", "flngMonthID", mlngWeekID);
-
-                while(cursor2.moveToNext()){
-                    setMonthDetails((cursor2.getInt(cursor2.getColumnIndex("fblnFirst")) == 1)? true : false,
-                            (cursor2.getInt(cursor2.getColumnIndex("fblnMiddle")) == 1)? true : false,
-                            (cursor2.getInt(cursor2.getColumnIndex("fblnLast")) == 1)? true : false,
-                            (cursor2.getInt(cursor2.getColumnIndex("fblnAfter")) == 1)? true : false,
-                            cursor2.getString(cursor2.getColumnIndex("fstrSpecific")));
-                }
-            } else if (mlngYearID != -1){
-                setTimeRange("Y");
+                    while(cursor.moveToNext()){
+                        setMonthDetails((cursor.getInt(cursor.getColumnIndex("fblnFirst")) == 1)? true : false,
+                                (cursor.getInt(cursor.getColumnIndex("fblnMiddle")) == 1)? true : false,
+                                (cursor.getInt(cursor.getColumnIndex("fblnLast")) == 1)? true : false,
+                                (cursor.getInt(cursor.getColumnIndex("fblnAfter")) == 1)? true : false,
+                                cursor.getString(cursor.getColumnIndex("fstrSpecific")));
+                    }
+                    break;
+                case 3: //Year
+                    //Dont need to do anything
+                    break;
             }
         }
     }
 
-    public void hideRepetition(){
-        findViewById(R.id.spnRepitition).setVisibility(View.GONE);
+    public void setMode(int pintMode){
+        //1 - standard
+        //2 - session
+        //3 - instance
+        //4 - long term
+        mintMode = pintMode;
+        if (mintMode == 1){
+            setUpRepetitionForRegular();
+        } else if(mintMode == 2){
+            setUpRepititionForSession();
+        } else if(mintMode == 3){
+            findViewById(R.id.spnRepitition).setVisibility(View.GONE);
+            findViewById(R.id.spnTimeRange).setVisibility(View.GONE);
+            evaluateRepetitionView(0);
+        } else if(mintMode == 4){
+            findViewById(R.id.spnRepitition).setVisibility(View.GONE);
+        }
     }
 
-    public void setUpForSession(){
-        repititionSpinner.Clear();
-        repititionSpinner.Add("Repeat Every", (long)1);
-        repititionSpinner.Add("Repeat Every Other", (long)2);
-        repititionSpinner.Add("Repeat Every Thrid", (long)3);
-        repititionSpinner.Add("Repeat Every Forth", (long)4);
-        repititionSpinner.mAdapter.notifyDataSetChanged();
-        repititionSpinner.setIDSpinner((long)1);
+    private void setUpRepititionForSession(){
+        repetitionSpinner.Clear();
+        repetitionSpinner.Add("Repeat Every", (long)1);
+        repetitionSpinner.Add("Repeat Every Other", (long)2);
+        repetitionSpinner.Add("Repeat Every Thrid", (long)3);
+        repetitionSpinner.Add("Repeat Every Forth", (long)4);
+        repetitionSpinner.mAdapter.notifyDataSetChanged();
+        repetitionSpinner.setIDSpinner((long)1);
 
-        evaluateTimeView(repititionSpinner.mSpinner.getSelectedItem().toString());
+        evaluateRepetitionView((long)1);
     }
 
-    public void setUpForRegular(){
-        repititionSpinner.Clear();
-        repititionSpinner.Add("No Repetition", (long)0);
-        repititionSpinner.Add("Repeat Every", (long)1);
-        repititionSpinner.Add("Repeat Every Other", (long)2);
-        repititionSpinner.Add("Repeat Every Thrid", (long)3);
-        repititionSpinner.Add("Repeat Every Forth", (long)4);
-        repititionSpinner.mAdapter.notifyDataSetChanged();
-        repititionSpinner.setIDSpinner((long)0);
+    private void setUpRepetitionForRegular(){
+        repetitionSpinner.Clear();
+        repetitionSpinner.Add("No Repetition", (long)0);
+        repetitionSpinner.Add("Repeat Every", (long)1);
+        repetitionSpinner.Add("Repeat Every Other", (long)2);
+        repetitionSpinner.Add("Repeat Every Thrid", (long)3);
+        repetitionSpinner.Add("Repeat Every Forth", (long)4);
+        repetitionSpinner.mAdapter.notifyDataSetChanged();
+        repetitionSpinner.setIDSpinner((long)0);
 
-        evaluateTimeView(repititionSpinner.mSpinner.getSelectedItem().toString());
+        evaluateRepetitionView((long)0);
     }
 
-    public void populateTimeFromSession(Long plngSessionID){
+    public void populateTimeFromSession(Integer plngSessionID){
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblSession", "flngSessionID", plngSessionID);
         cursor.moveToFirst();
-        loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")), true);
+        loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
     }
 
     public void validateTimeDetails(){
@@ -288,26 +302,40 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         //Do not allow to date without from date
     }
 
+    public void oneOffTimeCopy(){
+        mTime = new Time(mTime.getNextPriority(),
+                getToDate(),
+                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                mblnFromTime,
+                mblnToTime,
+                mblnToDate,
+                -1,
+                -1,
+                0,
+                0,
+                false,
+                -1);
+
+        mTime.saveTime();
+    }
+
     public void createTimeDetails(){
-        Long lngDayKey = (long)-1;
-        Long lngWeekKey = (long)-1;
-        Long lngMonthKey = (long)-1;
-        Long lngYearKey = (long)-1;
+        long lngTimeframeKey = (long)-1;
         String[] arrColumns;
         Object[] arrValues;
 
         //Determine and create appropriate data element for repetition type
         switch (getTimeRange()){
-            case "D":
+            case 0: //Day
                 arrColumns = new String[]{};
                 arrValues = new Object[]{};
-                lngDayKey = DatabaseAccess.addRecordToTable("tblDay",
+                lngTimeframeKey = DatabaseAccess.addRecordToTable("tblDay",
                         arrColumns,
                         arrValues,
                         "flngDayID",
                         (long)-1);
                 break;
-            case "W":
+            case 1: //Week
                 arrColumns = new String[]{"fblnMonday","fblnTuesday","fblnWednesday","fblnThursday","fblnFriday","fblnSaturday","fblnSunday"};
                 arrValues = new Object[]{getDayOfWeek("Monday"),
                         getDayOfWeek("Tuesday"),
@@ -316,25 +344,25 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                         getDayOfWeek("Friday"),
                         getDayOfWeek("Saturday"),
                         getDayOfWeek("Sunday")};
-                lngWeekKey = DatabaseAccess.addRecordToTable("tblWeek",
+                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblWeek",
                         arrColumns,
                         arrValues);
                 break;
-            case "M":
+            case 2: //Month
                 arrColumns = new String[]{"fblnFirst","fblnMiddle","fblnLast","fblnAfterWkn","fstrSpecific"};
                 arrValues = new Object[]{((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).isChecked(),
                         ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).isChecked(),
                         ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked(),
                         ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked(),
                         ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().toString()};
-                lngMonthKey = DatabaseAccess.addRecordToTable("tblMonth",
+                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblMonth",
                         arrColumns,
                         arrValues);
                 break;
-            case "Y":
+            case 3: //Year
                 arrColumns = new String[]{};
                 arrValues = new Object[]{};
-                lngYearKey = DatabaseAccess.addRecordToTable("tblYear",
+                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblYear",
                         arrColumns,
                         arrValues,
                         "flngYearID",
@@ -342,93 +370,106 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 break;
         }
 
-        arrColumns = new String[]{"fdtmFrom","fdtmTo","fblnFromTimeSet","fblnToTimeSet","flngDayID","flngWeekID","flngMonthID","flngYearID","flngRepetition","fdtmEvaluated","fdtmCreated"};
-        arrValues = new Object[]{getFromDateAndTime(),
-                getToDateAndTime(),
-                mFromTimeSet,
-                mToTimeSet,
-                lngDayKey,
-                lngWeekKey,
-                lngMonthKey,
-                lngYearKey,
-                repititionSpinner.GetID(repititionSpinner.mSpinner.getSelectedItemPosition()),
-                Task_Display.getCurrentCalendar(getContext()).getTimeInMillis(),
-                Task_Display.getCurrentCalendar( getContext()).getTimeInMillis()};
-        mlngTimeID = DatabaseAccess.addRecordToTable("tblTime",
-                arrColumns,
-                arrValues,
-                "flngTimeID",
-                mlngTimeID);
+        mTime = new Time(getFromDate(),
+                getToDate(),
+                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                mblnFromTime,
+                mblnToTime,
+                mblnToDate,
+                getTimeRange(),
+                lngTimeframeKey,
+                repetitionSpinner.getID(repetitionSpinner.mSpinner.getSelectedItemPosition()),
+                0,
+                false,
+                -1);
+
+        mTime.saveTime();
     }
 
     public void updateTimeDetails(){
         //Look to see if the frequency changed and if it has, delete the original record
-        if (mstrOrigFrequency != getTimeRange() && mstrOrigFrequency != ""){
+        if (mTime.mintTimeframe != getTimeRange() && mTime.mintTimeframe != -1){
             //Delete original frequency entry
             String strTable = "";
             String strColumn = "";
             Long lngID = (long)-1;
-            switch(mstrOrigFrequency){
-                case "D":
+            switch((int)mTime.mintTimeframe){
+                case 1:
+
                     strTable = "tblDay";
                     strColumn = "flngDayID";
-                    lngID = mlngDayID;
+                    //lngID = mlngDayID;
                     break;
-                case "M":
+                case 2:
                     strTable = "tblMonth";
                     strColumn = "flngMonthID";
-                    lngID = mlngMonthID;
+                   // lngID = mlngMonthID;
                     break;
-                case "W":
+                case 3:
                     strTable = "tblWeek";
                     strColumn = "flngWeekID";
-                    lngID = mlngWeekID;
+                    //lngID = mlngWeekID;
                     break;
-                case "Y":
+                case 4:
                     strTable = "tblYear";
                     strColumn = "flngYearID";
-                    lngID = mlngYearID;
+                    //lngID = mlngYearID;
                     break;
             }
         }
-        createTimeDetails();
+        DatabaseAccess.mDatabase.beginTransaction();
+        try {
+            createTimeDetails();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } finally {
+            DatabaseAccess.mDatabase.endTransaction();
+        }
+    }
+
+    public void setActiveTimekeeper(Boolean pblnActive){
+        timerangeSpinner.setEnabled(pblnActive);
+        repetitionSpinner.mSpinner.setEnabled(pblnActive);
+        btnFromDate.setEnabled(pblnActive);
+        btnToDate.setEnabled(pblnActive);
+        btnFromTime.setEnabled(pblnActive);
+        btnToTime.setEnabled(pblnActive);
+        txtMonthlyDays.setEnabled(pblnActive);
     }
 
     public void resetTimeKeeper(){
-        mlngTimeID = (long)-1;
-        mlngDayID = (long) -1;
-        mlngWeekID = (long)-1;
-        mlngMonthID = (long)-1;
-        mlngYearID = (long)-1;
-
-        mFromTimeSet = false;
-        mToTimeSet = false;
-        mFromDate = null;
-        mToDate = null;
-
+        mblnFromTime = false;
+        mblnToTime = false;
+        mdtmFrom = (long)-1;
+        mdtmTo = (long)-1;
         //Set visibility
     }
 
-    public void evaluateTimeView(String pstrSelection) {
-        switch (pstrSelection){
-            case "No Repetition":
-                cLayNoRep.setVisibility(View.VISIBLE);
-                cLayWeekly.setVisibility(View.GONE);
-                cLayMonthly.setVisibility(View.GONE);
-                timeRangeSpinner.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
-                break;
-            case "Day":
+    public void evaluateRepetitionView(long plngSelection) {
+        if (plngSelection == 0){
+            cLayNoRep.setVisibility(View.VISIBLE);
+            cLayWeekly.setVisibility(View.GONE);
+            cLayMonthly.setVisibility(View.GONE);
+            timerangeSpinner.setVisibility(View.GONE);
+        } else {
+            timerangeSpinner.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void evaluateTimeframeView(Integer plngSelection) {
+        switch (plngSelection){
+            case 0: //Day
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
                 break;
-            case "Week":
+            case 1: //Week
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.VISIBLE);
                 cLayMonthly.setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
                 break;
-            case "Month":
+            case 2: //Month
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.VISIBLE);
@@ -438,61 +479,21 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(GONE);
                 findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(GONE);
                 findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
                 break;
-            case "Year":
+            case 3: //Year
                 //Using No Rep View for now until Year View becomes important
                 cLayNoRep.setVisibility(View.VISIBLE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.VISIBLE);
-                break;
-            default:
-                timeRangeSpinner.setVisibility(View.VISIBLE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE); //Todo: Fix design to allow yearly to date repetition
                 break;
         }
     }
 
     //region Getters And Setters
-    public Long getTimeID(){
-        return mlngTimeID;
-    }
-
     public Boolean blnTimeDetailsExist(){
-        return (mFromTimeSet || mToTimeSet || getTimeRange() != "");
-    }
-
-    public Long getFromDateAndTime() {
-        if (mFromDate != null) {return mFromDate.getTimeInMillis();}
-        return null;
-    }
-
-    public Long getToDateAndTime() {
-        if (mToDate != null) {return mToDate.getTimeInMillis();}
-        return null;
-    }
-
-    public void setFromDateAndTime(Long pFromMili, Boolean pblnTimeSet){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
-        mFromDate = Task_Display.getCurrentCalendar(getContext());
-        mFromDate.setTimeInMillis(pFromMili);
-        btnFromDate.setText("From: " + dateFormat.format(mFromDate.getTime()));
-        if (pblnTimeSet){
-            mFromTimeSet = true;
-            dateFormat = new SimpleDateFormat("h:mm a");
-            btnFromTime.setText("From: " + dateFormat.format(mFromDate.getTime()));
-        }
-    }
-
-    public void setToDateAndTime(Long pToMili, Boolean pblnTimeSet){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
-        mToDate = Task_Display.getCurrentCalendar(getContext());
-        mToDate.setTimeInMillis(pToMili);
-        btnToDate.setText("To: " + dateFormat.format(mToDate.getTime()));
-        if (pblnTimeSet){
-            mToTimeSet = true;
-            dateFormat = new SimpleDateFormat("h:mm a");
-            btnToTime.setText("To: " + dateFormat.format(mToDate.getTime()));
-        }
+        return (mblnFromTime || mblnToTime || getTimeRange() != -1);
     }
 
     public Boolean getDayOfWeek(String pstrDow){
@@ -551,54 +552,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         chbDow.setChecked(pblnOn == 1 ? true: false);
     }
 
-    public String getTimeRange(){
-        String result = "";
-        if (!repititionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
-            switch (timeRangeSpinner.getSelectedItem().toString()){
-                case "Day":
-                    result = "D";
-                    break;
-                case "Week":
-                    result = "W";
-                    break;
-                case "Month":
-                    result = "M";
-                    break;
-                case "Year":
-                    result = "Y";
-                    break;
-            }
-        } else {
-            result = "";
+    public int getTimeRange(){
+        if (!repetitionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
+            return timerangeSpinner.getSelectedItemPosition();
         }
-        return result;
-    }
-
-    public void setTimeRange(String pstrTimeRange) {
-        switch (pstrTimeRange) {
-            case "D": timeRangeSpinner.setSelection(0);
-                evaluateTimeView("Day");
-                break;
-            case "W": timeRangeSpinner.setSelection(1);
-                evaluateTimeView("Week");
-                break;
-            case "M": timeRangeSpinner.setSelection(2);
-                evaluateTimeView("Month");
-                break;
-            case "Y": timeRangeSpinner.setSelection(3);
-                evaluateTimeView("Year");
-                break;
-            default: evaluateTimeView("NoRepetition");
-                break;
-        }
-    }
-
-    public Integer getRepititon(){
-        return repititionSpinner.mSpinner.getSelectedItemPosition();
-    }
-
-    public void setRepitition(int pintPosition){
-        repititionSpinner.mSpinner.setSelection(pintPosition);
+        return -1;
     }
 
     public void setMonthDetails(boolean pblnFirst,
@@ -635,17 +593,78 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         newFragment.show(context.getSupportFragmentManager(), "datePicker");
     }
 
+    public static long getFromDate(){
+        return (mdtmFrom == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmFrom;
+    }
+
+    public static long getToDate(){
+        return (mdtmTo == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmTo;
+    }
+
+
+    public static void setFromDate(long pdtmFrom) {
+        mdtmFrom = pdtmFrom;
+        if(pdtmFrom != -1) {
+            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+            btnFromDate.setText("From Date: " + dateFormat.format(pcalFrom.getTime()));
+        }
+    }
+
+    public static void setToDate(long pdtmTo) {
+        mdtmTo = pdtmTo;
+        if(pdtmTo != -1){
+            mblnToDate = true;
+            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+            btnToDate.setText("To Date: " + dateFormat.format(pcalTo.getTime()));
+        }
+    }
+
+    public static void setFromTime(long pdtmFrom) {
+        mdtmFrom = pdtmFrom;
+        if(pdtmFrom != -1){
+            mblnFromTime = true;
+            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+            btnFromTime.setText("From Time: " + dateFormat.format(pcalFrom.getTime()));
+        }
+    }
+
+    public static void setToTime(long pdtmTo) {
+        mdtmTo = pdtmTo;
+        if(pdtmTo != -1){
+            mblnToTime = true;
+            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+            btnToTime.setText("To Time: " + dateFormat.format(pcalTo.getTime()));
+        }
+    }
+
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            int hour = Task_Display.getCurrentCalendar(getContext()).get(Calendar.HOUR_OF_DAY);
-            int minute = Task_Display.getCurrentCalendar(getContext()).get(Calendar.MINUTE);
-            if (mFromTimeSet){
-                hour = mFromDate.get(Calendar.HOUR_OF_DAY);
-                minute = mFromDate.get(Calendar.MINUTE);
+            int hour = Task_Display.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
+            int minute = Task_Display.getCurrentCalendar().get(Calendar.MINUTE);
+            if(mSetIndicator == 1 && mblnFromTime){
+                Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                hour = fromCal.get(Calendar.HOUR_OF_DAY);
+                minute = fromCal.get(Calendar.MINUTE);
+            }
+            else if (mSetIndicator == 2){
+                if(mblnToTime){
+                    Calendar ToCal = Task_Display.getCalendar(mdtmTo);
+                    hour = ToCal.get(Calendar.HOUR_OF_DAY);
+                    minute = ToCal.get(Calendar.MINUTE);
+                }
+                else if(mblnFromTime){
+                    Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                    hour = fromCal.get(Calendar.HOUR_OF_DAY);
+                    minute = fromCal.get(Calendar.MINUTE);
+                }
             }
 
             // Create a new instance of TimePickerDialog and return it
@@ -656,33 +675,30 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             // Do something with the time chosen by the user
             if (mSetIndicator == 1) {
-                mFromTimeSet = true;
-                if(mFromDate == null){
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-                    mFromDate = Task_Display.getCurrentCalendar(getContext());
-                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));;
+                mblnFromTime = true;
+                if(mdtmFrom == -1){
+                    setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
                 }
-                SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-                mFromDate.set(Calendar.HOUR_OF_DAY,hourOfDay);
-                mFromDate.set(Calendar.MINUTE,minute);
-                btnFromTime.setText("From Time: " + dateFormat.format(mFromDate.getTime()));
+                Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                fromCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                fromCal.set(Calendar.MINUTE,minute);
+                setFromTime(fromCal.getTimeInMillis());
             } else if (mSetIndicator == 2) {
-                mToTimeSet = true;
-                //Curent logic is that if a to date is set a from date must also be set.
-                if(mFromDate == null){
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-                    mFromDate = Task_Display.getCurrentCalendar(getContext());
-                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
+                mblnToTime = true;
+                //Curent logic is that if a to time is set a from and to date must also be set.
+                if(mdtmFrom == -1){
+                    setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
                 }
-                if(mToDate == null){
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-                    mToDate = Task_Display.getCurrentCalendar(getContext());
-                    btnToDate.setText("To Date: " + dateFormat.format(mToDate.getTime()));
+                Calendar toCal;
+                if(mdtmTo != -1){
+                    toCal = Task_Display.getCalendar(mdtmTo);
+                } else {
+                    toCal = Task_Display.getCurrentCalendar();
                 }
-                SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-                mToDate.set(Calendar.HOUR_OF_DAY,hourOfDay);
-                mToDate.set(Calendar.MINUTE,minute);
-                btnToTime.setText("To Time: " + dateFormat.format(mToDate.getTime()));
+                toCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                toCal.set(Calendar.MINUTE,minute);
+                toCal.getTime();
+                setToTime(toCal.getTimeInMillis());
             }
         }
     }
@@ -692,15 +708,16 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            Calendar temp = Task_Display.getCurrentCalendar(getContext());
+            Calendar temp = Task_Display.getCurrentCalendar();
             int year = temp.get(Calendar.YEAR);
             int month = temp.get(Calendar.MONTH);
             int day = temp.get(Calendar.DAY_OF_MONTH);
 
-            if(mFromDate != null){
-                year = mFromDate.get(Calendar.YEAR);
-                month = mFromDate.get(Calendar.MONTH);
-                day = mFromDate.get(Calendar.DAY_OF_MONTH);
+            if(mdtmFrom != -1){
+                Calendar tempFrom = Task_Display.getCalendar(mdtmFrom);
+                year = tempFrom.get(Calendar.YEAR);
+                month = tempFrom.get(Calendar.MONTH);
+                day = tempFrom.get(Calendar.DAY_OF_MONTH);
             }
 
             // Create a new instance of TimePickerDialog and return it
@@ -712,29 +729,21 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             switch (mSetIndicator) {
                 case 3:
-                    if(mFromDate == null){
-                        mFromDate = Task_Display.getCurrentCalendar(getContext());
-                    }
-                    mFromDate.set(Calendar.YEAR, year);
-                    mFromDate.set(Calendar.MONTH, month);
-                    mFromDate.set(Calendar.DAY_OF_MONTH, day);
-                    btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
+                    Calendar tempFrom = Task_Display.getCalendar(mdtmFrom);
+                    tempFrom.set(Calendar.YEAR, year);
+                    tempFrom.set(Calendar.MONTH, month);
+                    tempFrom.set(Calendar.DAY_OF_MONTH, day);
+                    setFromDate(tempFrom.getTimeInMillis());
                     break;
                 case 4:
-                    if(mToDate == null){
-                        if(mFromDate == null){
-                            mFromDate = Task_Display.getCurrentCalendar(getContext());
-                            mFromDate.set(Calendar.YEAR, year);
-                            mFromDate.set(Calendar.MONTH, month);
-                            mFromDate.set(Calendar.DAY_OF_MONTH, day);
-                            btnFromDate.setText("From Date: " + dateFormat.format(mFromDate.getTime()));
-                        }
-                        mToDate = Task_Display.getCurrentCalendar(getContext());
+                    Calendar tempTo = Task_Display.getCalendar(mdtmTo);
+                    if(mdtmFrom == -1){
+                        setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
                     }
-                    mToDate.set(Calendar.YEAR, year);
-                    mToDate.set(Calendar.MONTH, month);
-                    mToDate.set(Calendar.DAY_OF_MONTH, day);
-                    btnToDate.setText("To Date: " + dateFormat.format(mToDate.getTime()));
+                    tempTo.set(Calendar.YEAR, year);
+                    tempTo.set(Calendar.MONTH, month);
+                    tempTo.set(Calendar.DAY_OF_MONTH, day);
+                    setToDate(tempTo.getTimeInMillis());
                     break;
             }
         }

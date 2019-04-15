@@ -62,7 +62,7 @@ public class Task_LongTerm extends AppCompatActivity {
 
 
     public  void BeginAddTaskToLongTerm() {
-        Intent intent = new Intent(this, Task_Task.class);
+        Intent intent = new Intent(this, Details_Task.class);
         intent.putExtra("EXTRA_LONGTERM_ID", mlngLongTermID);
         startActivity(intent);
     }
@@ -71,7 +71,7 @@ public class Task_LongTerm extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mLongTermTasksUnc.GetID(position));
+            bundle.putLong("TaskID", mLongTermTasksUnc.getID(position));
             DialogFragment newFragment = new TaskCompleteConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Complete Task");
@@ -82,7 +82,7 @@ public class Task_LongTerm extends AppCompatActivity {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mLongTermTasksUnc.GetID(position));
+            bundle.putLong("TaskID", mLongTermTasksUnc.getID(position));
             bundle.putLong("LongTermID",mlngLongTermID);
             DialogFragment newFragment = new TaskEditConfirmationFragment();
             newFragment.setArguments(bundle);
@@ -95,23 +95,20 @@ public class Task_LongTerm extends AppCompatActivity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long lngTaskId = getArguments().getLong("TaskID");
-            final Calendar currentCalendar = Task_Display.getCurrentCalendar(this.getContext());
+            final Calendar currentCalendar = Task_Display.getCurrentCalendar();
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Cursor cursor = DatabaseAccess.retrieveActiveTaskInstanceFromTask(lngTaskId);
-                            if (cursor.moveToNext()) {
-                                DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                                        "flngInstanceID",
-                                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                                        new String[]{"fblnComplete"},
-                                        new Object[]{true});
-                            } else {
-                                DatabaseAccess.addRecordToTable("tblTaskInstance",
-                                        new String[]{"flngTaskID","fblnComplete","fblnSystemComplete","fdtmCreated"},
-                                        new Object[]{lngTaskId, true, false, currentCalendar.getTimeInMillis()});
-                            }
+                            DatabaseAccess.generateTaskInstance(lngTaskId,
+                                    (long)-1,
+                                    (long)-1,
+                                    false,
+                                    false,
+                                    true,
+                                    false,
+                                    getContext());
+//                            }
                             retrieveLongTermTasks();
                         }
                     })
@@ -134,7 +131,7 @@ public class Task_LongTerm extends AppCompatActivity {
             builder.setMessage("Edit Long Term Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Task.class);
+                            Intent intent = new Intent(getActivity(), Details_Task.class);
                             intent.putExtra("EXTRA_LONGTERM_ID", lngLongTermId);
                             intent.putExtra("EXTRA_TASK_ID", lngTaskId);
                             startActivity(intent);
@@ -184,8 +181,8 @@ public class Task_LongTerm extends AppCompatActivity {
             DatabaseAccess.updateRecordFromTable("tblTaskInstance",
                     "flngInstanceID",
                     cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                    new String[]{"fblnSystemComplete"},
-                    new Object[]{true});
+                    new String[]{"fdtmSystemCompleted"},
+                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
         }
     }
 

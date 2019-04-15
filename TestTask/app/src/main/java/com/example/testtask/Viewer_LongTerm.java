@@ -62,10 +62,10 @@ public class Viewer_LongTerm extends AppCompatActivity {
             Bundle bundle = new Bundle();
             switch(parent.getId()){
                 case R.id.lsvLongTermListUnc:
-                    bundle.putLong("LongTermID", mLongTermListUnc.GetID(position));
+                    bundle.putLong("LongTermID", mLongTermListUnc.getID(position));
                     break;
                 case R.id.lsvLongTermListCmp:
-                    bundle.putLong("LongTermID", mLongTermListCmp.GetID(position));
+                    bundle.putLong("LongTermID", mLongTermListCmp.getID(position));
                     break;
             }
             DialogFragment newFragment = new EditLongTermFragment();
@@ -80,10 +80,10 @@ public class Viewer_LongTerm extends AppCompatActivity {
             Bundle bundle = new Bundle();
             switch(parent.getId()){
                 case R.id.lsvLongTermListUnc:
-                    bundle.putLong("LongTermID", mLongTermListUnc.GetID(position));
+                    bundle.putLong("LongTermID", mLongTermListUnc.getID(position));
                     break;
                 case R.id.lsvLongTermListCmp:
-                    bundle.putLong("LongTermID", mLongTermListCmp.GetID(position));
+                    bundle.putLong("LongTermID", mLongTermListCmp.getID(position));
                     break;
             }
             DialogFragment newFragment = new DeleteLongTermFragment();

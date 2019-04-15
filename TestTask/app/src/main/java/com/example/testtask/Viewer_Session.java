@@ -49,11 +49,15 @@ public class Viewer_Session extends AppCompatActivity {
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("SessionID", mSessionList.GetID(position));
-            DialogFragment newFragment = new Viewer_Session.EditSessionFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Session");
+            Intent intent = new Intent(getBaseContext(), Details_Session.class);
+            intent.putExtra("EXTRA_SESSION_ID", mSessionList.getID(position));
+            startActivity(intent);
+
+//            Bundle bundle = new Bundle();
+//            bundle.putLong("SessionID", mSessionList.getID(position));
+//            DialogFragment newFragment = new Viewer_Session.EditSessionFragment();
+//            newFragment.setArguments(bundle);
+//            newFragment.show(getSupportFragmentManager(), "Edit Session");
         }
     };
 
@@ -61,7 +65,7 @@ public class Viewer_Session extends AppCompatActivity {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
-            bundle.putLong("SessionID", mSessionList.GetID(position));
+            bundle.putLong("SessionID", mSessionList.getID(position));
             DialogFragment newFragment = new Viewer_Session.DeleteSessionFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Delete Session");
@@ -114,7 +118,7 @@ public class Viewer_Session extends AppCompatActivity {
             builder.setMessage("Edit Session")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Session.class);
+                            Intent intent = new Intent(getActivity(), Details_Session.class);
                             intent.putExtra("EXTRA_SESSION_ID", tmpSessionID);
                             startActivity(intent);
                         }
@@ -130,7 +134,7 @@ public class Viewer_Session extends AppCompatActivity {
     }
 
     public  void createNewSession() {
-        Intent intent = new Intent(this, Task_Session.class);
+        Intent intent = new Intent(this, Details_Session.class);
         startActivity(intent);
     }
 

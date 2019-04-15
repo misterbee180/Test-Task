@@ -5,7 +5,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
 
 /**
@@ -47,8 +46,12 @@ public class ArrayListContainer {
         mArrayList.add(pstrListItem);
     }
 
+    public Long getID(){
+        return getID(mSpinner.getSelectedItemPosition());
+    }
+
     //This function could just be replaced with an array of Ints. We just need to make sure that this list is ordered the same way as the array list.
-    public long GetID(Integer plngLocation){
+    public Long getID(Integer plngLocation){
         Decoder tmpDecoder;
         for (int i = 0; i < mDecoderList.size(); i++){
             tmpDecoder = mDecoderList.get(i);

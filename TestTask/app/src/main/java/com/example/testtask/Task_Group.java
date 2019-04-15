@@ -56,11 +56,9 @@ public class Task_Group extends AppCompatActivity {
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mGroupTask.GetID(position));
-            DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Task");
+            Intent intent = new Intent(getBaseContext(), Details_Task.class);
+            intent.putExtra("EXTRA_TASK_ID", mGroupTask.getID(position));
+            startActivity(intent);
         }
     };
 
@@ -84,7 +82,7 @@ public class Task_Group extends AppCompatActivity {
     }
 
     public  void BeginAddTaskToGroup() {
-        Intent intent = new Intent(this, Task_Task.class);
+        Intent intent = new Intent(this, Details_Task.class);
         intent.putExtra("EXTRA_GROUP_ID", mlngGroupId);
         startActivity(intent);
     }

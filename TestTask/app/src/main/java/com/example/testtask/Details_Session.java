@@ -11,21 +11,22 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class Task_Session extends AppCompatActivity{
+public class Details_Session extends AppCompatActivity{
 
     static ArrayListContainer mSessionTaskList;
     TimeKeeper timeKeeper;
     Long mlngSessionId = (long)-1;
+    Intent mIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_session);
         timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
-        timeKeeper.setUpForSession();
+        timeKeeper.setMode(2);
 
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
+        mIntent = getIntent();
+        Bundle extras = mIntent.getExtras();
         if (extras != null){
             mlngSessionId = getIntent().getLongExtra("EXTRA_SESSION_ID",-1);
         }
@@ -39,11 +40,9 @@ public class Task_Session extends AppCompatActivity{
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mSessionTaskList.GetID(position));
-            DialogFragment newFragment = new Viewer_Task.TaskEditConfirmationFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Task");
+            Intent intent = new Intent(getBaseContext(), Details_Task.class);
+            intent.putExtra("EXTRA_TASK_ID", mSessionTaskList.getID(position));
+            startActivity(intent);
         }
     };
 
@@ -60,39 +59,41 @@ public class Task_Session extends AppCompatActivity{
 
         while(cursor.moveToNext()){
             setSessionTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
-            timeKeeper.loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")),
-                    false);
+            timeKeeper.loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
         }
 
-        String rawSessionTaskSelect = "SELECT * FROM tblTask t WHERE t.flngSessionID = " + Long.toString(mlngSessionId) + " AND t.fblnOneOff = 0 AND fblnActive = 1\n";
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawSessionTaskSelect,null);
+        Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
+                "flngTimeID",
+                timeKeeper.mTime.mlngTimeID);
+
         mSessionTaskList.Clear();
-        while (cursor.moveToNext()){
+        while (tblTask.moveToNext()){
             mSessionTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
         }
         mSessionTaskList.mAdapter.notifyDataSetChanged();
     }
 
-    public void ceaseSessionCreation (View view) {
-        Intent intent = new Intent(this, Task_Display.class);
-        if (view.getId() == R.id.btnSessionConfirm) {
+    public void createSession (View view) {
+        DatabaseAccess.mDatabase.beginTransaction();
+        try {
             //todo: add validation to session before it attempts to be created
-            if (mlngSessionId == -1){
+            if (mlngSessionId == -1){ //Initial creation
                 timeKeeper.createTimeDetails();
-                createSession(getSessionTitle(), timeKeeper.getTimeID());
-            } else {
+                mlngSessionId = createSession(getSessionTitle(), timeKeeper.mTime.mlngTimeID);
+            } else { //Updating
                 timeKeeper.updateTimeDetails();
                 updateSessionRecord();
                 //Todo: Reevaluate tasks associated to this session (NOT ONE OFF TASKS)
             }
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
 
-            //use the result to determine if a session was added.
-            setResult(RESULT_OK, intent);
+            mIntent.putExtra("EXTRA_SESSION_ID", mlngSessionId);
+            setResult(RESULT_OK, mIntent);
             finish();
-        } else {
-            //use the result to determine if a session was added.
-            setResult(RESULT_CANCELED, intent);
-            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseAccess.mDatabase.endTransaction();
         }
     }
 

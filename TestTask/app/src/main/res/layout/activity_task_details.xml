@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.testtask.Task_Task"
+    tools:context="com.example.testtask.Details_Task"
     android:orientation="vertical"
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
@@ -90,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_gravity="right"
-        android:onClick="confirmActivity"
+        android:onClick="CreateTask"
         android:text="@string/Button_Confirm"/>
 
     <!--<Button-->

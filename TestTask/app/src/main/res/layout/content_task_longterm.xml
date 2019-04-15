@@ -74,7 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
-        android:onClick="confirmActivity"
+        android:onClick="CreateTask"
         android:layout_gravity="left"
         android:text="@string/Button_Confirm"
         app:layout_constraintBottom_toBottomOf="parent"

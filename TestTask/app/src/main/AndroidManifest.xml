@@ -13,10 +13,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".Details_Instance"></activity>
         <activity
             android:name=".Task_LongTerm"
             android:label="@string/title_activity_task_long_term"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".Viewer_LongTerm"
             android:label="@string/title_activity_viewer__long_term"
@@ -32,9 +33,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Task_Task"
+            android:name=".Details_Task"
             android:label="@string/title_activity_task_task" />
-        <activity android:name=".Task_Session" />
+        <activity android:name=".Details_Session" />
         <activity android:name=".TimeKeeper" />
         <activity
             android:name=".Viewer_Session"
@@ -59,7 +60,8 @@
             android:name=".Viewer_Groups"
             android:label="@string/title_activity_viewer__groups"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Task_Group"
+        <activity
+            android:name=".Task_Group"
             android:label="@string/title_activity_task_group"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
