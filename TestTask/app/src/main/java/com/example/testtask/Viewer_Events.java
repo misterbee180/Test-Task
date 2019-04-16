@@ -127,9 +127,14 @@ public class Viewer_Events extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(tmpEventID);
                             while (cursor.moveToNext()){
-                                DatabaseAccess.addRecordToTable("tblTaskInstance",
-                                        new String[]{"flngTaskID","fblnComplete","fblnSystemCompleted"},
-                                        new Object[]{cursor.getLong(cursor.getColumnIndex("flngTaskID")), false, false});
+                                TaskInstance ti = new TaskInstance(cursor.getLong(cursor.getColumnIndex("flngTaskID")),
+                                        cursor.getLong(cursor.getColumnIndex("flngTaskDetailID")),
+                                        (long) -1,
+                                        (long) -1,
+                                        false,
+                                        false,
+                                        false,
+                                        Task_Display.getCurrentCalendar().getTimeInMillis());
                             }
                             setEventsList();
                         }
@@ -157,8 +162,8 @@ public class Viewer_Events extends AppCompatActivity {
                                 DatabaseAccess.updateRecordFromTable("tblTaskInstance",
                                         "flngInstanceID",
                                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                                        new String[]{"fblnComplete"},
-                                        new Object[]{true});
+                                        new String[]{"fdtmCompleted"},
+                                        new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
                             }
                             setEventsList();
                         }

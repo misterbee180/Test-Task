@@ -1793,8 +1793,8 @@ public class DatabaseAccess {
                 "FROM tblTaskInstance ti \n" +
                 "JOIN tblTask t \n" +
                 "ON t.flngTaskID = ti.flngTaskId \n" +
-                "AND ti.fblnComplete <> 1 \n" +
-                "AND ti.fblnSystemComplete <> 1 \n" +
+                "AND ti.fdtmCompleted = -1 \n" +
+                "AND ti.fdtmSystemCompleted = -1 \n" +
                 "WHERE t.fintTaskType = 1 \n" +
                 "AND t.flngTaskTypeID = ?";
 
