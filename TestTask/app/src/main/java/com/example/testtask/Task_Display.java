@@ -82,12 +82,12 @@ public class Task_Display extends AppCompatActivity {
         }
     };
 
-    AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
+    static AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
-            Intent intent = new Intent(getBaseContext(), Details_Instance.class);
+            Intent intent = new Intent(mContext, Details_Instance.class);
             intent.putExtra("EXTRA_INSTANCE_ID",  Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
-            startActivity(intent);
+            mContext.startActivity(intent);
             return true;
         }
     };
@@ -105,7 +105,7 @@ public class Task_Display extends AppCompatActivity {
                                     tmpInstanceID,
                                     new String[]{"fdtmCompleted"},
                                     new Object[]{getCurrentCalendar().getTimeInMillis()});
-                            //loadTasksFromDatabase(getContext());
+                            loadTasksFromDatabase(mContext);
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -143,7 +143,7 @@ public class Task_Display extends AppCompatActivity {
                                 tblTask.close();
                             }
                             tblSession.close();
-                            //loadTasksFromDatabase(getContext());
+                            loadTasksFromDatabase(mContext);
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -158,11 +158,18 @@ public class Task_Display extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-        super.onResume();
-        generateTaskInstances();
-        loadTasksFromDatabase(this);
+        try{
+            super.onResume();
+            generateTaskInstances();
+            loadTasksFromDatabase(this);
+        }catch(Exception e){
+            e.printStackTrace();
+            setResult(RESULT_CANCELED);
+            finish();
+        }
     }
 
+    //region CALENDER FUNCTIONS
     public static Calendar getBeginningCurentDay(){
         Calendar temp = getCurrentCalendar();
         temp.set(Calendar.HOUR_OF_DAY,0);
@@ -237,13 +244,16 @@ public class Task_Display extends AppCompatActivity {
         return currentCalendar;
     }
 
+    //endregion
+
     private void generateTaskInstances() {
-        Cursor timeCursor = DatabaseAccess.getRecordsFromTable("tblTime",
+        DatabaseAccess.mDatabase.beginTransaction();
+        try{
+            Cursor timeCursor = DatabaseAccess.getRecordsFromTable("tblTime",
                 "fblnComplete = ?",
                 new Object[]{0});
 
-        DatabaseAccess.mDatabase.beginTransaction();
-        try{
+
             while (timeCursor.moveToNext()) {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 //if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) { //if possibility that instance needs generating
@@ -258,27 +268,6 @@ public class Task_Display extends AppCompatActivity {
             DatabaseAccess.mDatabase.endTransaction();
         }
     }
-
-//    private void generateTaskInstances() {
-//        Cursor timeCursor = DatabaseAccess.getRecordsFromTable("tblTime",
-//                    "fblnComplete = ?",
-//                    new Object[]{0});
-//
-//        DatabaseAccess.mDatabase.beginTransaction();
-//        try{
-//            while (timeCursor.moveToNext()) {
-//                Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
-//                if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) {
-//                    tempTime.buildGenerationPoints(true);
-//                }
-//            }
-//            DatabaseAccess.mDatabase.setTransactionSuccessful();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally{
-//            DatabaseAccess.mDatabase.endTransaction();
-//        }
-//    }
 
     /** Called when the user taps the Send button */
     public void createTask() {
@@ -316,7 +305,7 @@ public class Task_Display extends AppCompatActivity {
         startActivity(intent);
     }
 
-    void loadTasksFromDatabase(Context pContext){
+    static void loadTasksFromDatabase(Context pContext){
         class taskInstances{
             private String mTitle;
             private Long mId;

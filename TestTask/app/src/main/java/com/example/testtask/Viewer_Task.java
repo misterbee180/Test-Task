@@ -28,6 +28,7 @@ public class Viewer_Task extends AppCompatActivity {
     static ListView mTaskView;
     static Sorting mSorting;
     static CustomAdapter mAdapter;
+    static Context mContext;
 
     enum Sorting
     {
@@ -36,21 +37,28 @@ public class Viewer_Task extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_viewer_task);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        try{
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_viewer_task);
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createTask();
-            }
-        });
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    createTask();
+                }
+            });
 
-        mTaskView = (ListView) findViewById(R.id.lsvTaskList);
-        mSorting = Sorting.Ascending;
+            mTaskView = (ListView) findViewById(R.id.lsvTaskList);
+            mSorting = Sorting.Ascending;
+            mContext = this;
+        } catch (Exception e) {
+            e.printStackTrace();
+            setResult(RESULT_CANCELED);
+            finish();
+        }
     }
 
     protected void onResume(){
@@ -65,15 +73,15 @@ public class Viewer_Task extends AppCompatActivity {
         }
     }
 
-    public AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+    public static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             int type = mAdapter.getItemViewType(position);
             switch (type) {
                 case 0:
-                    Intent intent = new Intent(getBaseContext(), Details_Task.class);
+                    Intent intent = new Intent(mContext, Details_Task.class);
                     intent.putExtra("EXTRA_TASK_ID", Long.valueOf(((CustomAdapter.ViewHolder)view.getTag()).id.getText().toString()));
-                    startActivity(intent);
+                    mContext.startActivity(intent);
                     break;
             }
         }
@@ -102,6 +110,7 @@ public class Viewer_Task extends AppCompatActivity {
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             deleteTask(tmpTaskID);
+                            setTaskList(mContext);
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -115,19 +124,27 @@ public class Viewer_Task extends AppCompatActivity {
     }
 
     public static void deleteTask(Long plngTaskId){
-        DatabaseAccess.updateRecordFromTable("tblTask",
-                "flngTaskID",
-                plngTaskId,
-                new String[]{"fblnActive"},
-                new Object[]{false});
-        Cursor cursor = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskId);
-        if(cursor.moveToNext()){
-            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                    new String[]{"fblnSystemComplete"},
-                    new Object[]{true});
+        DatabaseAccess.mDatabase.beginTransaction();
+        try{
+            DatabaseAccess.updateRecordFromTable("tblTask",
+                    "flngTaskID",
+                    plngTaskId,
+                    new String[]{"fdtmDeleted"},
+                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+
+            Cursor curActiveInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskId);
+            if(curActiveInstances.moveToNext()){
+                DatabaseAccess.updateRecordFromTable("tblTaskInstance",
+                        "flngInstanceID",
+                        curActiveInstances.getLong(curActiveInstances.getColumnIndex("flngInstanceID")),
+                        new String[]{"fdtmSystemCompleted"},
+                        new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+            }
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch (Exception e){
+            e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
     }
 
     public void createTask() {
@@ -135,7 +152,7 @@ public class Viewer_Task extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void setTaskList(Context pContext){
+    public static void setTaskList(Context pContext){
         Cursor cursor;
         String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, s.fstrTitle as fstrSession\n" +
                 "FROM tblTask t\n" +
