@@ -81,6 +81,8 @@ public class Time {
         mintStarting = plngStarting;
         mblnComplete = pblnComplete;
         mlngGenerationID = plngGenerationID;
+
+        saveTime();
     }
 
     public void saveTime(){

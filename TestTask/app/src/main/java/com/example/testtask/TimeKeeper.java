@@ -41,8 +41,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
 
     //View objects
-    Spinner timerangeSpinner;
-    ArrayListContainer repetitionSpinner;
+    Spinner mTimeframeSpinner;
+    ArrayListContainer mRepetitionSpinner;
     ConstraintLayout cLayMonthly;
     ConstraintLayout cLayWeekly;
     ConstraintLayout cLayNoRep;
@@ -63,9 +63,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         //Set member access
         arrSpecificDays = new int[31];
         intArrayCounter = 0;
-        repetitionSpinner = new ArrayListContainer();
-        timerangeSpinner = (Spinner) findViewById(R.id.spnTimeRange);
-        timerangeSpinner.setOnItemSelectedListener(timeframeListener);
+        mRepetitionSpinner = new ArrayListContainer();
+        mTimeframeSpinner = (Spinner) findViewById(R.id.spnTimeRange);
+        mTimeframeSpinner.setOnItemSelectedListener(timeframeListener);
 
         //Target View Groups
         cLayNoRep = (ConstraintLayout) findViewById(R.id.CLayNoFrequency);
@@ -73,8 +73,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         cLayMonthly = (ConstraintLayout) findViewById(R.id.CLayMonthly);
 
         //Target Generic Fields
-        repetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.spnRepitition), getContext());
-        repetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
+        mRepetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.spnRepitition), getContext());
+        mRepetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
         btnFromTime = (Button) findViewById(R.id.Timekeeper_BtnFromTime);
         btnToTime = (Button) findViewById(R.id.Timekeeper_BtnToTime);
 
@@ -108,10 +108,200 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     };*/
 
+    //region Getters And Setters
+    public boolean wasEdited(){
+//        if(mdtmFrom != mTime.mdtmFrom
+//                || mdtmTo != mTime.mdtmTo
+//                || mblnFromTime != mTime.mblnFromTime
+//                || mblnToTime != mTime.mblnToTime
+//                || mblnToDate != mTime.mblnToDate
+//                || mRepetitionSpinner.getID() != mTime.mlngRepetition
+//                || mTimeframeSpinner.getSelectedItemPosition() != mTime.mintTimeframe
+//                //|| wasDayEdited()
+//                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasWeekEdited())
+//                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasMonthEdited())
+//        //|| wasYearEdited()
+//        ){
+//            return true;
+//        }
+//        return false;
+        return true;
+    }
+
+    public boolean wasWeekEdited(){
+        Cursor weekCursor = DatabaseAccess.getRecordsFromTable("tblWeek","flngWeekID",mTime.mlngTimeframeID);
+        if(weekCursor.moveToNext()){
+            if((weekCursor.getLong(weekCursor.getColumnIndex("fblnSunday"))==1) != getDayOfWeek("Sunday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnMonday"))==1) != getDayOfWeek("Monday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnTuesday"))==1) != getDayOfWeek("Tuesday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnWednesday"))==1) != getDayOfWeek("Wednesday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnThursday"))==1) != getDayOfWeek("Thursday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnFriday"))==1) != getDayOfWeek("Friday")
+                    || (weekCursor.getLong(weekCursor.getColumnIndex("fblnSaturday"))==1) != getDayOfWeek("Saturday"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean wasMonthEdited(){
+        Cursor monthCursor = DatabaseAccess.getRecordsFromTable("tblMonth","flngMonthID",mTime.mlngTimeframeID);
+        if(monthCursor.moveToNext()){
+            if((monthCursor.getLong(monthCursor.getColumnIndex("fblnFirst"))==1) != ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).isChecked()
+            ||(monthCursor.getLong(monthCursor.getColumnIndex("fblnMiddle"))==1) != ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).isChecked()
+            ||(monthCursor.getLong(monthCursor.getColumnIndex("fblnLast"))==1) != ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked()
+            ||(monthCursor.getLong(monthCursor.getColumnIndex("fblnAfterWkn"))==1) != ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked()
+            ||(!((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().equals(monthCursor.getLong(monthCursor.getColumnIndex("fstrSpecific")))))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static long getFromDate(){
+        return (mdtmFrom == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmFrom;
+    }
+
+    public static long getToDate(){
+        return (mdtmTo == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmTo;
+    }
+
+
+    public static void setFromDate(long pdtmFrom) {
+        mdtmFrom = pdtmFrom;
+        if(pdtmFrom != -1) {
+            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+            btnFromDate.setText("From Date: " + dateFormat.format(pcalFrom.getTime()));
+        }
+    }
+
+    public static void setToDate(long pdtmTo) {
+        mdtmTo = pdtmTo;
+        if(pdtmTo != -1){
+            mblnToDate = true;
+            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
+            btnToDate.setText("To Date: " + dateFormat.format(pcalTo.getTime()));
+        }
+    }
+
+    public static void setFromTime(long pdtmFrom) {
+        mdtmFrom = pdtmFrom;
+        if(pdtmFrom != -1){
+            mblnFromTime = true;
+            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+            btnFromTime.setText("From Time: " + dateFormat.format(pcalFrom.getTime()));
+        }
+    }
+
+    public static void setToTime(long pdtmTo) {
+        mdtmTo = pdtmTo;
+        if(pdtmTo != -1){
+            mblnToTime = true;
+            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
+            btnToTime.setText("To Time: " + dateFormat.format(pcalTo.getTime()));
+        }
+    }
+
+    public Boolean blnTimeDetailsExist(){
+        return (mblnFromTime || mblnToTime || getTimeframe() != -1);
+    }
+
+    public Boolean getDayOfWeek(String pstrDow){
+        CheckBox chbDow = null;
+        switch (pstrDow){
+            case "Monday":
+                chbDow = (CheckBox) findViewById(R.id.chkMonday);
+                break;
+            case "Tuesday":
+                chbDow = (CheckBox) findViewById(R.id.chkTuesday);
+                break;
+            case "Wednesday":
+                chbDow = (CheckBox) findViewById(R.id.chkWednesday);
+                break;
+            case "Thursday":
+                chbDow = (CheckBox) findViewById(R.id.chkThursday);
+                break;
+            case "Friday":
+                chbDow = (CheckBox) findViewById(R.id.chkFriday);
+                break;
+            case "Saturday":
+                chbDow = (CheckBox) findViewById(R.id.chkSaturday);
+                break;
+            case "Sunday":
+                chbDow = (CheckBox) findViewById(R.id.chkSunday);
+                break;
+        }
+        return chbDow.isChecked();
+    }
+
+    public void setDayOfWeek(String pstrDow, Long pblnOn){
+        CheckBox chbDow = null;
+        switch (pstrDow){
+            case "Monday":
+                chbDow = (CheckBox) findViewById(R.id.chkMonday);
+                break;
+            case "Tuesday":
+                chbDow = (CheckBox) findViewById(R.id.chkTuesday);
+                break;
+            case "Wednesday":
+                chbDow = (CheckBox) findViewById(R.id.chkWednesday);
+                break;
+            case "Thursday":
+                chbDow = (CheckBox) findViewById(R.id.chkThursday);
+                break;
+            case "Friday":
+                chbDow = (CheckBox) findViewById(R.id.chkFriday);
+                break;
+            case "Saturday":
+                chbDow = (CheckBox) findViewById(R.id.chkSaturday);
+                break;
+            case "Sunday":
+                chbDow = (CheckBox) findViewById(R.id.chkSunday);
+                break;
+        }
+        chbDow.setChecked(pblnOn == 1 ? true: false);
+    }
+
+    public int getTimeframe(){
+        if (!mRepetitionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
+            return mTimeframeSpinner.getSelectedItemPosition();
+        }
+        return -1;
+    }
+
+    public void setMonthDetails(boolean pblnFirst,
+                                boolean pblnMiddle,
+                                boolean pblnLast,
+                                boolean pblnAfter,
+                                String pstrSpecific){
+        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).setChecked(pblnFirst);
+        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).setChecked(pblnMiddle);
+        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).setChecked(pblnLast);
+        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).setChecked(pblnAfter);
+        String[] tmpArray = pstrSpecific.split(",");
+        String value = "";
+        for (int i = 0; i<tmpArray.length; i++){
+            if (value != ""){
+                value += ", ";
+            }
+            value += tmpArray[i];
+            arrSpecificDays[i] = Integer.parseInt(tmpArray[i]);
+        }
+        ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).setText(value);
+    }
+    //endregion
+
+    //region HANDLERS
     Spinner.OnItemSelectedListener repetitionListener = new Spinner.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            evaluateRepetitionView(repetitionSpinner.getID(position));
+            evaluateRepetitionView(mRepetitionSpinner.getID(position));
         }
 
         public void onNothingSelected(AdapterView parent){
@@ -173,6 +363,74 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     }
 
+    //endregion
+
+    //region VIEW INITIALIZATION
+    public void setActiveTimekeeper(Boolean pblnActive){
+        mTimeframeSpinner.setEnabled(pblnActive);
+        mRepetitionSpinner.mSpinner.setEnabled(pblnActive);
+        btnFromDate.setEnabled(pblnActive);
+        btnToDate.setEnabled(pblnActive);
+        btnFromTime.setEnabled(pblnActive);
+        btnToTime.setEnabled(pblnActive);
+        txtMonthlyDays.setEnabled(pblnActive);
+    }
+
+    public void resetTimeKeeper(){
+        mblnFromTime = false;
+        mblnToTime = false;
+        mdtmFrom = (long)-1;
+        mdtmTo = (long)-1;
+        //Set visibility
+    }
+
+    public void evaluateRepetitionView(long plngSelection) {
+        if (plngSelection == 0){
+            cLayNoRep.setVisibility(View.VISIBLE);
+            cLayWeekly.setVisibility(View.GONE);
+            cLayMonthly.setVisibility(View.GONE);
+            mTimeframeSpinner.setVisibility(View.GONE);
+        } else {
+            mTimeframeSpinner.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void evaluateTimeframeView(Integer plngSelection) {
+        switch (plngSelection){
+            case 0: //Day
+                cLayNoRep.setVisibility(View.GONE);
+                cLayWeekly.setVisibility(View.GONE);
+                cLayMonthly.setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                break;
+            case 1: //Week
+                cLayNoRep.setVisibility(View.GONE);
+                cLayWeekly.setVisibility(View.VISIBLE);
+                cLayMonthly.setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                break;
+            case 2: //Month
+                cLayNoRep.setVisibility(View.GONE);
+                cLayWeekly.setVisibility(View.GONE);
+                cLayMonthly.setVisibility(View.VISIBLE);
+                findViewById(R.id.TimeKeeper_Monthly_First).setVisibility(GONE);
+                findViewById(R.id.TimeKeeper_Monthly_Middle).setVisibility(GONE);
+                findViewById(R.id.TimeKeeper_Monthly_Last).setVisibility(GONE);
+                findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(GONE);
+                findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(GONE);
+                findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                break;
+            case 3: //Year
+                //Using No Rep View for now until Year View becomes important
+                cLayNoRep.setVisibility(View.VISIBLE);
+                cLayWeekly.setVisibility(View.GONE);
+                cLayMonthly.setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE); //Todo: Fix design to allow yearly to date repetition
+                break;
+        }
+    }
+
     public void loadTimeDetails(long pdtmFrom,
                                 long pdtmTo,
                                 boolean pblnFromTime,
@@ -203,13 +461,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         //Set repetition spinner
         if (mTime.mlngRepetition != -1){
-            repetitionSpinner.setIDSpinner(mTime.mlngRepetition);
+            mRepetitionSpinner.setIDSpinner(mTime.mlngRepetition);
         }
 
         //Set timeframe spinner
         if (mTime.mlngTimeframeID != -1) {
             Cursor cursor;
-            timerangeSpinner.setSelection(mTime.mintTimeframe);
+            mTimeframeSpinner.setSelection(mTime.mintTimeframe);
             switch (mTime.mintTimeframe) {
                 case 0: //Day
                     //Dont need to do anything
@@ -264,26 +522,26 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     private void setUpRepititionForSession(){
-        repetitionSpinner.Clear();
-        repetitionSpinner.Add("Repeat Every", (long)1);
-        repetitionSpinner.Add("Repeat Every Other", (long)2);
-        repetitionSpinner.Add("Repeat Every Thrid", (long)3);
-        repetitionSpinner.Add("Repeat Every Forth", (long)4);
-        repetitionSpinner.mAdapter.notifyDataSetChanged();
-        repetitionSpinner.setIDSpinner((long)1);
+        mRepetitionSpinner.Clear();
+        mRepetitionSpinner.Add("Repeat Every", (long)1);
+        mRepetitionSpinner.Add("Repeat Every Other", (long)2);
+        mRepetitionSpinner.Add("Repeat Every Thrid", (long)3);
+        mRepetitionSpinner.Add("Repeat Every Forth", (long)4);
+        mRepetitionSpinner.mAdapter.notifyDataSetChanged();
+        mRepetitionSpinner.setIDSpinner((long)1);
 
         evaluateRepetitionView((long)1);
     }
 
     private void setUpRepetitionForRegular(){
-        repetitionSpinner.Clear();
-        repetitionSpinner.Add("No Repetition", (long)0);
-        repetitionSpinner.Add("Repeat Every", (long)1);
-        repetitionSpinner.Add("Repeat Every Other", (long)2);
-        repetitionSpinner.Add("Repeat Every Thrid", (long)3);
-        repetitionSpinner.Add("Repeat Every Forth", (long)4);
-        repetitionSpinner.mAdapter.notifyDataSetChanged();
-        repetitionSpinner.setIDSpinner((long)0);
+        mRepetitionSpinner.Clear();
+        mRepetitionSpinner.Add("No Repetition", (long)0);
+        mRepetitionSpinner.Add("Repeat Every", (long)1);
+        mRepetitionSpinner.Add("Repeat Every Other", (long)2);
+        mRepetitionSpinner.Add("Repeat Every Thrid", (long)3);
+        mRepetitionSpinner.Add("Repeat Every Forth", (long)4);
+        mRepetitionSpinner.mAdapter.notifyDataSetChanged();
+        mRepetitionSpinner.setIDSpinner((long)0);
 
         evaluateRepetitionView((long)0);
     }
@@ -293,7 +551,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         cursor.moveToFirst();
         loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
     }
+    //endregion
 
+    //region COMPLETION
     public void validateTimeDetails(){
         //if session, do not allow no timeframe
 
@@ -315,25 +575,49 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 0,
                 false,
                 -1);
-
-        mTime.saveTime();
     }
 
     public void createTimeDetails(){
-        long lngTimeframeKey = (long)-1;
+        long lngTimeframeId = (long)-1;
+
+        //Determine and create appropriate data element for repetition type
+        if(mTime.mlngTimeID != -1){ //Time was loaded
+            if(mTime.mlngTimeframeID == getTimeframe()){ //Timeframe type matches (should work even if -1)
+                lngTimeframeId = mTime.mlngTimeframeID;
+            } else if(mTime.mintTimeframe == -1){} //Repeating time newly added
+            else{ //Different timeframe was present during time load
+                deleteTimeframe(mTime.mintTimeframe, mTime.mlngTimeframeID);
+            }
+        }
+
+        mTime = new Time(getFromDate(),
+                getToDate(),
+                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                mblnFromTime,
+                mblnToTime,
+                mblnToDate,
+                getTimeframe(),
+                createTimeframe(lngTimeframeId),
+                mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition()),
+                0,
+                false,
+                -1);
+    }
+
+    public long createTimeframe(long plntTimeframeID){
+
         String[] arrColumns;
         Object[] arrValues;
 
-        //Determine and create appropriate data element for repetition type
-        switch (getTimeRange()){
+        switch (getTimeframe()){
             case 0: //Day
                 arrColumns = new String[]{};
                 arrValues = new Object[]{};
-                lngTimeframeKey = DatabaseAccess.addRecordToTable("tblDay",
+                plntTimeframeID = DatabaseAccess.addRecordToTable("tblDay",
                         arrColumns,
                         arrValues,
                         "flngDayID",
-                        (long)-1);
+                        plntTimeframeID);
                 break;
             case 1: //Week
                 arrColumns = new String[]{"fblnMonday","fblnTuesday","fblnWednesday","fblnThursday","fblnFriday","fblnSaturday","fblnSunday"};
@@ -344,9 +628,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                         getDayOfWeek("Friday"),
                         getDayOfWeek("Saturday"),
                         getDayOfWeek("Sunday")};
-                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblWeek",
+                plntTimeframeID = (int)DatabaseAccess.addRecordToTable("tblWeek",
                         arrColumns,
-                        arrValues);
+                        arrValues,
+                        "flngWeekID",
+                        plntTimeframeID);
                 break;
             case 2: //Month
                 arrColumns = new String[]{"fblnFirst","fblnMiddle","fblnLast","fblnAfterWkn","fstrSpecific"};
@@ -355,231 +641,53 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                         ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked(),
                         ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked(),
                         ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().toString()};
-                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblMonth",
+                plntTimeframeID = (int)DatabaseAccess.addRecordToTable("tblMonth",
                         arrColumns,
-                        arrValues);
+                        arrValues,
+                        "flngMonthID",
+                        plntTimeframeID);
                 break;
             case 3: //Year
                 arrColumns = new String[]{};
                 arrValues = new Object[]{};
-                lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblYear",
+                plntTimeframeID = (int)DatabaseAccess.addRecordToTable("tblYear",
                         arrColumns,
                         arrValues,
                         "flngYearID",
-                        (long)-1);
+                        plntTimeframeID);
                 break;
         }
 
-        mTime = new Time(getFromDate(),
-                getToDate(),
-                Task_Display.getCurrentCalendar().getTimeInMillis(),
-                mblnFromTime,
-                mblnToTime,
-                mblnToDate,
-                getTimeRange(),
-                lngTimeframeKey,
-                repetitionSpinner.getID(repetitionSpinner.mSpinner.getSelectedItemPosition()),
-                0,
-                false,
-                -1);
-
-        mTime.saveTime();
+        return plntTimeframeID;
     }
 
-    public void updateTimeDetails(){
-        //Look to see if the frequency changed and if it has, delete the original record
-        if (mTime.mintTimeframe != getTimeRange() && mTime.mintTimeframe != -1){
-            //Delete original frequency entry
-            String strTable = "";
-            String strColumn = "";
-            Long lngID = (long)-1;
-            switch((int)mTime.mintTimeframe){
-                case 1:
-
-                    strTable = "tblDay";
-                    strColumn = "flngDayID";
-                    //lngID = mlngDayID;
-                    break;
-                case 2:
-                    strTable = "tblMonth";
-                    strColumn = "flngMonthID";
-                   // lngID = mlngMonthID;
-                    break;
-                case 3:
-                    strTable = "tblWeek";
-                    strColumn = "flngWeekID";
-                    //lngID = mlngWeekID;
-                    break;
-                case 4:
-                    strTable = "tblYear";
-                    strColumn = "flngYearID";
-                    //lngID = mlngYearID;
-                    break;
-            }
-        }
-        DatabaseAccess.mDatabase.beginTransaction();
-        try {
-            createTimeDetails();
-            DatabaseAccess.mDatabase.setTransactionSuccessful();
-        } finally {
-            DatabaseAccess.mDatabase.endTransaction();
-        }
-    }
-
-    public void setActiveTimekeeper(Boolean pblnActive){
-        timerangeSpinner.setEnabled(pblnActive);
-        repetitionSpinner.mSpinner.setEnabled(pblnActive);
-        btnFromDate.setEnabled(pblnActive);
-        btnToDate.setEnabled(pblnActive);
-        btnFromTime.setEnabled(pblnActive);
-        btnToTime.setEnabled(pblnActive);
-        txtMonthlyDays.setEnabled(pblnActive);
-    }
-
-    public void resetTimeKeeper(){
-        mblnFromTime = false;
-        mblnToTime = false;
-        mdtmFrom = (long)-1;
-        mdtmTo = (long)-1;
-        //Set visibility
-    }
-
-    public void evaluateRepetitionView(long plngSelection) {
-        if (plngSelection == 0){
-            cLayNoRep.setVisibility(View.VISIBLE);
-            cLayWeekly.setVisibility(View.GONE);
-            cLayMonthly.setVisibility(View.GONE);
-            timerangeSpinner.setVisibility(View.GONE);
-        } else {
-            timerangeSpinner.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void evaluateTimeframeView(Integer plngSelection) {
-        switch (plngSelection){
+    public void deleteTimeframe(int pintTimeframe,
+                                long plngID){
+        String strTable = "";
+        String strColumn = "";
+        switch (pintTimeframe){
             case 0: //Day
-                cLayNoRep.setVisibility(View.GONE);
-                cLayWeekly.setVisibility(View.GONE);
-                cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                strTable = "tblDay";
+                strColumn = "flngDayID";
                 break;
             case 1: //Week
-                cLayNoRep.setVisibility(View.GONE);
-                cLayWeekly.setVisibility(View.VISIBLE);
-                cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                strTable = "tblWeek";
+                strColumn = "flngWeekID";
                 break;
             case 2: //Month
-                cLayNoRep.setVisibility(View.GONE);
-                cLayWeekly.setVisibility(View.GONE);
-                cLayMonthly.setVisibility(View.VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_First).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Middle).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Last).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                strTable = "tblMonth";
+                strColumn = "flngMonthID";
                 break;
             case 3: //Year
-                //Using No Rep View for now until Year View becomes important
-                cLayNoRep.setVisibility(View.VISIBLE);
-                cLayWeekly.setVisibility(View.GONE);
-                cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE); //Todo: Fix design to allow yearly to date repetition
+                strTable = "tblYear";
+                strColumn = "flngYearID";
                 break;
         }
-    }
-
-    //region Getters And Setters
-    public Boolean blnTimeDetailsExist(){
-        return (mblnFromTime || mblnToTime || getTimeRange() != -1);
-    }
-
-    public Boolean getDayOfWeek(String pstrDow){
-        CheckBox chbDow = null;
-        switch (pstrDow){
-            case "Monday":
-                chbDow = (CheckBox) findViewById(R.id.chkMonday);
-                break;
-            case "Tuesday":
-                chbDow = (CheckBox) findViewById(R.id.chkTuesday);
-                break;
-            case "Wednesday":
-                chbDow = (CheckBox) findViewById(R.id.chkWednesday);
-                break;
-            case "Thursday":
-                chbDow = (CheckBox) findViewById(R.id.chkThursday);
-                break;
-            case "Friday":
-                chbDow = (CheckBox) findViewById(R.id.chkFriday);
-                break;
-            case "Saturday":
-                chbDow = (CheckBox) findViewById(R.id.chkSaturday);
-                break;
-            case "Sunday":
-                chbDow = (CheckBox) findViewById(R.id.chkSunday);
-                break;
-        }
-        return chbDow.isChecked();
-    }
-
-    public void setDayOfWeek(String pstrDow, Long pblnOn){
-        CheckBox chbDow = null;
-        switch (pstrDow){
-            case "Monday":
-                chbDow = (CheckBox) findViewById(R.id.chkMonday);
-                break;
-            case "Tuesday":
-                chbDow = (CheckBox) findViewById(R.id.chkTuesday);
-                break;
-            case "Wednesday":
-                chbDow = (CheckBox) findViewById(R.id.chkWednesday);
-                break;
-            case "Thursday":
-                chbDow = (CheckBox) findViewById(R.id.chkThursday);
-                break;
-            case "Friday":
-                chbDow = (CheckBox) findViewById(R.id.chkFriday);
-                break;
-            case "Saturday":
-                chbDow = (CheckBox) findViewById(R.id.chkSaturday);
-                break;
-            case "Sunday":
-                chbDow = (CheckBox) findViewById(R.id.chkSunday);
-                break;
-        }
-        chbDow.setChecked(pblnOn == 1 ? true: false);
-    }
-
-    public int getTimeRange(){
-        if (!repetitionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
-            return timerangeSpinner.getSelectedItemPosition();
-        }
-        return -1;
-    }
-
-    public void setMonthDetails(boolean pblnFirst,
-                                boolean pblnMiddle,
-                                boolean pblnLast,
-                                boolean pblnAfter,
-                                String pstrSpecific){
-        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).setChecked(pblnFirst);
-        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).setChecked(pblnMiddle);
-        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).setChecked(pblnLast);
-        ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).setChecked(pblnAfter);
-        String[] tmpArray = pstrSpecific.split(",");
-        String value = "";
-        for (int i = 0; i<tmpArray.length; i++){
-            if (value != ""){
-                value += ", ";
-            }
-            value += tmpArray[i];
-            arrSpecificDays[i] = Integer.parseInt(tmpArray[i]);
-        }
-        ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).setText(value);
+        DatabaseAccess.deleteRecordFromTable(strTable,strColumn,plngID);
     }
     //endregion
+
+
 
     private void instantiateTimeFragment(){
         AppCompatActivity context = (AppCompatActivity)getContext();
@@ -591,54 +699,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         AppCompatActivity context = (AppCompatActivity)getContext();
         DialogFragment newFragment = new TimeKeeper.DatePickerFragment();
         newFragment.show(context.getSupportFragmentManager(), "datePicker");
-    }
-
-    public static long getFromDate(){
-        return (mdtmFrom == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmFrom;
-    }
-
-    public static long getToDate(){
-        return (mdtmTo == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmTo;
-    }
-
-
-    public static void setFromDate(long pdtmFrom) {
-        mdtmFrom = pdtmFrom;
-        if(pdtmFrom != -1) {
-            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-            btnFromDate.setText("From Date: " + dateFormat.format(pcalFrom.getTime()));
-        }
-    }
-
-    public static void setToDate(long pdtmTo) {
-        mdtmTo = pdtmTo;
-        if(pdtmTo != -1){
-            mblnToDate = true;
-            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
-            btnToDate.setText("To Date: " + dateFormat.format(pcalTo.getTime()));
-        }
-    }
-
-    public static void setFromTime(long pdtmFrom) {
-        mdtmFrom = pdtmFrom;
-        if(pdtmFrom != -1){
-            mblnFromTime = true;
-            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-            btnFromTime.setText("From Time: " + dateFormat.format(pcalFrom.getTime()));
-        }
-    }
-
-    public static void setToTime(long pdtmTo) {
-        mdtmTo = pdtmTo;
-        if(pdtmTo != -1){
-            mblnToTime = true;
-            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
-            btnToTime.setText("To Time: " + dateFormat.format(pcalTo.getTime()));
-        }
     }
 
     public static class TimePickerFragment extends DialogFragment

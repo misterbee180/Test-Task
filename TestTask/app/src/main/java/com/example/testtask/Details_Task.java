@@ -25,78 +25,11 @@ public class Details_Task extends AppCompatActivity {
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
-    TimeKeeper timeKeeper;
+    static TimeKeeper timeKeeper;
     TextView mTitle;
     TextView mDescription;
 
-    //region SETTER/GETTERS
-    public String getTaskTitle(){
-        return mTitle.getText().toString();
-    }
 
-    public void setTaskTitle(String pstrTitle){
-        mTitle.setText(pstrTitle);
-    }
-
-    public String getTaskDesc(){
-        return mDescription.getText().toString();
-    }
-
-    public void setTaskDesc(String pstrDescription){
-        mDescription.setText(pstrDescription);
-    }
-
-    public Long getSession(){
-        return mSessionList.getID(mSession.getSelectedItemPosition());
-    }
-
-    public void setSession(long plngTimeId){
-        mSessionList.setIDSpinner(plngTimeId);
-        
-    }
-
-    public long getOneOff() {
-        if(((CheckBox) findViewById(R.id.chkSessOneOff)).isChecked()){
-            return mSessionList.getID(mSessionList.mSpinner.getSelectedItemPosition());
-        }
-        return -1;
-    }
-
-    public void setOneOff(long plngTimeId){
-        if(plngTimeId != -1){
-            ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(true);
-        } else {
-            ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(false);
-        }
-    }
-
-     public int getTaskType(){
-        if(mlngEventID != -1){
-            return 1;
-        }
-        if(mlngLongTermID != -1){
-            return 2;
-        }
-        if(mlngGroupID != -1){
-            return 3;
-        }
-        return 0;
-    }
-
-    public long getTaskTypeID(){
-        if(mlngEventID != -1){
-            return mlngEventID;
-        }
-        if(mlngLongTermID != -1){
-            return mlngLongTermID;
-        }
-        if(mlngGroupID != -1){
-            return mlngGroupID;
-        }
-        return -1;
-    }
-
-    //endregion
 
     //region Overridden Functions
     @Override
@@ -127,35 +60,6 @@ public class Details_Task extends AppCompatActivity {
         setupViews();
     }
 
-    //region Listeners
-    AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            if(mSessionList.getID(position) != -1){
-                //Deactivate timekeeper for editing
-                timeKeeper.loadTimeDetails(mSessionList.getID(position));
-                timeKeeper.setActiveTimekeeper(false);
-
-                //Provide one off opportunity
-                (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
-                setOneOff(mSessionList.getID(position));
-            } else {
-                //Reactivate timekeeper for editing
-                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
-                timeKeeper.setActiveTimekeeper(true);
-
-                //Remove one off opportunity
-                (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
-                setOneOff(mSessionList.getID(position));
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-        }
-    };
-    //endregion Listeners
-
     @Override
     protected void onResume(){
         super.onResume();
@@ -164,6 +68,111 @@ public class Details_Task extends AppCompatActivity {
     }
     //endregion
 
+    //region SETTER/GETTERS
+    public String getTaskTitle(){
+        return mTitle.getText().toString();
+    }
+
+    public void setTaskTitle(String pstrTitle){
+        mTitle.setText(pstrTitle);
+    }
+
+    public String getTaskDesc(){
+        return mDescription.getText().toString();
+    }
+
+    public void setTaskDesc(String pstrDescription){
+        mDescription.setText(pstrDescription);
+    }
+
+    public Long getSession(){
+        return mSessionList.getID(mSession.getSelectedItemPosition());
+    }
+
+    public boolean isSessionSet(){
+        if(mSessionList.mSpinner.getSelectedItemPosition() != 0) return true;
+        return false;
+    }
+
+    public void setSession(long plngTimeId){
+        mSessionList.setIDSpinner(plngTimeId);
+
+    }
+
+    public long getOneOff() {
+        if(((CheckBox) findViewById(R.id.chkSessOneOff)).isChecked()){
+            return mSessionList.getID(mSessionList.mSpinner.getSelectedItemPosition());
+        }
+        return -1;
+    }
+
+    public void setOneOff(long plngTimeId){
+        if(plngTimeId != -1){
+            ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(true);
+        } else {
+            ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(false);
+        }
+    }
+
+    public int getTaskType(){
+        if(mlngEventID != -1){
+            return 1;
+        }
+        if(mlngLongTermID != -1){
+            return 2;
+        }
+        if(mlngGroupID != -1){
+            return 3;
+        }
+        return 0;
+    }
+
+    public long getTaskTypeID(){
+        if(mlngEventID != -1){
+            return mlngEventID;
+        }
+        if(mlngLongTermID != -1){
+            return mlngLongTermID;
+        }
+        if(mlngGroupID != -1){
+            return mlngGroupID;
+        }
+        return -1;
+    }
+
+    public boolean wasEdited(){
+        return (wasDetailsEdited() || wasTimeEdited() || wasSessionEdited());
+    }
+
+    public boolean wasDetailsEdited(){
+        if (!mTitle.getText().equals(mTask.mstrTitle)
+        || !mDescription.getText().equals(mTask.mstrDescription))
+            return true;
+        return false;
+    }
+
+    public boolean wasTimeEdited(){
+        if (timeKeeper.wasEdited()) return true;
+        return false;
+    }
+
+    public boolean wasSessionReplaced(){
+        if(mTask.mlngTaskID != -1) //Task was loaded
+        {
+            if(isSessionSet() && (getSession() != mTask.mlngTimeID)){ //Selected session time doesn't match current time
+                //Either session replacing session or session replacing time.
+            }
+        }
+    }
+
+    public boolean wasSessionEdited(){
+        if((isSessionSet() && getSession()) != mTask.mlngTimeID){
+            return true;
+        } return false;
+    }
+    //endregion
+
+    //region ACTIVITY INITIALIZAION
     private void setupViews() {
         if (mlngGroupID != -1){//Group
             mGroupList.setIDSpinner(mTask.mlngTaskTypeID);
@@ -220,7 +229,6 @@ public class Details_Task extends AppCompatActivity {
         }
     }
 
-    //region Initialization Functions
     public void LoadSessionSpinner(){
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblSession");
 
@@ -247,29 +255,44 @@ public class Details_Task extends AppCompatActivity {
         }
         mGroupList.mAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        /*if (mTask.mlngTaskID != -1){
+            getMenuInflater().inflate(R.menu.event_edit_menu, menu);
+        }*/
+        return true;
+    }
     //endregion
 
+    //region ACTIVITY COMPLETION
     public void CreateTask(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            if(getOneOff() != -1){
-                timeKeeper.oneOffTimeCopy();
-            } else if(getSession() != -1){
+            if(wasEdited()){
+                if(wasTimeEdited()){
+                }
             } else {
-                timeKeeper.createTimeDetails();
-            }
-            mTask = new Task(mTask.mlngTaskID,
-                    timeKeeper.mTime.mlngTimeID,
-                    Task_Display.getCurrentCalendar().getTimeInMillis(),
-                    getTaskTitle(),
-                    getTaskDesc(),
-                    (long)-1,
-                    getTaskType(),
-                    getTaskTypeID(),
-                    getOneOff());
-            mTask.saveTask();
+                if(getOneOff() != -1){
+                    timeKeeper.oneOffTimeCopy();
+                } else if(getSession() != -1){
+                } else {
+                    timeKeeper.createTimeDetails();
+                }
+                mTask = new Task(mTask.mlngTaskID,
+                        timeKeeper.mTime.mlngTimeID,
+                        Task_Display.getCurrentCalendar().getTimeInMillis(),
+                        getTaskTitle(),
+                        getTaskDesc(),
+                        (long)-1,
+                        getTaskType(),
+                        getTaskTypeID(),
+                        getOneOff());
+                mTask.saveTask();
 
-            timeKeeper.mTime.generateInstances(true);
+                timeKeeper.mTime.generateInstances(true);
+            }
 
             setResult(RESULT_OK);
             finish();
@@ -281,6 +304,35 @@ public class Details_Task extends AppCompatActivity {
             DatabaseAccess.mDatabase.endTransaction();
         }
     }
+    //endregion
+
+    //region HANDLERS
+    AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            if(mSessionList.getID(position) != -1){
+                //Deactivate timekeeper for editing
+                timeKeeper.loadTimeDetails(mSessionList.getID(position));
+                timeKeeper.setActiveTimekeeper(false);
+
+                //Provide one off opportunity
+                (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
+                setOneOff(mSessionList.getID(position));
+            } else {
+                //Reactivate timekeeper for editing
+                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
+                timeKeeper.setActiveTimekeeper(true);
+
+                //Remove one off opportunity
+                (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
+                setOneOff(mSessionList.getID(position));
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+        }
+    };
 
     public void StartNewSession(View view) {
         Intent intent = new Intent(this, Details_Session.class);
@@ -298,15 +350,6 @@ public class Details_Task extends AppCompatActivity {
                 break;
             }
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        /*if (mTask.mlngTaskID != -1){
-            getMenuInflater().inflate(R.menu.event_edit_menu, menu);
-        }*/
-        return true;
     }
 
     @Override
@@ -336,4 +379,6 @@ public class Details_Task extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //endregion
 }
