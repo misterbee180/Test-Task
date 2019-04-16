@@ -1804,7 +1804,7 @@ public class DatabaseAccess {
     }
 
     public static Cursor retrieveEventTasksFromEvent(Long plngEventId){
-        String selection = "flngEventId == ? AND fblnActive = 1";
+        String selection = "fintTaskType = 1 AND flngTaskTypeID == ? AND fdtmDeleted = -1";
         String[] selectionArgs = {Long.toString(plngEventId)};
 
         return mDatabase.query("tblTask",

@@ -184,8 +184,9 @@ public class Viewer_Events extends AppCompatActivity {
                 "CASE WHEN EXISTS(SELECT 1 FROM tblTask t \n" +
                 "JOIN tblTaskInstance ti \n" +
                 "ON t.flngTaskID = ti.flngTaskID \n" +
-                "AND ti.fblnSystemComplete = 0 AND ti.fblnComplete = 0 \n" +
-                "WHERE t.flngEventId = e.flngEventID) THEN 1 ELSE 0 END as fblnActive \n" +
+                "AND ti.fdtmSystemCompleted = -1 AND ti.fdtmCompleted = -1 \n" +
+                "WHERE t.fintTaskType = 1 \n" +
+                "AND t.flngTaskTypeID = e.flngEventID) THEN 1 ELSE 0 END as fblnActive \n" +
                 "FROM tblEvent e \n";
         cursor = DatabaseAccess.mDatabase.rawQuery(rawGetEvents,null);
 
