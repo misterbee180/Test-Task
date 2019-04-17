@@ -49,13 +49,19 @@ public class Task_Event extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-        super.onResume();
-        retrieveExtras();
-        if (mlngEventID != -1){
-            retrieveEventTasks();
+        try{
+            super.onResume();
+            retrieveExtras();
+            if (mlngEventID != -1){
+                retrieveEventTasks();
+            }
+            setupInitialVisibility();
+            setupViews();
+        } catch(Exception e) {
+            e.printStackTrace();
+            setResult(RESULT_CANCELED);
+            finish();
         }
-        setupInitialVisibility();
-        setupViews();
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
@@ -148,11 +154,13 @@ public class Task_Event extends AppCompatActivity {
     }
 
     private static void retrieveEventTasks() {
-        Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(mlngEventID);
+        Cursor TaskCursor = DatabaseAccess.retrieveEventTasksFromEvent(mlngEventID);
 
         mEventTasks.Clear();
-        while (cursor.moveToNext()){
-            mEventTasks.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+        while (TaskCursor.moveToNext()){
+            Task tempTask = new Task(TaskCursor.getLong(TaskCursor.getColumnIndex("flngTaskID")));
+            mEventTasks.Add(tempTask.mstrTitle,
+                    tempTask.mlngTaskID);
         }
         mEventTasks.mAdapter.notifyDataSetChanged();
     }
@@ -205,11 +213,6 @@ public class Task_Event extends AppCompatActivity {
             setResult(RESULT_OK);
             finish();
         }
-    }
-
-    public void cancelActivity(View view){
-        setResult(RESULT_CANCELED);
-        finish();
     }
 
     public  void BeginAddTaskToEvent() {

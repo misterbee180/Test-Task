@@ -225,7 +225,6 @@ public class Time {
                                 mblnToTime,
                                 mblnToDate,
                                 Task_Display.getCurrentCalendar().getTimeInMillis());
-                        ti.createTaskInstance();
                     }
                 }
                 if(lngGenID < tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID"))){ //Updates

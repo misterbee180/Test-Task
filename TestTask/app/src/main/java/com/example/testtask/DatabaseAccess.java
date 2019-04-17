@@ -1793,8 +1793,8 @@ public class DatabaseAccess {
                 "FROM tblTaskInstance ti \n" +
                 "JOIN tblTask t \n" +
                 "ON t.flngTaskID = ti.flngTaskId \n" +
-                "AND ti.fblnComplete <> 1 \n" +
-                "AND ti.fblnSystemComplete <> 1 \n" +
+                "AND ti.fdtmCompleted = -1 \n" +
+                "AND ti.fdtmSystemCompleted = -1 \n" +
                 "WHERE t.fintTaskType = 1 \n" +
                 "AND t.flngTaskTypeID = ?";
 
@@ -1804,7 +1804,7 @@ public class DatabaseAccess {
     }
 
     public static Cursor retrieveEventTasksFromEvent(Long plngEventId){
-        String selection = "flngEventId == ? AND fblnActive = 1";
+        String selection = "fintTaskType = 1 AND flngTaskTypeID == ? AND fdtmDeleted = -1";
         String[] selectionArgs = {Long.toString(plngEventId)};
 
         return mDatabase.query("tblTask",

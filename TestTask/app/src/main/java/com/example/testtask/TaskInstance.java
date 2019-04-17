@@ -60,6 +60,8 @@ public class TaskInstance {
         mblnToTime = pblnToTime;
         mblnToDate = pblnToDate;
         mdtmCreated = pdtmCreated;
+
+        createTaskInstance();
     }
 
     public void updateTaskInstance(String pstrTitle,
