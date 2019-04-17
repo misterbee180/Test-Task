@@ -110,22 +110,21 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     //region Getters And Setters
     public boolean wasEdited(){
-//        if(mdtmFrom != mTime.mdtmFrom
-//                || mdtmTo != mTime.mdtmTo
-//                || mblnFromTime != mTime.mblnFromTime
-//                || mblnToTime != mTime.mblnToTime
-//                || mblnToDate != mTime.mblnToDate
-//                || mRepetitionSpinner.getID() != mTime.mlngRepetition
-//                || mTimeframeSpinner.getSelectedItemPosition() != mTime.mintTimeframe
-//                //|| wasDayEdited()
-//                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasWeekEdited())
-//                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasMonthEdited())
-//        //|| wasYearEdited()
-//        ){
-//            return true;
-//        }
-//        return false;
-        return true;
+        if(mdtmFrom != mTime.mdtmFrom
+                || mdtmTo != mTime.mdtmTo
+                || mblnFromTime != mTime.mblnFromTime
+                || mblnToTime != mTime.mblnToTime
+                || mblnToDate != mTime.mblnToDate
+                || mRepetitionSpinner.getID() != mTime.mlngRepetition
+                || mTimeframeSpinner.getSelectedItemPosition() != mTime.mintTimeframe
+                //|| wasDayEdited()
+                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasWeekEdited())
+                || (mTimeframeSpinner.getSelectedItemPosition() == 0 && wasMonthEdited())
+        //|| wasYearEdited()
+        ){
+            return true;
+        }
+        return false;
     }
 
     public boolean wasWeekEdited(){
@@ -449,31 +448,31 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void loadTimeDetails(Long plngTimeID) {
-        mTime = new Time(plngTimeID);
+        Time tempTime = new Time(plngTimeID);
 
-        setFromDate(mTime.mdtmFrom);
-        if(mTime.mblnToDate) setToDate(mTime.mdtmTo);
-        if(mTime.mblnFromTime) setFromTime(mTime.mdtmFrom);
-        if(mTime.mblnToTime) setToTime(mTime.mdtmTo);
-        mblnFromTime = mTime.mblnFromTime;
-        mblnToTime = mTime.mblnToTime;
-        mblnToDate = mTime.mblnToDate;
+        setFromDate(tempTime.mdtmFrom);
+        if(tempTime.mblnToDate) setToDate(tempTime.mdtmTo);
+        if(tempTime.mblnFromTime) setFromTime(tempTime.mdtmFrom);
+        if(tempTime.mblnToTime) setToTime(tempTime.mdtmTo);
+        mblnFromTime = tempTime.mblnFromTime;
+        mblnToTime = tempTime.mblnToTime;
+        mblnToDate = tempTime.mblnToDate;
 
         //Set repetition spinner
-        if (mTime.mlngRepetition != -1){
-            mRepetitionSpinner.setIDSpinner(mTime.mlngRepetition);
+        if (tempTime.mlngRepetition != -1){
+            mRepetitionSpinner.setIDSpinner(tempTime.mlngRepetition);
         }
 
         //Set timeframe spinner
-        if (mTime.mlngTimeframeID != -1) {
+        if (tempTime.mlngTimeframeID != -1) {
             Cursor cursor;
-            mTimeframeSpinner.setSelection(mTime.mintTimeframe);
-            switch (mTime.mintTimeframe) {
+            mTimeframeSpinner.setSelection(tempTime.mintTimeframe);
+            switch (tempTime.mintTimeframe) {
                 case 0: //Day
                     //Dont need to do anything
                     break;
                 case 1: //Week
-                    cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", mTime.mlngTimeframeID);
+                    cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", tempTime.mlngTimeframeID);
                     while(cursor.moveToNext()){
                         setDayOfWeek("Monday",cursor.getLong(cursor.getColumnIndex("fblnMonday")));
                         setDayOfWeek("Tuesday",cursor.getLong(cursor.getColumnIndex("fblnTuesday")));
@@ -485,7 +484,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                     }
                     break;
                 case 2: //Month
-                    cursor = DatabaseAccess.getRecordsFromTable("tblMonth", "flngMonthID", mTime.mlngTimeframeID);
+                    cursor = DatabaseAccess.getRecordsFromTable("tblMonth", "flngMonthID", tempTime.mlngTimeframeID);
 
                     while(cursor.moveToNext()){
                         setMonthDetails((cursor.getInt(cursor.getColumnIndex("fblnFirst")) == 1)? true : false,

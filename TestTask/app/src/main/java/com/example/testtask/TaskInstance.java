@@ -115,7 +115,7 @@ public class TaskInstance {
         DatabaseAccess.updateRecordFromTable("tblTaskInstance",
                 "flngInstanceID",
                 mlngInstanceID,
-                new String[] {"fdtmRemoved"},
+                new String[] {"fdtmDeleted"},
                 new Object[] {Task_Display.getCurrentCalendar()});
     }
 }

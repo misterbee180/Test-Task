@@ -2,6 +2,7 @@ package com.example.testtask;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -140,10 +141,6 @@ public class Details_Task extends AppCompatActivity {
         return -1;
     }
 
-    public boolean wasEdited(){
-        return (wasDetailsEdited() || wasTimeEdited() || wasSessionEdited());
-    }
-
     public boolean wasDetailsEdited(){
         if (!mTitle.getText().equals(mTask.mstrTitle)
         || !mDescription.getText().equals(mTask.mstrDescription))
@@ -156,19 +153,31 @@ public class Details_Task extends AppCompatActivity {
         return false;
     }
 
-    public boolean wasSessionReplaced(){
-        if(mTask.mlngTaskID != -1) //Task was loaded
-        {
-            if(isSessionSet() && (getSession() != mTask.mlngTimeID)){ //Selected session time doesn't match current time
-                //Either session replacing session or session replacing time.
+    public boolean wasSessionSessionReplaced(){
+        if(mTask.mlngTaskID != -1){ //Task was loaded
+            if(isSessionSet() && TimeKeeper.mTime.isSession() && (getSession() != TimeKeeper.mTime.mlngTimeID)){
+                return true;
             }
         }
+        return false;
     }
 
-    public boolean wasSessionEdited(){
-        if((isSessionSet() && getSession()) != mTask.mlngTimeID){
-            return true;
-        } return false;
+    public boolean wasSessionTimeReplaced(){
+        if(mTask.mlngTaskID != -1){ //Task was loaded
+            if(!isSessionSet() && TimeKeeper.mTime.isSession()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean wasTimeSessionReplace(){
+        if(mTask.mlngTaskID != -1){
+            if(isSessionSet() && !TimeKeeper.mTime.isSession()){
+                return true;
+            }
+        }
+        return false;
     }
     //endregion
 
@@ -270,8 +279,48 @@ public class Details_Task extends AppCompatActivity {
     public void CreateTask(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            if(wasEdited()){
-                if(wasTimeEdited()){
+            if(mTask.mlngTaskID != -1) {
+                if (wasDetailsEdited()) {
+                    mTask.updateTaskDetails(mTitle.getText().toString(),
+                            mDescription.getText().toString());
+                }
+
+                if (wasSessionSessionReplaced()) {
+                    //replace time id
+                    DatabaseAccess.updateRecordFromTable("tblTask",
+                            "flngTaskID",
+                            mTask.mlngTaskID,
+                            new String[]{"flngTimeID"},
+                            new Object[]{getSession()});
+                } else if (wasSessionTimeReplaced()) {
+                    //create new time id and replace.
+                    timeKeeper.createTimeDetails();
+                    DatabaseAccess.updateRecordFromTable("tblTask",
+                            "flngTaskID",
+                            mTask.mlngTaskID,
+                            new String[]{"flngTimeID"},
+                            new Object[]{timeKeeper.mTime.mlngTimeID});
+                    //Remove instances associated w/ original time
+                    Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mTask.mlngTaskID);
+                    while(curInstances.moveToNext()){
+                        TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
+                        ti.deleteInstance();
+                    }
+                    timeKeeper.mTime.generateInstances(true);
+                } else if (wasTimeSessionReplace()) {
+                    //complete time and replace id
+                    timeKeeper.mTime.completeTime();
+                    mTask.replaceTimeId(getSession());
+                    timeKeeper.lo
+                    DatabaseAccess.updateRecordFromTable("tblTask",
+                            "flngTaskID",
+                            mTask.mlngTaskID,
+                            new String[]{"flngTimeID"},
+                            new Object[]{getSession()});
+
+
+                } else if (wasTimeEdited()) {
+                    //Update time details
                 }
             } else {
                 if(getOneOff() != -1){

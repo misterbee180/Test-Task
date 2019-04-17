@@ -90,4 +90,21 @@ public class Task {
                 mlngTaskID);
         return true;
     }
+
+    public void updateTaskDetails(String pstrTitle,
+                                  String pstrDescription){
+        DatabaseAccess.updateRecordFromTable("tblTaskDetail",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"fstrTitle","fstrDescription"},
+                new Object[]{pstrTitle,pstrDescription})
+    }
+
+    public void replaceTimeId(long plngTimeId){
+        DatabaseAccess.updateRecordFromTable("tblTask",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"flngTimeID"},
+                new Object[]{plngTimeId});
+    }
 }
