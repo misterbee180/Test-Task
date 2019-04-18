@@ -18,8 +18,8 @@ public class Details_Task extends AppCompatActivity {
     //Declare local variables
     Spinner mSession;
     Spinner mGroup;
-    static Task mTask;
-    static Time mTime;
+    Task mTask;
+    Time mTime;
     long mlngEventID;
     long mlngLongTermID;
     long mlngGroupID;
@@ -53,7 +53,6 @@ public class Details_Task extends AppCompatActivity {
 
     public void setSession(long plngTimeId){
         mSessionList.setIDSpinner(plngTimeId);
-        
     }
 
     public long getOneOff() {
@@ -109,6 +108,7 @@ public class Details_Task extends AppCompatActivity {
         timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
         timeKeeper.setMode(1);
         mTask = new Task();
+        mTime = new Time();
         mlngEventID = -1;
         mlngLongTermID = -1;
         mlngGroupID = -1;
@@ -201,9 +201,8 @@ public class Details_Task extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
-            long taskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
-            if (taskId != -1) {
-                mTask = new Task(taskId);
+            mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
+            if(mTask.mlngTaskID != -1){
                 //Get all data from the task and apply it to the control
                 setOneOff(mTask.mlngOneOff);
                 setSession(mTask.mlngTimeID);
@@ -213,11 +212,10 @@ public class Details_Task extends AppCompatActivity {
                 if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
                 if (mTask.mintTaskType == 3) mlngGroupID = mTask.mlngTaskTypeID;
                 timeKeeper.loadTimeDetails(mTask.mlngTimeID);
-            } else {
-                mlngEventID = getIntent().getIntExtra("EXTRA_EVENT_ID",-1);
-                mlngLongTermID = getIntent().getIntExtra("EXTRA_LONGTERM_ID",-1);
-                mlngGroupID = getIntent().getIntExtra("EXTRA_GROUP_ID",-1);
             }
+            mlngEventID = extras.getLong("EXTRA_EVENT_ID",-1);
+            mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID",-1);
+            mlngGroupID = extras.getLong("EXTRA_GROUP_ID",-1);
         }
     }
 
@@ -256,10 +254,10 @@ public class Details_Task extends AppCompatActivity {
             if(getOneOff() != -1){
                 oneOffTimeCopy();
             } else if(getSession() != -1){
-            } else {
+            } else if(mlngEventID == -1) {
                 mTime = timeKeeper.createTimeDetails();
             }
-            mTask = new Task(mTask.mlngTaskID,
+            mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function
                     mTime.mlngTimeID,
                     Task_Display.getCurrentCalendar().getTimeInMillis(),
                     getTaskTitle(),
@@ -268,7 +266,6 @@ public class Details_Task extends AppCompatActivity {
                     getTaskType(),
                     getTaskTypeID(),
                     getOneOff());
-            mTask.saveTask();
 
             mTime.generateInstances(true);
 
