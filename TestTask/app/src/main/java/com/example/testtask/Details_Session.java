@@ -14,9 +14,9 @@ import android.widget.TextView;
 public class Details_Session extends AppCompatActivity{
 
     static ArrayListContainer mSessionTaskList;
-    TimeKeeper timeKeeper;
-    Long mlngSessionId = (long)-1;
+    TimeKeeper timeKeeper;;
     Intent mIntent;
+    Time mTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +24,12 @@ public class Details_Session extends AppCompatActivity{
         setContentView(R.layout.activity_task_session);
         timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
         timeKeeper.setMode(2);
+        mTime = new Time();
 
         mIntent = getIntent();
         Bundle extras = mIntent.getExtras();
         if (extras != null){
-            mlngSessionId = getIntent().getLongExtra("EXTRA_SESSION_ID",-1);
+            mTime = new Time(getIntent().getLongExtra("EXTRA_TIME_ID",-1));
         }
 
         ListView mSessionView = (ListView) findViewById(R.id.lsvSessionTaskList);
@@ -49,26 +50,28 @@ public class Details_Session extends AppCompatActivity{
     @Override
     protected void onResume(){
         super.onResume();
-        if (mlngSessionId != -1){
+        if (mTime.mlngTimeID != -1){
             LoadSession();
         }
     }
 
     private void LoadSession() {
-        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblSession", "flngSessionID", mlngSessionId);
+        Cursor curSession = mTime.getSession();
 
-        while(cursor.moveToNext()){
-            setSessionTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
-            timeKeeper.loadTimeDetails(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+        if(curSession.moveToNext()){
+            setSessionTitle(curSession.getString(curSession.getColumnIndex("fstrTitle")));
+            timeKeeper.loadTimeDetails(mTime.mlngTimeID);
         }
 
         Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
                 "flngTimeID",
-                timeKeeper.mTime.mlngTimeID);
+                mTime.mlngTimeID);
 
         mSessionTaskList.Clear();
         while (tblTask.moveToNext()){
-            mSessionTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            Task tempTask = new Task(tblTask.getLong(tblTask.getColumnIndex("flngTaskID")));
+            mSessionTaskList.Add(tempTask.mstrTitle,
+                    tempTask.mlngTaskID);
         }
         mSessionTaskList.mAdapter.notifyDataSetChanged();
     }
@@ -77,17 +80,15 @@ public class Details_Session extends AppCompatActivity{
         DatabaseAccess.mDatabase.beginTransaction();
         try {
             //todo: add validation to session before it attempts to be created
-            if (mlngSessionId == -1){ //Initial creation
-                timeKeeper.createTimeDetails();
-                mlngSessionId = createSession(getSessionTitle(), timeKeeper.mTime.mlngTimeID);
-            } else { //Updating
-                timeKeeper.updateTimeDetails();
-                updateSessionRecord();
-                //Todo: Reevaluate tasks associated to this session (NOT ONE OFF TASKS)
+            mTime = timeKeeper.createTimeDetails();
+            mTime.createSession(getSessionTitle());
+            if(mTime.mlngTimeID != -1){
+               //Find tasks w/ associated session.
+                //remove instances and re-generate instances for all tasks
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
 
-            mIntent.putExtra("EXTRA_SESSION_ID", mlngSessionId);
+            mIntent.putExtra("EXTRA_TIME_ID", mTime.mlngTimeID);
             setResult(RESULT_OK, mIntent);
             finish();
         } catch (Exception e) {
@@ -95,23 +96,6 @@ public class Details_Session extends AppCompatActivity{
         } finally {
             DatabaseAccess.mDatabase.endTransaction();
         }
-    }
-
-    private void updateSessionRecord() {
-            String rawUpdateSessionRecord = "UPDATE tblSession \n" +
-                    "SET fstrTitle = '" + getSessionTitle() + "' \n" +
-                    "WHERE flngSessionID = " + Long.toString(mlngSessionId);
-            Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateSessionRecord,null);
-            c.moveToFirst();
-            c.close();
-    }
-
-    private long createSession(String pstrTitle,
-                               Long plngTimeId){
-        ContentValues values = new ContentValues();
-        values.put("fstrTitle", pstrTitle);
-        values.put("flngTimeId", plngTimeId);
-        return DatabaseAccess.mDatabase.insertOrThrow("tblSession",null,values);
     }
 
     public String getSessionTitle() {

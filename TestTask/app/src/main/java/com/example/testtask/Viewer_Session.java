@@ -50,7 +50,7 @@ public class Viewer_Session extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent intent = new Intent(getBaseContext(), Details_Session.class);
-            intent.putExtra("EXTRA_SESSION_ID", mSessionList.getID(position));
+            intent.putExtra("EXTRA_TIME_ID", mSessionList.getID(position));
             startActivity(intent);
 
 //            Bundle bundle = new Bundle();
@@ -110,29 +110,6 @@ public class Viewer_Session extends AppCompatActivity {
         }
     }
 
-    public static class EditSessionFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpSessionID = getArguments().getLong("SessionID");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Session")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Details_Session.class);
-                            intent.putExtra("EXTRA_SESSION_ID", tmpSessionID);
-                            startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
     public  void createNewSession() {
         Intent intent = new Intent(this, Details_Session.class);
         startActivity(intent);
@@ -146,7 +123,7 @@ public class Viewer_Session extends AppCompatActivity {
 
         mSessionList.Clear();
         while (cursor.moveToNext()){
-            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngSessionID")));
+            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTimeID")));
         }
         mSessionList.mAdapter.notifyDataSetChanged();
     }
