@@ -19,7 +19,8 @@ public class Details_Task extends AppCompatActivity {
     //Declare local variables
     Spinner mSession;
     Spinner mGroup;
-    static Task mTask;
+    Task mTask;
+    Time mTime;
     long mlngEventID;
     long mlngLongTermID;
     long mlngGroupID;
@@ -97,7 +98,6 @@ public class Details_Task extends AppCompatActivity {
 
     public void setSession(long plngTimeId){
         mSessionList.setIDSpinner(plngTimeId);
-
     }
 
     public long getOneOff() {
@@ -154,8 +154,8 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean wasSessionSessionReplaced(){
-        if(mTask.mlngTaskID != -1){ //Task was loaded
-            if(isSessionSet() && TimeKeeper.mTime.isSession() && (getSession() != TimeKeeper.mTime.mlngTimeID)){
+        if(mTask.mlngTaskID != -1) { //Task was loaded
+            if (isSessionSet() && TimeKeeper.mTime.isSession() && (getSession() != TimeKeeper.mTime.mlngTimeID)) {
                 return true;
             }
         }
@@ -181,6 +181,66 @@ public class Details_Task extends AppCompatActivity {
     }
     //endregion
 
+    //region Overridden Functions
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_details);
+        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
+        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
+        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
+        timeKeeper.setMode(1);
+        mTask = new Task();
+        mTime = new Time();
+        mlngEventID = -1;
+        mlngLongTermID = -1;
+        mlngGroupID = -1;
+
+        mGroup = (Spinner) findViewById(R.id.spnTaskGroupSel);
+        mGroupList = new ArrayListContainer();
+        mGroupList.LinkArrayToSpinner(mGroup, this);
+
+        mSession = (Spinner) findViewById(R.id.spnTaskSessSel);
+        mSessionList = new ArrayListContainer();
+        mSessionList.LinkArrayToSpinner(mSession, this);
+        mSessionList.mSpinner.setOnItemSelectedListener(sessionListener);
+
+
+        retrieveExtras();
+        setupInitialVisibility();
+        setupViews();
+    }
+
+    //region Listeners
+    AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            if(mSessionList.getID(position) != -1){
+                //Deactivate timekeeper for editing
+                timeKeeper.loadTimeDetails(mSessionList.getID(position));
+                //Inactivate view
+                timeKeeper.setActiveTimekeeper(false);
+                //Provide one off opportunity
+                (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
+                setOneOff(mSessionList.getID(position));
+            } else {
+                //Reactivate timekeeper for editing
+                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
+                //activate view
+                timeKeeper.setActiveTimekeeper(true);
+                //Remove one off opportunity
+                (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
+                setOneOff(mSessionList.getID(position));
+            }
+        }
+
+        public void onNothingSelected(AdapterView<?> adapterView){
+        }
+    };
+
+
+    //endregion
+
     //region ACTIVITY INITIALIZAION
     private void setupViews() {
         if (mlngGroupID != -1){//Group
@@ -190,7 +250,7 @@ public class Details_Task extends AppCompatActivity {
         if (mlngEventID == -1){
             LoadSessionSpinner();
             LoadGroupSpinner();
-            if(timeKeeper.mTime.mlngTimeID != -1){
+            if(mTask.mlngTimeID != -1){
                 setOneOff(mTask.mlngOneOff);
                 //It will only set it to one or the other because only 1 should ever evaluate to a record.
                 setSession(mTask.mlngOneOff);
@@ -218,9 +278,8 @@ public class Details_Task extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
-            long taskId = getIntent().getLongExtra("EXTRA_TASK_ID",-1);
-            if (taskId != -1) {
-                mTask = new Task(taskId);
+            mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
+            if(mTask.mlngTaskID != -1){
                 //Get all data from the task and apply it to the control
                 setOneOff(mTask.mlngOneOff);
                 setSession(mTask.mlngTimeID);
@@ -230,11 +289,10 @@ public class Details_Task extends AppCompatActivity {
                 if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
                 if (mTask.mintTaskType == 3) mlngGroupID = mTask.mlngTaskTypeID;
                 timeKeeper.loadTimeDetails(mTask.mlngTimeID);
-            } else {
-                mlngEventID = getIntent().getIntExtra("EXTRA_EVENT_ID",-1);
-                mlngLongTermID = getIntent().getIntExtra("EXTRA_LONGTERM_ID",-1);
-                mlngGroupID = getIntent().getIntExtra("EXTRA_GROUP_ID",-1);
             }
+            mlngEventID = extras.getLong("EXTRA_EVENT_ID",-1);
+            mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID",-1);
+            mlngGroupID = extras.getLong("EXTRA_GROUP_ID",-1);
         }
     }
 
@@ -323,30 +381,28 @@ public class Details_Task extends AppCompatActivity {
                     //Update time details
                 }
             } else {
-                if(getOneOff() != -1){
-                    timeKeeper.oneOffTimeCopy();
-                } else if(getSession() != -1){
-                } else {
-                    timeKeeper.createTimeDetails();
+                if (getOneOff() != -1) {
+                    oneOffTimeCopy();
+                } else if (getSession() != -1) {
+                } else if (mlngEventID == -1) {
+                    mTime = timeKeeper.createTimeDetails();
                 }
-                mTask = new Task(mTask.mlngTaskID,
-                        timeKeeper.mTime.mlngTimeID,
+                mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function
+                        mTime.mlngTimeID,
                         Task_Display.getCurrentCalendar().getTimeInMillis(),
                         getTaskTitle(),
                         getTaskDesc(),
-                        (long)-1,
+                        (long) -1,
                         getTaskType(),
                         getTaskTypeID(),
                         getOneOff());
-                mTask.saveTask();
 
-                timeKeeper.mTime.generateInstances(true);
+                mTime.generateInstances(true);
+                setResult(RESULT_OK);
+                finish();
+
+                DatabaseAccess.mDatabase.setTransactionSuccessful();
             }
-
-            setResult(RESULT_OK);
-            finish();
-
-            DatabaseAccess.mDatabase.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -382,6 +438,21 @@ public class Details_Task extends AppCompatActivity {
         public void onNothingSelected(AdapterView<?> adapterView) {
         }
     };
+
+    public void oneOffTimeCopy(){
+        mTime = new Time(mTime.getNextPriority(),
+                timeKeeper.getToDate(),
+                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                timeKeeper.mblnFromTime,
+                timeKeeper.mblnToTime,
+                timeKeeper.mblnToDate,
+                -1,
+                -1,
+                0,
+                0,
+                false,
+                -1);
+    }
 
     public void StartNewSession(View view) {
         Intent intent = new Intent(this, Details_Session.class);

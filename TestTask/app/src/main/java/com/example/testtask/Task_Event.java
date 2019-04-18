@@ -179,11 +179,10 @@ public class Task_Event extends AppCompatActivity {
             fab.setVisibility(View.GONE);
             findViewById(R.id.lsvEventTaskList).setVisibility(View.GONE);
             findViewById(R.id.txtEventAddReq).setVisibility(View.GONE);
-            findViewById(R.id.btnLongTermConfirm).setVisibility(View.VISIBLE);
+            findViewById(R.id.btnEventConfirm).setVisibility(View.VISIBLE);
         } else {
             //No Tasks Associated with Event
             fab.setVisibility(View.VISIBLE);
-            findViewById(R.id.btnLongTermConfirm).setVisibility(View.GONE);
             if (mEventTasks.mArrayList.size() == 0){
                 findViewById(R.id.txtEventAddReq).setVisibility(View.VISIBLE);
                 findViewById(R.id.lsvEventTaskList).setVisibility(View.GONE);
@@ -203,15 +202,22 @@ public class Task_Event extends AppCompatActivity {
         }
     }
 
-    public void confirmActivity(View view){
-        if (mlngEventID == -1){
+    public void confirmEventCreation(View view){
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
             mlngEventID = DatabaseAccess.addRecordToTable("tblEvent",
                     new String[] {"fstrTitle","fstrDescription"},
-                    new String[] {getEventTitle(), getEventDescription()});
+                    new String[] {getEventTitle(), getEventDescription()},
+                    "flngEventID",
+                    mlngEventID);
             setupInitialVisibility();
-        } else {
             setResult(RESULT_OK);
             finish();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch(Exception e){
+            e.printStackTrace();
+        } finally {
+            DatabaseAccess.mDatabase.endTransaction();
         }
     }
 

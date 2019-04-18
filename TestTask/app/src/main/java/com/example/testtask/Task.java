@@ -32,6 +32,7 @@ public class Task {
     }
 
     public Task(Long plngTaskID){
+        this();
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTaskID", plngTaskID);
         if(cursor.moveToFirst()){
             mlngTaskID = cursor.getLong(cursor.getColumnIndex("flngTaskID"));
@@ -69,6 +70,8 @@ public class Task {
         mintTaskType = pintTaskType;
         mlngTaskTypeID = plngTaskTypeID;
         mlngOneOff = plngOneOff;
+
+        saveTask();
     }
 
     public boolean saveTask(){
