@@ -19,6 +19,7 @@ public class Details_Task extends AppCompatActivity {
     Spinner mSession;
     Spinner mGroup;
     static Task mTask;
+    static Time mTime;
     long mlngEventID;
     long mlngLongTermID;
     long mlngGroupID;
@@ -134,16 +135,16 @@ public class Details_Task extends AppCompatActivity {
             if(mSessionList.getID(position) != -1){
                 //Deactivate timekeeper for editing
                 timeKeeper.loadTimeDetails(mSessionList.getID(position));
+                //Inactivate view
                 timeKeeper.setActiveTimekeeper(false);
-
                 //Provide one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
                 setOneOff(mSessionList.getID(position));
             } else {
                 //Reactivate timekeeper for editing
                 timeKeeper.loadTimeDetails(mTask.mlngTimeID);
+                //activate view
                 timeKeeper.setActiveTimekeeper(true);
-
                 //Remove one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
                 setOneOff(mSessionList.getID(position));
@@ -172,7 +173,7 @@ public class Details_Task extends AppCompatActivity {
         if (mlngEventID == -1){
             LoadSessionSpinner();
             LoadGroupSpinner();
-            if(timeKeeper.mTime.mlngTimeID != -1){
+            if(mTask.mlngTimeID != -1){
                 setOneOff(mTask.mlngOneOff);
                 //It will only set it to one or the other because only 1 should ever evaluate to a record.
                 setSession(mTask.mlngOneOff);
@@ -253,13 +254,13 @@ public class Details_Task extends AppCompatActivity {
         DatabaseAccess.mDatabase.beginTransaction();
         try {
             if(getOneOff() != -1){
-                timeKeeper.oneOffTimeCopy();
+                oneOffTimeCopy();
             } else if(getSession() != -1){
             } else {
-                timeKeeper.createTimeDetails();
+                mTime = timeKeeper.createTimeDetails();
             }
             mTask = new Task(mTask.mlngTaskID,
-                    timeKeeper.mTime.mlngTimeID,
+                    mTime.mlngTimeID,
                     Task_Display.getCurrentCalendar().getTimeInMillis(),
                     getTaskTitle(),
                     getTaskDesc(),
@@ -269,7 +270,7 @@ public class Details_Task extends AppCompatActivity {
                     getOneOff());
             mTask.saveTask();
 
-            timeKeeper.mTime.generateInstances(true);
+            mTime.generateInstances(true);
 
             setResult(RESULT_OK);
             finish();
@@ -280,6 +281,21 @@ public class Details_Task extends AppCompatActivity {
         } finally {
             DatabaseAccess.mDatabase.endTransaction();
         }
+    }
+
+    public void oneOffTimeCopy(){
+        mTime = new Time(mTime.getNextPriority(),
+                timeKeeper.getToDate(),
+                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                timeKeeper.mblnFromTime,
+                timeKeeper.mblnToTime,
+                timeKeeper.mblnToDate,
+                -1,
+                -1,
+                0,
+                0,
+                false,
+                -1);
     }
 
     public void StartNewSession(View view) {

@@ -26,7 +26,7 @@ public class Time {
         mblnFromTime = false;
         mblnToTime = false;
         mblnToDate = false;
-        mintTimeframe = 1;
+        mintTimeframe = -1;
         mlngTimeframeID = -1;
         mlngRepetition = -1;
         mdtmCreated = -1;
@@ -81,6 +81,8 @@ public class Time {
         mintStarting = plngStarting;
         mblnComplete = pblnComplete;
         mlngGenerationID = plngGenerationID;
+
+        saveTime();
     }
 
     public void saveTime(){
@@ -687,10 +689,15 @@ public class Time {
         }
     }
 
-    public void createSession(Long plngTimeID,
-                              String pstrTitle){
+    public void createSession(String pstrTitle){
         DatabaseAccess.addRecordToTable("tblSession",
                 new String[] {"flngTimeID","fstrTitle"},
-                new Object[] {plngTimeID, pstrTitle});
+                new Object[] {mlngTimeID, pstrTitle},
+                "fstrTimeID",
+                mlngTimeID);
+    }
+
+    public Cursor getSession(){
+        return DatabaseAccess.getRecordsFromTable("tblSession", "flngTimeID", mlngTimeID);
     }
 }
