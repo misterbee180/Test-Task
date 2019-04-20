@@ -116,6 +116,6 @@ public class TaskInstance {
                 "flngInstanceID",
                 mlngInstanceID,
                 new String[] {"fdtmDeleted"},
-                new Object[] {Task_Display.getCurrentCalendar()});
+                new Object[] {Task_Display.getCurrentCalendar().getTimeInMillis()});
     }
 }

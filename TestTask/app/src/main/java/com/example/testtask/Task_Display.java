@@ -258,14 +258,13 @@ public class Task_Display extends AppCompatActivity {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 //if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) { //if possibility that instance needs generating
                     tempTime.buildGenerationPoints(); //build generation points
-                    tempTime.generateInstances(false); //Add any new instances that need adding
+                    tempTime.generateInstances(false,-1); //Add any new instances that need adding
                // }
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
+            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
-            DatabaseAccess.mDatabase.endTransaction();
         }
     }
 

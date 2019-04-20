@@ -56,9 +56,10 @@ public class Time {
         cursor.close();
     }
     
-    public Time(Long pdtmFrom,
-                Long pdtmTo,
-                Long pdtmCreated,
+    public Time(long plngTimeID,
+                long pdtmFrom,
+                long pdtmTo,
+                long pdtmCreated,
                 boolean pblnFromTime,
                 boolean pblnToTime,
                 boolean pblnToDate,
@@ -69,6 +70,7 @@ public class Time {
                 boolean pblnComplete,
                 long plngGenerationID){
 
+        mlngTimeID = plngTimeID;
         mdtmFrom = pdtmFrom;
         mdtmTo = pdtmTo;
         mblnToDate = pblnToDate;
@@ -116,6 +118,18 @@ public class Time {
             return true;
         }
         return false;
+    }
+
+    public void createSession(String pstrTitle){
+        DatabaseAccess.addRecordToTable("tblSession",
+                new String[] {"flngTimeID","fstrTitle"},
+                new Object[] {mlngTimeID, pstrTitle},
+                "flngTimeID",
+                mlngTimeID);
+    }
+
+    public Cursor getSession(){
+        return DatabaseAccess.getRecordsFromTable("tblSession", "flngTimeID", mlngTimeID);
     }
     //endregion
 
@@ -180,6 +194,16 @@ public class Time {
         return rtn == 0 ? -1 : rtn;
     }
 
+    public void clearGenerationPoints(){
+        DatabaseAccess.deleteRecordFromTable("tblTimeGeneration",
+                "flngTimeID",
+                mlngTimeID);
+        DatabaseAccess.updateRecordFromTable("tblTime",
+                "flngTimeID",
+                mlngTimeID,
+                new String[]{"flngGenerationID"},
+                new Object[]{(long)-1});
+    }
 
     public void buildGenerationPoints(){
         TimeGeneration tGen = new TimeGeneration(mlngTimeID);
@@ -648,24 +672,37 @@ public class Time {
         }
     }
 
-    public void generateInstances(Boolean pblnInitial){
+    public void generateInstances(Boolean pblnInitial,
+                                  long plngTaskId){
         long lngGenID = mlngGenerationID;
         Cursor tblTimeGeneration = getValidGenerationPoints();
 
+        Task tempTask = new Task(plngTaskId);
         while(tblTimeGeneration.moveToNext()){
             if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
                     tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID")) > mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
-                Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
-                while (tblTaskCursor.moveToNext()) {
-                    if(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("fdtmDeleted")) == -1){ //Add instance for all non deleted tasks
-                        TaskInstance ti = new TaskInstance(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")),
-                                tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskDetailID")),
-                                tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("fdtmPriority")),
-                                mdtmTo,
-                                mblnFromTime,
-                                mblnToTime,
-                                mblnToDate,
-                                Task_Display.getCurrentCalendar().getTimeInMillis());
+                if(plngTaskId != -1){
+                    new TaskInstance(tempTask.mlngTaskID,
+                            tempTask.mlngTaskDetailID,
+                            tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("fdtmPriority")),
+                            mdtmTo,
+                            mblnFromTime,
+                            mblnToTime,
+                            mblnToDate,
+                            Task_Display.getCurrentCalendar().getTimeInMillis());
+                }else{
+                    Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
+                    while (tblTaskCursor.moveToNext()) {
+                        if(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("fdtmDeleted")) == -1){ //Add instance for all non deleted tasks
+                            new TaskInstance(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")),
+                                    tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskDetailID")),
+                                    tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("fdtmPriority")),
+                                    mdtmTo,
+                                    mblnFromTime,
+                                    mblnToTime,
+                                    mblnToDate,
+                                    Task_Display.getCurrentCalendar().getTimeInMillis());
+                        }
                     }
                 }
                 if(lngGenID < tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID"))){ //Updates
@@ -705,17 +742,22 @@ public class Time {
         mblnComplete = true;
         saveTime();
     }
+
+    public void refreshInstances(){
+        Cursor curTask = DatabaseAccess.mDatabase.query("tblTask",
+                new String[] {"flngTaskID"},
+                "fdtmDeleted = -1 and flngTimeID = ?",
+                new String[] {Long.toString(mlngTimeID)},
+                null,
+                null,
+                null);
+
+        while (curTask.moveToNext()){
+            Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
+            tempTask.clearActiveInstances();
+        }
+
+        generateInstances(true, -1);
+    }
     //endregion
-
-    public void createSession(String pstrTitle){
-        DatabaseAccess.addRecordToTable("tblSession",
-                new String[] {"flngTimeID","fstrTitle"},
-                new Object[] {mlngTimeID, pstrTitle},
-                "fstrTimeID",
-                mlngTimeID);
-    }
-
-    public Cursor getSession(){
-        return DatabaseAccess.getRecordsFromTable("tblSession", "flngTimeID", mlngTimeID);
-    }
 }

@@ -2,7 +2,6 @@ package com.example.testtask;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -24,14 +23,13 @@ public class Details_Task extends AppCompatActivity {
     long mlngEventID;
     long mlngLongTermID;
     long mlngGroupID;
+    boolean mblnLoaded;
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
     static TimeKeeper timeKeeper;
     TextView mTitle;
     TextView mDescription;
-
-
 
     //region Overridden Functions
     @Override
@@ -43,9 +41,11 @@ public class Details_Task extends AppCompatActivity {
         timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
         timeKeeper.setMode(1);
         mTask = new Task();
+        mTime = new Time();
         mlngEventID = -1;
         mlngLongTermID = -1;
         mlngGroupID = -1;
+        mblnLoaded = false;
 
         mGroup = (Spinner) findViewById(R.id.spnTaskGroupSel);
         mGroupList = new ArrayListContainer();
@@ -142,20 +142,16 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean wasDetailsEdited(){
-        if (!mTitle.getText().equals(mTask.mstrTitle)
-        || !mDescription.getText().equals(mTask.mstrDescription))
+        if (!mTitle.getText().toString().equals(mTask.mstrTitle)
+        || !mDescription.getText().toString().equals(mTask.mstrDescription))
             return true;
-        return false;
-    }
-
-    public boolean wasTimeEdited(){
-        if (timeKeeper.wasEdited()) return true;
         return false;
     }
 
     public boolean wasSessionSessionReplaced(){
         if(mTask.mlngTaskID != -1) { //Task was loaded
-            if (isSessionSet() && TimeKeeper.mTime.isSession() && (getSession() != TimeKeeper.mTime.mlngTimeID)) {
+            if (isSessionSet() && mTime.isSession()
+                    && (getSession() != mTime.mlngTimeID)) {
                 return true;
             }
         }
@@ -164,81 +160,21 @@ public class Details_Task extends AppCompatActivity {
 
     public boolean wasSessionTimeReplaced(){
         if(mTask.mlngTaskID != -1){ //Task was loaded
-            if(!isSessionSet() && TimeKeeper.mTime.isSession()){
+            if(!isSessionSet() && mTime.isSession()){
                 return true;
             }
         }
         return false;
     }
 
-    public boolean wasTimeSessionReplace(){
+    public boolean wasTimeSessionReplaced(){
         if(mTask.mlngTaskID != -1){
-            if(isSessionSet() && !TimeKeeper.mTime.isSession()){
+            if(isSessionSet() && !mTime.isSession()){
                 return true;
             }
         }
         return false;
     }
-    //endregion
-
-    //region Overridden Functions
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task_details);
-        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
-        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
-        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
-        timeKeeper.setMode(1);
-        mTask = new Task();
-        mTime = new Time();
-        mlngEventID = -1;
-        mlngLongTermID = -1;
-        mlngGroupID = -1;
-
-        mGroup = (Spinner) findViewById(R.id.spnTaskGroupSel);
-        mGroupList = new ArrayListContainer();
-        mGroupList.LinkArrayToSpinner(mGroup, this);
-
-        mSession = (Spinner) findViewById(R.id.spnTaskSessSel);
-        mSessionList = new ArrayListContainer();
-        mSessionList.LinkArrayToSpinner(mSession, this);
-        mSessionList.mSpinner.setOnItemSelectedListener(sessionListener);
-
-
-        retrieveExtras();
-        setupInitialVisibility();
-        setupViews();
-    }
-
-    //region Listeners
-    AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            if(mSessionList.getID(position) != -1){
-                //Deactivate timekeeper for editing
-                timeKeeper.loadTimeDetails(mSessionList.getID(position));
-                //Inactivate view
-                timeKeeper.setActiveTimekeeper(false);
-                //Provide one off opportunity
-                (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
-                setOneOff(mSessionList.getID(position));
-            } else {
-                //Reactivate timekeeper for editing
-                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
-                //activate view
-                timeKeeper.setActiveTimekeeper(true);
-                //Remove one off opportunity
-                (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
-                setOneOff(mSessionList.getID(position));
-            }
-        }
-
-        public void onNothingSelected(AdapterView<?> adapterView){
-        }
-    };
-
-
     //endregion
 
     //region ACTIVITY INITIALIZAION
@@ -280,15 +216,17 @@ public class Details_Task extends AppCompatActivity {
         if (extras != null){
             mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
             if(mTask.mlngTaskID != -1){
+                mblnLoaded = true;
                 //Get all data from the task and apply it to the control
-                setOneOff(mTask.mlngOneOff);
                 setSession(mTask.mlngTimeID);
+                setOneOff(mTask.mlngOneOff);
                 setTaskTitle(mTask.mstrTitle);
                 setTaskDesc(mTask.mstrDescription);
                 if (mTask.mintTaskType == 1) mlngEventID = mTask.mlngTaskTypeID;
                 if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
                 if (mTask.mintTaskType == 3) mlngGroupID = mTask.mlngTaskTypeID;
-                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
+                mTime = new Time(mTask.mlngTimeID);
+                timeKeeper.loadTimeDetails(mTime);
             }
             mlngEventID = extras.getLong("EXTRA_EVENT_ID",-1);
             mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID",-1);
@@ -337,55 +275,53 @@ public class Details_Task extends AppCompatActivity {
     public void CreateTask(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
+            //updating and regular creation can probably be joined together but as it's just as simple to keep
+            //them seperated it will for now be.
             if(mTask.mlngTaskID != -1) {
                 if (wasDetailsEdited()) {
                     mTask.updateTaskDetails(mTitle.getText().toString(),
                             mDescription.getText().toString());
                 }
 
-                if (wasSessionSessionReplaced()) {
-                    //replace time id
-                    DatabaseAccess.updateRecordFromTable("tblTask",
-                            "flngTaskID",
-                            mTask.mlngTaskID,
-                            new String[]{"flngTimeID"},
-                            new Object[]{getSession()});
-                } else if (wasSessionTimeReplaced()) {
-                    //create new time id and replace.
-                    timeKeeper.createTimeDetails();
-                    DatabaseAccess.updateRecordFromTable("tblTask",
-                            "flngTaskID",
-                            mTask.mlngTaskID,
-                            new String[]{"flngTimeID"},
-                            new Object[]{timeKeeper.mTime.mlngTimeID});
-                    //Remove instances associated w/ original time
-                    Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mTask.mlngTaskID);
-                    while(curInstances.moveToNext()){
-                        TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
-                        ti.deleteInstance();
+                if(mlngEventID == -1){
+                    if (wasSessionSessionReplaced()) {
+                        mTime = new Time(getSession());
+                        if (getOneOff() != -1) {
+                            mTime = oneOffTimeCopy();
+                        }
+                        //replace time id
+                        mTask.replaceTimeId(mTime.mlngTimeID);
+                    } else if (wasSessionTimeReplaced()) {
+                        //create new time id and replace.
+                        mTime = timeKeeper.createTimeDetails(-1,
+                                -1,
+                                -1);
+                        mTask.replaceTimeId(mTime.mlngTimeID);
+                    } else if (wasTimeSessionReplaced()) {
+                        //complete time and replace id
+                        mTime.completeTime();
+                        mTask.updateOneOff(getOneOff());
+                        mTask.replaceTimeId(getSession());
+                        mTime = new Time(getSession());
+                    } else {
+                        mTime.clearGenerationPoints();
+                        mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
+                                mTime.mintTimeframe,
+                                mTime.mlngTimeframeID);
                     }
-                    timeKeeper.mTime.generateInstances(true);
-                } else if (wasTimeSessionReplace()) {
-                    //complete time and replace id
-                    timeKeeper.mTime.completeTime();
-                    mTask.replaceTimeId(getSession());
-                    timeKeeper.lo
-                    DatabaseAccess.updateRecordFromTable("tblTask",
-                            "flngTaskID",
-                            mTask.mlngTaskID,
-                            new String[]{"flngTimeID"},
-                            new Object[]{getSession()});
-
-
-                } else if (wasTimeEdited()) {
-                    //Update time details
+                    //Remove instances associated w/ original time
+                    mTask.clearActiveInstances();
                 }
             } else {
                 if (getOneOff() != -1) {
-                    oneOffTimeCopy();
+                    mTime = new Time(getSession());
+                    mTime = oneOffTimeCopy();
                 } else if (getSession() != -1) {
+                    mTime = new Time(getSession());
                 } else if (mlngEventID == -1) {
-                    mTime = timeKeeper.createTimeDetails();
+                    mTime = timeKeeper.createTimeDetails(-1,
+                            -1,
+                            -1);
                 }
                 mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function
                         mTime.mlngTimeID,
@@ -396,17 +332,15 @@ public class Details_Task extends AppCompatActivity {
                         getTaskType(),
                         getTaskTypeID(),
                         getOneOff());
-
-                mTime.generateInstances(true);
-                setResult(RESULT_OK);
-                finish();
-
-                DatabaseAccess.mDatabase.setTransactionSuccessful();
             }
+            mTime.generateInstances(true,mTask.mlngTaskID);
+            setResult(RESULT_OK);
+            finish();
+
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            DatabaseAccess.mDatabase.endTransaction();
         }
     }
     //endregion
@@ -415,22 +349,25 @@ public class Details_Task extends AppCompatActivity {
     AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            if(mblnLoaded && mSessionList.getID(position) != mTime.mlngTimeID){
+                mblnLoaded = false;
+            }
             if(mSessionList.getID(position) != -1){
-                //Deactivate timekeeper for editing
+                timeKeeper.resetTimeKeeper();
                 timeKeeper.loadTimeDetails(mSessionList.getID(position));
+                //Deactivate timekeeper for editing
                 timeKeeper.setActiveTimekeeper(false);
-
                 //Provide one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
-                setOneOff(mSessionList.getID(position));
+                if(!mblnLoaded)setOneOff(mSessionList.getID(position));
             } else {
+                timeKeeper.resetTimeKeeper();
+                timeKeeper.loadTimeDetails(mTime);
                 //Reactivate timekeeper for editing
-                timeKeeper.loadTimeDetails(mTask.mlngTimeID);
                 timeKeeper.setActiveTimekeeper(true);
-
                 //Remove one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
-                setOneOff(mSessionList.getID(position));
+                if(!mblnLoaded)setOneOff(mSessionList.getID(position));
             }
         }
 
@@ -439,8 +376,9 @@ public class Details_Task extends AppCompatActivity {
         }
     };
 
-    public void oneOffTimeCopy(){
-        mTime = new Time(mTime.getNextPriority(),
+    public Time oneOffTimeCopy(){
+        return new Time(-1,
+                mTime.getNextPriority(),
                 timeKeeper.getToDate(),
                 Task_Display.getCurrentCalendar().getTimeInMillis(),
                 timeKeeper.mblnFromTime,
