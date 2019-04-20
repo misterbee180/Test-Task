@@ -83,7 +83,7 @@ public class ArrayListContainer {
         }
     }
 
-    public void setIDSpinner(Long plngID){
+    public void setIDSpinner(long plngID){
         Decoder tmpDecoder;
         for (int i = 0; i < mDecoderList.size(); i++){
             tmpDecoder = mDecoderList.get(i);

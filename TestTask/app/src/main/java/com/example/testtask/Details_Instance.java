@@ -102,7 +102,7 @@ public class Details_Instance extends AppCompatActivity {
             case R.id.action_view_task:
                 Intent intent = new Intent(this, Details_Task.class);
                 intent.putExtra("EXTRA_TASK_ID", mInstance.mlngTaskID);
-                startActivity(intent);
+                startActivityForResult(intent, 1);
             /*case R.id.action_delete_task:
                 B*/
             /*case R.id.action_session:
@@ -117,6 +117,20 @@ public class Details_Instance extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (1) : {
+                if (resultCode == RESULT_OK) {
+                    setResult(RESULT_OK);
+                    finish();
+                }
+                break;
+            }
+        }
     }
 
     public static class InstanceDeleteConfirmationFragment extends DialogFragment {
