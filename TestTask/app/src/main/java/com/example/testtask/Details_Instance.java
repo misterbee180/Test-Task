@@ -55,7 +55,8 @@ public class Details_Instance extends AppCompatActivity {
                 mInstance.mdtmTo,
                 mInstance.mblnFromTime,
                 mInstance.mblnToTime,
-                mInstance.mblnToDate);
+                mInstance.mblnToDate,
+                false);
     }
 
     public void ConfirmInstance(View view){

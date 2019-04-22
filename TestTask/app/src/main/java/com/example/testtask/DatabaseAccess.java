@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Switch;
 
 import java.util.Calendar;
 
@@ -46,10 +45,10 @@ public class DatabaseAccess {
         private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
                 "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fintTimeframe INTEGER NOT NULL DEFAULT -1, " +
                 "flngTimeframeID INTEGER NOT NULL DEFAULT -1, flngRepetition INTEGER NOT NULL DEFAULT -1, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
-                "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1)";
+                "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1, fblnThru INTEGER NOT NULL DEFAULT 0)";
 
-        private static final String CREATE_TIME_GENERATION_TABLE = "CREATE TABLE tblTimeGeneration (flngGenerationID INTEGER PRIMARY KEY, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
-                "fdtmUpcoming INTEGER NOT NULL DEFAULT -1, fdtmPriority INTEGER NOT NULL DEFAULT -1)";
+        private static final String CREATE_TIME_INSTANCE_TABLE = "CREATE TABLE tblTimeInstance (flngGenerationID INTEGER PRIMARY KEY, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
+                "fdtmUpcoming INTEGER NOT NULL DEFAULT -1, fdtmPriority INTEGER NOT NULL DEFAULT -1, fintThru INTEGER NOT NULL DEFAULT 0)";
 
         private static final String CREATE_EVENT_TABLE = "CREATE TABLE tblEvent (flngEventID INTEGER PRIMARY KEY , fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
 
@@ -96,8 +95,8 @@ public class DatabaseAccess {
         private static final String DROP_LONGTERM_TABLE=
                 "DROP TABLE IF EXISTS tblLongTerm";
 
-        private static final String DROP_TIME_GENERATION_TABLE =
-                "DROP TABLE IF EXISTS tblTimeGeneration";
+        private static final String DROP_TIME_INSTANCE_TABLE =
+                "DROP TABLE IF EXISTS tblTimeInstance";
         //endregion
 
         //region TABLE TRUNCATE SCRIPTS
@@ -134,8 +133,8 @@ public class DatabaseAccess {
         private static final String TRUNCATE_LONGTERM_TABLE=
                 "DELETE FROM tblLongTerm";
 
-        private static final String TRUNCATE_TIME_GENERATION_TABLE=
-                "DELETE FROM tblTimeGeneration";
+        private static final String TRUNCATE_TIME_INSTANCE_TABLE =
+                "DELETE FROM tblTimeInstance";
         //endregion
 
         @Override
@@ -152,7 +151,7 @@ public class DatabaseAccess {
             db.execSQL(CREATE_YEAR_TABLE);
             db.execSQL(CREATE_GROUP_TABLE);
             db.execSQL(CREATE_LONGTERM_TABLE);
-            db.execSQL(CREATE_TIME_GENERATION_TABLE);
+            db.execSQL(CREATE_TIME_INSTANCE_TABLE);
         }
 
         @Override
@@ -1176,11 +1175,11 @@ public class DatabaseAccess {
             }
 
         private void upgradeToV16(SQLiteDatabase db) throws Exception {
-            db.execSQL(CREATE_TIME_GENERATION_TABLE);
+            db.execSQL(CREATE_TIME_INSTANCE_TABLE);
 
             Cursor tblTime = getRecordsFromTable("tblTime");
             while(tblTime.moveToNext()){
-                addRecordToTable("tblTimeGeneration",
+                addRecordToTable("tblTimeInstance",
                         new String[]{"flngTimeID","fdtmUpcoming","fdtmPriority"},
                         new Object[]{tblTime.getLong(tblTime.getColumnIndex("flngTimeID")),
                                 tblTime.getLong(tblTime.getColumnIndex("fdtmUpcoming")),

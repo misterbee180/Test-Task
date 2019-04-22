@@ -53,7 +53,6 @@
             android:id="@+id/CLayWeekly"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-        android:visibility="gone"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/CLayNoFrequency">
 
@@ -119,6 +118,7 @@
         android:id="@+id/CLayMonthly"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/CLayWeekly">
 
@@ -207,6 +207,12 @@
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_To_Time"
         app:layout_constraintTop_toBottomOf="@+id/Timekeeper_BtnFromTime" />
+    <CheckBox
+        android:id="@+id/Timekeeper_ChkThru"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Days Thru"
+        app:layout_constraintTop_toBottomOf="@id/Timekeeper_BtnToTime"/>
 
 
 </android.support.constraint.ConstraintLayout>

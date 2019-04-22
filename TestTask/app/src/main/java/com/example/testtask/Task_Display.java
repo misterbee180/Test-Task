@@ -257,7 +257,7 @@ public class Task_Display extends AppCompatActivity {
             while (timeCursor.moveToNext()) {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 //if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) { //if possibility that instance needs generating
-                    tempTime.buildGenerationPoints(); //build generation points
+                    tempTime.buildTimeInstances(); //build generation points
                     tempTime.generateInstances(false); //Add any new instances that need adding
                // }
             }

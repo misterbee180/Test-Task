@@ -51,6 +51,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     static Button btnFromTime;
     static Button btnToTime;
     static EditText txtMonthlyDays;
+    CheckBox chkThru;
 
     public TimeKeeper(Context context){
         super(context);
@@ -77,6 +78,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         repetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
         btnFromTime = (Button) findViewById(R.id.Timekeeper_BtnFromTime);
         btnToTime = (Button) findViewById(R.id.Timekeeper_BtnToTime);
+        chkThru = (CheckBox) findViewById(R.id.Timekeeper_ChkThru);
 
         //Target No Frequency and Year Fields
         btnFromDate = (Button) findViewById(R.id.Timekeeper_NoFreq_BtnFromDate);
@@ -201,7 +203,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 tempTime.mdtmTo,
                 tempTime.mblnFromTime,
                 tempTime.mblnToTime,
-                tempTime.mblnToDate);
+                tempTime.mblnToDate,
+                tempTime.mblnThru);
         loadRepetitionDetails(tempTime.mlngRepetition,
                 tempTime.mintTimeframe,
                 tempTime.mlngTimeframeID);
@@ -211,7 +214,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                 long pdtmTo,
                                 boolean pblnFromTime,
                                 boolean pblnToTime,
-                                boolean pblnToDate){
+                                boolean pblnToDate,
+                                boolean pblnThru){
         setFromDate(pdtmFrom);
         if(pblnToDate){
             setToDate(pdtmTo);
@@ -221,6 +225,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
         if(pblnToTime){
             setToTime(pdtmTo);
+        }
+        if(pblnThru){
+            setThru(pblnThru);
         }
     }
 
@@ -335,6 +342,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         evaluateRepetitionView((long)0);
     }
 
+    public boolean getThru(){
+        return chkThru.isChecked();
+    }
+
+    public void setThru(boolean pblnThru){
+        chkThru.setChecked(pblnThru);
+    }
+
     //endregion
 
     //region Getters And Setters
@@ -432,13 +447,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 break;
             case 1: //Week
                 arrColumns = new String[]{"fblnMonday","fblnTuesday","fblnWednesday","fblnThursday","fblnFriday","fblnSaturday","fblnSunday"};
-                arrValues = new Object[]{mWeek.mblnMonday,
-                        mWeek.mblnTuesday,
-                        mWeek.mblnWednesday,
-                        mWeek.mblnThursday,
-                        mWeek.mblnFriday,
-                        mWeek.mblnSaturday,
-                        mWeek.mblnSunday};
+                arrValues = new Object[]{getDayOfWeek("Monday"),
+                        getDayOfWeek("Tuesday"),
+                        getDayOfWeek("Wednesday"),
+                        getDayOfWeek("Thursday"),
+                        getDayOfWeek("Friday"),
+                        getDayOfWeek("Saturday"),
+                        getDayOfWeek("Sunday")};
                 lngTimeframeKey = (int)DatabaseAccess.addRecordToTable("tblWeek",
                         arrColumns,
                         arrValues);
@@ -476,7 +491,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 getRepetition(),
                 getStarting(),
                 false,
-                -1);
+                -1,
+                getThru());
     }
 
     public void validateTimeDetails(){

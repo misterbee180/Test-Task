@@ -292,7 +292,8 @@ public class Details_Task extends AppCompatActivity {
                 0,
                 0,
                 false,
-                -1);
+                -1,
+                false);
     }
 
     public void StartNewSession(View view) {
