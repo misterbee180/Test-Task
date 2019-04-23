@@ -80,14 +80,15 @@ public class Details_Session extends AppCompatActivity{
         DatabaseAccess.mDatabase.beginTransaction();
         try {
             //todo: add validation to session before it attempts to be created
-            mTime.createSession(getSessionTitle());
-            mTime.clearGenerationPoints();
+            if(mTime.mlngTimeID != -1){
+                mTime.clearGenerationPoints();
+            }
             mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
                     mTime.mintTimeframe,
                     mTime.mlngTimeframeID);
-            if(mTime.mlngTimeID != -1){
-                mTime.refreshInstances();
-            }
+            mTime.createSession(getSessionTitle());
+            mTime.refreshInstances();
+
             DatabaseAccess.mDatabase.setTransactionSuccessful();
 
             mIntent.putExtra("EXTRA_SESSION_ID", mTime.mlngTimeID);

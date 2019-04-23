@@ -73,7 +73,6 @@ public class Task_Group extends AppCompatActivity {
             fab.setVisibility(View.VISIBLE);
             findViewById(R.id.btnGroupConfirm).setVisibility(View.GONE);
             if (mGroupTask.mArrayList.size() == 0){
-                //TODO: Add text to request addition of tasks to group (see event)
                 findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
             } else {
                 findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);

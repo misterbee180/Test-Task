@@ -94,31 +94,24 @@ public class Task {
         return true;
     }
 
-//    public void generateInstances(Boolean pblnInitial){
-//        Time tempTime = new Time(mlngTimeID);
-//        Cursor tblTimeGeneration = getValidGenerationPoints();
-//
-//        while(tblTimeGeneration.moveToNext()){
-//            if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
-//                    tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID")) > tempTime.mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
-//                if(mdtmDeleted == -1){ //Add instance for all non deleted tasks
-//                    TaskInstance ti = new TaskInstance(mlngTaskID,
-//                            mlngTaskDetailID,
-//                            tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("fdtmPriority")),
-//                            tempTime.mdtmTo,
-//                            tempTime.mblnFromTime,
-//                            tempTime.mblnToTime,
-//                            tempTime.mblnToDate,
-//                            Task_Display.getCurrentCalendar().getTimeInMillis());
-//                }
-//                if(lngGenID < tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID"))){ //Updates
-//                    lngGenID = tblTimeGeneration.getLong(tblTimeGeneration.getColumnIndex("flngGenerationID"));
-//                }
-//            }
-//        }
-//
-//        if(lngGenID > mlngGenerationID) updateGenerationID(lngGenID);
-//    }
+    public void deleteTask(){
+        DatabaseAccess.updateRecordFromTable("tblTask",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"fdtmDeleted"},
+                new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+
+        Cursor curActiveInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
+        while(curActiveInstances.moveToNext()){
+            TaskInstance ti = new TaskInstance(curActiveInstances.getLong(curActiveInstances.getColumnIndex("flngInstanceID")));
+            ti.deleteInstance();
+        }
+
+        Time tempTime = new Time(mlngTimeID);
+        if(!tempTime.isSession()){
+            tempTime.completeTime();
+        }
+    }
 
     public void updateTaskDetails(String pstrTitle,
                                   String pstrDescription){

@@ -60,13 +60,21 @@ public class Details_Task extends AppCompatActivity {
         retrieveExtras();
         setupInitialVisibility();
         setupViews();
+<<<<<<< HEAD
+        LoadSessionSpinner();
+        LoadGroupSpinner();
+=======
+>>>>>>> refs/remotes/origin/master
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+<<<<<<< HEAD
+=======
         LoadSessionSpinner();
         LoadGroupSpinner();
+>>>>>>> refs/remotes/origin/master
     }
     //endregion
 
@@ -342,6 +350,7 @@ public class Details_Task extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
     }
     //endregion
 
@@ -378,18 +387,24 @@ public class Details_Task extends AppCompatActivity {
 
     public Time oneOffTimeCopy(){
         return new Time(-1,
+<<<<<<< HEAD
+                mTime.getNextPriority(false),
+                mTime.getNextPriority(true),
+=======
                 mTime.getNextPriority(),
                 timeKeeper.getToDate(),
+>>>>>>> refs/remotes/origin/master
                 Task_Display.getCurrentCalendar().getTimeInMillis(),
-                timeKeeper.mblnFromTime,
-                timeKeeper.mblnToTime,
-                timeKeeper.mblnToDate,
+                mTime.mblnFromTime,
+                mTime.mblnToTime,
+                mTime.mblnToDate,
                 -1,
                 -1,
                 0,
                 0,
                 false,
-                -1);
+                -1,
+                false);
     }
 
     public void StartNewSession(View view) {
@@ -403,6 +418,7 @@ public class Details_Task extends AppCompatActivity {
         switch(requestCode) {
             case (1) : {
                 if (resultCode == RESULT_OK) {
+                    LoadSessionSpinner();
                     setSession(data.getLongExtra("EXTRA_SESSION_ID", -1));
                 }
                 break;

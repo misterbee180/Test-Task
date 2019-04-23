@@ -54,6 +54,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     static Button btnFromTime;
     static Button btnToTime;
     static EditText txtMonthlyDays;
+    CheckBox chkThru;
 
     public TimeKeeper(Context context){
         super(context);
@@ -80,6 +81,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         mRepetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
         btnFromTime = (Button) findViewById(R.id.Timekeeper_BtnFromTime);
         btnToTime = (Button) findViewById(R.id.Timekeeper_BtnToTime);
+        chkThru = (CheckBox) findViewById(R.id.Timekeeper_ChkThru);
 
         //Target No Frequency and Year Fields
         btnFromDate = (Button) findViewById(R.id.Timekeeper_NoFreq_BtnFromDate);
@@ -395,7 +397,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayNoRep.setVisibility(View.VISIBLE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE); //Todo: Fix design to allow yearly to date repetition
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                //Todo: Fix design to allow yearly to date repetition
                 break;
         }
     }
@@ -410,12 +413,12 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void loadTimeDetails(Time pTime){
-        mblnLoaded = true;
         loadTimeDetails(pTime.mdtmFrom,
                 pTime.mdtmTo,
                 pTime.mblnFromTime,
                 pTime.mblnToTime,
-                pTime.mblnToDate);
+                pTime.mblnToDate,
+                pTime.mblnThru);
         loadRepetitionDetails(pTime.mlngRepetition,
                 pTime.mintTimeframe,
                 pTime.mlngTimeframeID);
@@ -425,7 +428,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                 long pdtmTo,
                                 boolean pblnFromTime,
                                 boolean pblnToTime,
-                                boolean pblnToDate){
+                                boolean pblnToDate,
+                                boolean pblnThru){
         setFromDate(pdtmFrom);
         if(pblnToDate){
             setToDate(pdtmTo);
@@ -435,6 +439,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
         if(pblnToTime){
             setToTime(pdtmTo);
+        }
+        if(pblnThru){
+            setThru(pblnThru);
         }
     }
 
@@ -600,6 +607,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         evaluateRepetitionView((long)0);
     }
 
+    public boolean getThru(){
+        return chkThru.isChecked();
+    }
+
+    public void setThru(boolean pblnThru){
+        chkThru.setChecked(pblnThru);
+    }
+
     //endregion
 
     //region COMPLETION
@@ -638,7 +653,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition()),
                 0,
                 false,
-                -1);
+                -1,
+                getThru());
     }
 
     public long createTimeframe(long plntTimeframeID){
@@ -821,7 +837,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            //Todo: Remove mSetIndicator and use View
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             switch (mSetIndicator) {
                 case 3:
