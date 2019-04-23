@@ -1849,7 +1849,7 @@ public class DatabaseAccess {
     }
 
     public static Cursor retrieveTasksAssociatedWithLongTerm(Long plngLongTermId){
-        String selection = "flngLongTermID = ?";
+        String selection = "flngTaskTypeID = ? and fintTaskType = 2";
         String[] selectionArgs = {Long.toString(plngLongTermId)};
 
         return mDatabase.query("tblTask",

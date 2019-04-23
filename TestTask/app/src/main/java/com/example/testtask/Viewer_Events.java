@@ -157,14 +157,18 @@ public class Viewer_Events extends AppCompatActivity {
             builder.setMessage("Cancel Active Event")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Cursor cursor = DatabaseAccess.retrieveEventTaskInstancesFromEvent(tmpEventID);
-                            while (cursor.moveToNext()){
-                                DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                                        "flngInstanceID",
-                                        cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                                        new String[]{"fdtmCompleted"},
-                                        new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+                            try{
+                                DatabaseAccess.mDatabase.beginTransaction();
+                                Cursor cursor = DatabaseAccess.retrieveEventTaskInstancesFromEvent(tmpEventID);
+                                while (cursor.moveToNext()){
+                                    TaskInstance ti = new TaskInstance(cursor.getLong(cursor.getColumnIndex("flngInstanceID")));
+                                    ti.finishInstance(2);
+                                }
+                                DatabaseAccess.mDatabase.setTransactionSuccessful();
+                            } catch (Exception e){
+                                e.printStackTrace();
                             }
+                            DatabaseAccess.mDatabase.endTransaction();
                             setEventsList();
                         }
                     })

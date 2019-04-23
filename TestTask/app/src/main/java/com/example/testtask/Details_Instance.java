@@ -142,7 +142,7 @@ public class Details_Instance extends AppCompatActivity {
             builder.setMessage("Delete Instance?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            mInstance.deleteInstance();
+                            mInstance.finishInstance(3);
                             Intent intent = new Intent(getActivity(), Task_Display.class);
                             startActivity(intent);
                         }

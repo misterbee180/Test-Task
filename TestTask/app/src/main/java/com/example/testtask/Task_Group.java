@@ -104,12 +104,10 @@ public class Task_Group extends AppCompatActivity {
     public void ceaseGroupCreation(View view) {
         Intent intent = new Intent(this, Task_Display.class);
         if (view.getId() == R.id.btnGroupConfirm) {
-            //todo: add validation to session before it attempts to be created
             if (mlngGroupId == -1){
                 createGroup(getGroupTitle());
             } else {
                 updateGroupRecord();
-                //Todo: Reevaluate tasks associated to this session (NOT ONE OFF TASKS)
             }
 
             //use the result to determine if a session was added.

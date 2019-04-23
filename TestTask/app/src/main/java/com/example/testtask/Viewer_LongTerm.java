@@ -59,18 +59,16 @@ public class Viewer_LongTerm extends AppCompatActivity {
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
+            Intent intent = new Intent(getBaseContext(), Task_LongTerm.class);
             switch(parent.getId()){
                 case R.id.lsvLongTermListUnc:
-                    bundle.putLong("LongTermID", mLongTermListUnc.getID(position));
+                    intent.putExtra("EXTRA_LONGTERM_ID", mLongTermListUnc.getID(position));
                     break;
                 case R.id.lsvLongTermListCmp:
-                    bundle.putLong("LongTermID", mLongTermListCmp.getID(position));
+                    intent.putExtra("EXTRA_LONGTERM_ID", mLongTermListCmp.getID(position));
                     break;
             }
-            DialogFragment newFragment = new EditLongTermFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit LongTerm");
+            startActivity(intent);
         }
     };
 
@@ -120,28 +118,6 @@ public class Viewer_LongTerm extends AppCompatActivity {
         }
     }
 
-    public static class EditLongTermFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Long Term")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_LongTerm.class);
-                            intent.putExtra("EXTRA_LONGTERM_ID", getArguments().getLong("LongTermID"));
-                            startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
     public static void setLongTermList(){
         //Populating complete then populating uncomplete by grabbing all and not adding complete ones
         String rawGetCompleteLongTerms = "SELECT lt.flngLongTermID, lt.fstrTitle \n" +
@@ -149,17 +125,19 @@ public class Viewer_LongTerm extends AppCompatActivity {
                 //Where there's at least one task associated to long term
                 "WHERE EXISTS (SELECT 1 \n" +
                 "FROM tblTask t \n" +
-                "WHERE t.flngLongTermID = lt.flngLongTermID \n" +
-                "AND t.fblnActive = 1) \n " +
+                "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
+                "AND t.fintTaskType = 2 \n" +
+                "AND t.fdtmDeleted = -1) \n " +
                 //And none of the tasks do not have a completed task instance associated with them
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTask t \n" +
-                "WHERE t.flngLongTermID = lt.flngLongTermID \n" +
-                "AND t.fblnActive = 1 \n" +
+                "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
+                "AND t.fintTaskType = 2 \n" +
+                "AND t.fdtmDeleted = -1 \n" +
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance ti \n" +
                 "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "AND ti.fblnComplete = 1))\n" +
+                "AND ti.fdtmCompleted <> -1))\n" +
                 "ORDER BY lt.flngLongTermID";
 
         Cursor cursor = DatabaseAccess.mDatabase.rawQuery(rawGetCompleteLongTerms,null);

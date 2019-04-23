@@ -60,21 +60,13 @@ public class Details_Task extends AppCompatActivity {
         retrieveExtras();
         setupInitialVisibility();
         setupViews();
-<<<<<<< HEAD
         LoadSessionSpinner();
         LoadGroupSpinner();
-=======
->>>>>>> refs/remotes/origin/master
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-<<<<<<< HEAD
-=======
-        LoadSessionSpinner();
-        LoadGroupSpinner();
->>>>>>> refs/remotes/origin/master
     }
     //endregion
 
@@ -326,7 +318,8 @@ public class Details_Task extends AppCompatActivity {
                     mTime = oneOffTimeCopy();
                 } else if (getSession() != -1) {
                     mTime = new Time(getSession());
-                } else if (mlngEventID == -1) {
+                } else if (mlngEventID == -1 && //Not event task
+                        (mlngLongTermID == -1 || timeKeeper.isTimeSet())) { //Not long term w/o time set
                     mTime = timeKeeper.createTimeDetails(-1,
                             -1,
                             -1);
@@ -346,7 +339,6 @@ public class Details_Task extends AppCompatActivity {
             finish();
 
             DatabaseAccess.mDatabase.setTransactionSuccessful();
-            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -387,13 +379,8 @@ public class Details_Task extends AppCompatActivity {
 
     public Time oneOffTimeCopy(){
         return new Time(-1,
-<<<<<<< HEAD
                 mTime.getNextPriority(false),
                 mTime.getNextPriority(true),
-=======
-                mTime.getNextPriority(),
-                timeKeeper.getToDate(),
->>>>>>> refs/remotes/origin/master
                 Task_Display.getCurrentCalendar().getTimeInMillis(),
                 mTime.mblnFromTime,
                 mTime.mblnToTime,

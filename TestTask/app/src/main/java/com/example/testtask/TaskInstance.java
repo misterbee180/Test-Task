@@ -111,11 +111,23 @@ public class TaskInstance {
         return true;
     }
 
-    public void deleteInstance(){
+    public void finishInstance(int pintCompleteType){
+        String[] strCompleteType = new String[1];
+        switch (pintCompleteType){
+            case 1:
+                strCompleteType[0] = "fdtmCompleted";
+                break;
+            case 2:
+                strCompleteType[0] = "fdtmSystemCompleted";
+                break;
+            case 3:
+                strCompleteType[0] = "fdtmDeleted";
+                break;
+        }
         DatabaseAccess.updateRecordFromTable("tblTaskInstance",
                 "flngInstanceID",
                 mlngInstanceID,
-                new String[] {"fdtmDeleted"},
+                strCompleteType,
                 new Object[] {Task_Display.getCurrentCalendar().getTimeInMillis()});
     }
 }

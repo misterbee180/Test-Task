@@ -142,6 +142,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         return 0;
     }
 
+    public boolean isTimeSet(){
+        if(mdtmFrom != -1){
+            return true;
+        }
+        return false;
+    }
+
     public Week getWeekDetails(){
         Week tempWeek = new Week();
         tempWeek.mblnSunday = getDayOfWeek("Sunday");
@@ -406,7 +413,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     //endregion
 
     //region INITIALIZATION
-
     public void loadTimeDetails(long plngTimeID){
         Time tempTime = new Time(plngTimeID);
         loadTimeDetails(tempTime);

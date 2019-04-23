@@ -81,12 +81,17 @@ public class Task_LongTerm extends AppCompatActivity {
     AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("TaskID", mLongTermTasksUnc.getID(position));
-            bundle.putLong("LongTermID",mlngLongTermID);
-            DialogFragment newFragment = new TaskEditConfirmationFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Task");
+            Intent intent = new Intent(getBaseContext(), Details_Task.class);
+            intent.putExtra("EXTRA_LONGTERM_ID", mlngLongTermID);
+            switch(parent.getId()){
+                case R.id.lsvLongTermTaskListUnc:
+                    intent.putExtra("EXTRA_TASK_ID", mLongTermTasksUnc.getID(position));
+                    break;
+                case R.id.lsvLongTermTaskListCmp:
+                    intent.putExtra("EXTRA_TASK_ID", mLongTermTasksCmp.getID(position));
+                    break;
+            }
+            startActivity(intent);
             return true;
         }
     };
@@ -100,15 +105,17 @@ public class Task_LongTerm extends AppCompatActivity {
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            DatabaseAccess.generateTaskInstance(lngTaskId,
-                                    (long)-1,
-                                    (long)-1,
-                                    false,
-                                    false,
-                                    true,
-                                    false,
-                                    getContext());
-//                            }
+                            try{
+                                DatabaseAccess.mDatabase.beginTransaction();
+                                Task tempTask = new Task(lngTaskId);
+                                TaskInstance ti = tempTask.generateInstance(-1, -1, false, false, false);
+                                ti.finishInstance(2);
+
+                                DatabaseAccess.mDatabase.setTransactionSuccessful();
+                            } catch(Exception e){
+                                e.printStackTrace();
+                            }
+                            DatabaseAccess.mDatabase.endTransaction();
                             retrieveLongTermTasks();
                         }
                     })
@@ -119,96 +126,38 @@ public class Task_LongTerm extends AppCompatActivity {
                     });
             // Create the AlertDialog object and return it
             return builder.create();
-        }
-    }
-
-    public static class TaskEditConfirmationFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long lngTaskId = getArguments().getLong("TaskID");
-            final Long lngLongTermId = getArguments().getLong("LongTermID");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Long Term Task")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Details_Task.class);
-                            intent.putExtra("EXTRA_LONGTERM_ID", lngLongTermId);
-                            intent.putExtra("EXTRA_TASK_ID", lngTaskId);
-                            startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
-    public static class TaskDeleteConfirmationFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long lngTaskId = getArguments().getLong("TaskID");
-//            final Long lngLongTermId = getArguments().getLong("LongTermID");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Delete Long Term Task")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            deleteTask(lngTaskId);
-                            retrieveLongTermTasks();
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
-    public static void deleteTask(Long plngTaskId){
-        DatabaseAccess.updateRecordFromTable("tblTask",
-                "flngTaskID",
-                plngTaskId,
-                new String[]{"fblnActive"},
-                new Object[]{false});
-        Cursor cursor = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskId);
-        if(cursor.moveToNext()){
-            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                    new String[]{"fdtmSystemCompleted"},
-                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
         }
     }
 
     private static void retrieveLongTermTasks() {
-        String rawGetUnCompleteLongTermTasks = "SELECT t.fstrTitle, t.flngTaskID \n" +
+        String rawGetUnCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
                 "FROM tblTask t \n" +
+                "JOIN tblTaskDetail td \n" +
+                "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
                 "JOIN tblLongTerm lt \n" +
-                "ON lt.flngLongTermID = t.flngLongTermID \n" +
-                "WHERE t.flngLongTermID = ? \n" +
-                "AND t.fblnActive = 1 \n" +
+                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 2\n" +
+                "AND t.fdtmDeleted = -1 \n" +
+                "WHERE lt.flngLongTermID = ? \n" +
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance i \n" +
                 "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND i.fblnComplete = 1) \n" +
+                "AND i.fdtmCompleted <> -1) \n" +
                 "ORDER BY t.flngTaskID";
 
-        String rawGetCompleteLongTermTasks = "SELECT t.fstrTitle, t.flngTaskID \n" +
+        String rawGetCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
                 "FROM tblTask t \n" +
+                "JOIN tblTaskDetail td \n" +
+                "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
                 "JOIN tblLongTerm lt \n" +
-                "ON lt.flngLongTermID = t.flngLongTermID \n" +
-                "WHERE t.flngLongTermID = ? \n" +
-                "AND t.fblnActive = 1 \n" +
+                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 2\n" +
+                "AND t.fdtmDeleted = -1 \n" +
+                "WHERE lt.flngLongTermID = ? \n" +
                 "AND EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance i \n" +
                 "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND i.fblnComplete = 1) \n" +
+                "AND i.fdtmCompleted <> -1) \n" +
                 "ORDER BY t.flngTaskID";
 
         String[] parameters = {Long.toString(mlngLongTermID)};
@@ -273,20 +222,20 @@ public class Task_LongTerm extends AppCompatActivity {
     }
 
     public void confirmActivity(View view){
-        if (mlngLongTermID == -1){
-            mlngLongTermID = DatabaseAccess.addRecordToTable("tblLongTerm",
-                    new String[] {"fstrTitle","fstrDescription"},
-                    new String[] {getLongTermTitle(), getLongTermDescription()});
-            setupInitialVisibility();
-        } else {
+        boolean blnContinue = false;
+        if(mlngLongTermID == -1){
+            blnContinue = true;
+        }
+        mlngLongTermID = DatabaseAccess.addRecordToTable("tblLongTerm",
+                new String[] {"fstrTitle","fstrDescription"},
+                new String[] {getLongTermTitle(), getLongTermDescription()},
+                "flngLongTermID",
+                mlngLongTermID);
+        if(blnContinue) setupInitialVisibility();
+        else {
             setResult(RESULT_OK);
             finish();
         }
-    }
-
-    public void cancelActivity(View view){
-        setResult(RESULT_CANCELED);
-        finish();
     }
 
     public String getLongTermTitle() {
@@ -401,22 +350,14 @@ public class Task_LongTerm extends AppCompatActivity {
                 "flngLongTermID",
                 plngLongTermId);
 
-        Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithLongTerm(plngLongTermId);
-        while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-        }
+        clearLongTerm(plngLongTermId);
     }
 
     public static void clearLongTerm(Long plngLongTermId){
         Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithLongTerm(plngLongTermId);
         while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            tempTask.deleteTask();
         }
     }
 }
