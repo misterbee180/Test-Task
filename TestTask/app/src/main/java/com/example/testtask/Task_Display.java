@@ -259,6 +259,7 @@ public class Task_Display extends AppCompatActivity {
                 tempTime.generateInstances(false, -1); //Add any new instances that need adding
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
+            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }

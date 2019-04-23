@@ -58,7 +58,6 @@ public class Time {
         }
         cursor.close();
     }
-
     public Time(long plngTimeID,
                 Long pdtmFrom,
                 Long pdtmTo,
@@ -261,7 +260,6 @@ public class Time {
     private void evaluateDayGeneration(int upcomingRange,
                                        long pdtmOrigPriority,
                                        TimeInstance pGen) {
-
         Calendar calEvaluate;
         Calendar calNow = Task_Display.getCurrentCalendar();
 
@@ -390,7 +388,6 @@ public class Time {
                                    int upcomingRange,
                                    TimeInstance pGen,
                                    boolean pblnFirst){
-
         Boolean blnComplete = false;
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", mlngTimeframeID);
         cursor.moveToFirst();
@@ -845,3 +842,4 @@ public class Time {
     }
     //endregion
 }
+
