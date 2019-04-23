@@ -207,12 +207,14 @@
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_To_Time"
         app:layout_constraintTop_toBottomOf="@+id/Timekeeper_BtnFromTime" />
+
     <CheckBox
         android:id="@+id/Timekeeper_ChkThru"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Days Thru"
-        app:layout_constraintTop_toBottomOf="@id/Timekeeper_BtnToTime"/>
+        app:layout_constraintTop_toBottomOf="@id/Timekeeper_BtnToTime"
+        android:visibility="gone"/>
 
 
 </android.support.constraint.ConstraintLayout>

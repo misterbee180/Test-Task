@@ -743,7 +743,7 @@ public class Time {
         long lngGenID = mlngGenerationID;
         Cursor tblTimeInstance = getValidGenerationPoints();
 
-        Task tempTask = new Task(plngTaskId);
+        Task tempTask;
         while(tblTimeInstance.moveToNext()){
             if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
                     tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
@@ -763,26 +763,22 @@ public class Time {
                 }
 
                 if(plngTaskId != -1){
-                    new TaskInstance(tempTask.mlngTaskID,
-                            tempTask.mlngTaskDetailID,
-                            tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
+                    tempTask = new Task(plngTaskId);
+                    tempTask.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
                             tempTo.getTimeInMillis(),
                             mblnFromTime,
                             mblnToTime,
-                            mblnToDate,
-                            Task_Display.getCurrentCalendar().getTimeInMillis());
+                            mblnToDate);
                 }else{
                     Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
                     while (tblTaskCursor.moveToNext()) {
-                        if(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("fdtmDeleted")) == -1){ //Add instance for all non deleted tasks
-                            new TaskInstance(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")),
-                                    tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskDetailID")),
-                                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
+                        tempTask = new Task(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")));
+                        if(tempTask.mdtmDeleted == -1){
+                            tempTask.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
                                     tempTo.getTimeInMillis(),
                                     mblnFromTime,
                                     mblnToTime,
-                                    mblnToDate,
-                                    Task_Display.getCurrentCalendar().getTimeInMillis());
+                                    mblnToDate);
                         }
                     }
                 }

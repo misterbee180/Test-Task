@@ -314,6 +314,7 @@ public class Details_Task extends AppCompatActivity {
                 }
             } else {
                 if (getOneOff() != -1) {
+                    //TODO: Create button to allow adding to time instance currently active (adding to this weekend during weekend instead of next weekend)
                     mTime = new Time(getSession());
                     mTime = oneOffTimeCopy();
                 } else if (getSession() != -1) {

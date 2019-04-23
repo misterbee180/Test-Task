@@ -134,6 +134,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     //endregion
 
     //region Getters And Setters
+    public boolean getThru(){
+        return chkThru.isChecked();
+    }
+
+    public void setThru(boolean pblnThru){
+        chkThru.setChecked(pblnThru);
+    }
+
     public long getRepetition(){
         return mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition());
     }
@@ -221,10 +229,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
     }
 
-    public Boolean blnTimeDetailsExist(){
-        return (mblnFromTime || mblnToTime || getTimeRange() != -1);
-    }
-
     public Boolean getDayOfWeek(String pstrDow){
         CheckBox chbDow = null;
         switch (pstrDow){
@@ -279,13 +283,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 break;
         }
         chbDow.setChecked(pblnOn == 1 ? true: false);
-    }
-
-    public int getTimeRange(){
-        if (!mRepetitionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
-            return mTimeframeSpinner.getSelectedItemPosition();
-        }
-        return -1;
     }
 
     public int getTimeframe(){
@@ -380,24 +377,20 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
                 findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
                 break;
             case 1: //Week
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.VISIBLE);
                 cLayMonthly.setVisibility(View.GONE);
                 findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.VISIBLE);
                 break;
             case 2: //Month
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.VISIBLE);
-//                findViewById(R.id.TimeKeeper_Monthly_First).setVisibility(GONE);
-//                findViewById(R.id.TimeKeeper_Monthly_Middle).setVisibility(GONE);
-//                findViewById(R.id.TimeKeeper_Monthly_Last).setVisibility(GONE);
-//                findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(GONE);
-//                findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(GONE);
-//                findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(GONE);
-//                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.VISIBLE);
                 break;
             case 3: //Year
                 //Using No Rep View for now until Year View becomes important
@@ -405,6 +398,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
                 findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
                 //Todo: Fix design to allow yearly to date repetition
                 break;
         }
@@ -535,13 +529,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     //region VIEW INITIALIZATION
     public void setActiveTimekeeper(Boolean pblnActive){
         setViewAndChildrenEnabled(this, pblnActive);
-//        mTimeframeSpinner.setEnabled(pblnActive);
-//        mRepetitionSpinner.mSpinner.setEnabled(pblnActive);
-//        btnFromDate.setEnabled(pblnActive);
-//        btnToDate.setEnabled(pblnActive);
-//        btnFromTime.setEnabled(pblnActive);
-//        btnToTime.setEnabled(pblnActive);
-//        txtMonthlyDays.setEnabled(pblnActive);
     }
 
     private void setViewAndChildrenEnabled(View view, boolean enabled) {
@@ -612,15 +599,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         evaluateRepetitionView((long)0);
     }
-
-    public boolean getThru(){
-        return chkThru.isChecked();
-    }
-
-    public void setThru(boolean pblnThru){
-        chkThru.setChecked(pblnThru);
-    }
-
     //endregion
 
     //region COMPLETION
@@ -656,7 +634,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 mblnToDate,
                 getTimeframe(),
                 createTimeframe(lngTimeframeId),
-                mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition()),
+                getRepetition(),
                 0,
                 false,
                 -1,
