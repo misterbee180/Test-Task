@@ -60,7 +60,7 @@ public class Details_Session extends AppCompatActivity{
 
         if(curSession.moveToNext()){
             setSessionTitle(curSession.getString(curSession.getColumnIndex("fstrTitle")));
-            timeKeeper.loadTimeDetails(mTime.mlngTimeID);
+            timeKeeper.loadTimeDetails(mTime);
         }
 
         Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
@@ -80,15 +80,18 @@ public class Details_Session extends AppCompatActivity{
         DatabaseAccess.mDatabase.beginTransaction();
         try {
             //todo: add validation to session before it attempts to be created
-            mTime = timeKeeper.createTimeDetails();
-            mTime.createSession(getSessionTitle());
             if(mTime.mlngTimeID != -1){
-               //Find tasks w/ associated session.
-                //remove instances and re-generate instances for all tasks
+                mTime.clearGenerationPoints();
             }
+            mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
+                    mTime.mintTimeframe,
+                    mTime.mlngTimeframeID);
+            mTime.createSession(getSessionTitle());
+            mTime.refreshInstances();
+
             DatabaseAccess.mDatabase.setTransactionSuccessful();
 
-            mIntent.putExtra("EXTRA_TIME_ID", mTime.mlngTimeID);
+            mIntent.putExtra("EXTRA_SESSION_ID", mTime.mlngTimeID);
             setResult(RESULT_OK, mIntent);
             finish();
         } catch (Exception e) {

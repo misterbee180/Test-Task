@@ -258,14 +258,13 @@ public class Task_Display extends AppCompatActivity {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 //if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) { //if possibility that instance needs generating
                     tempTime.buildTimeInstances(); //build generation points
-                    tempTime.generateInstances(false); //Add any new instances that need adding
+                    tempTime.generateInstances(false, -1); //Add any new instances that need adding
                // }
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
+            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
-            DatabaseAccess.mDatabase.endTransaction();
         }
     }
 
@@ -424,13 +423,6 @@ public class Task_Display extends AppCompatActivity {
     private static char determineListForTask(Long pdtmFrom, Long pdtmTo, Boolean pblnFromTimeSet, Boolean pblnToTimeSet, Boolean pblnToDateSet, Long pdtmCreated) {
         char result = ' ';
         Calendar calNow = getCurrentCalendar(); //represents the time now
-//        Calendar calInt = getCurrentCalendar()); //represents an intermediary calender. Not really used except while generating others
-
-
-//        Calendar calFromBefore = null; //represents 1 day before from calendar
-//
-//        Calendar calToBefore = null;  //represents 1 day before to calendar
-
         Calendar calFromWithTime = null;
         Calendar calToWithTime = null;
         Calendar calFrom = null; //represents the from time of a task
@@ -446,16 +438,9 @@ public class Task_Display extends AppCompatActivity {
         }
 
         //Start: Set General To Details
-        if(!pblnToDateSet && pblnToTimeSet){
-            Calendar temp = getCalendar(pdtmTo);
-            calTo = (Calendar)calFrom.clone();
-            calTo.set(Calendar.HOUR_OF_DAY,temp.get(Calendar.HOUR_OF_DAY));
-            calTo.set(Calendar.MINUTE,temp.get(Calendar.MINUTE));
-        }
-        else if(pblnToDateSet){
+        if(pdtmTo != -1){
             calTo = getCalendar(pdtmTo);
-        } else {
-            //Set to beginning of next day of From
+        } else{
             calTo = (Calendar)calFrom.clone();
         }
 
@@ -476,6 +461,7 @@ public class Task_Display extends AppCompatActivity {
         //End: Set General From Details
         calFrom.set(Calendar.HOUR_OF_DAY,0);
         calFrom.set(Calendar.MINUTE, 0);
+        calFrom.set(Calendar.SECOND, 0);
         calFrom.set(Calendar.MILLISECOND, 0);
 
         //End: Set General To Details
@@ -483,21 +469,6 @@ public class Task_Display extends AppCompatActivity {
         calTo.set(Calendar.HOUR_OF_DAY, 0);
         calTo.set(Calendar.MINUTE,0);
         calTo.set(Calendar.MILLISECOND,0);
-
-
-            //calInt.setTimeInMillis(pdtmFrom);
-//            calFromTime.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
-//            calFromTime.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
-//            calFromBefore = (Calendar) calFromTime.clone();
-//            calFromBefore.add(Calendar.DAY_OF_YEAR, -1);
-        //}
-
-//            calInt.setTimeInMillis(pdtmToTime);
-//            calToTime.set(Calendar.HOUR_OF_DAY, calInt.get(Calendar.HOUR_OF_DAY));
-//            calToTime.set(Calendar.MINUTE, calInt.get(Calendar.MINUTE));
-//            calToBefore = (Calendar) calToTime.clone();
-//            calToBefore.add(Calendar.DAY_OF_YEAR, -1);
-        //}
 
         //if either of the time settings is set and the from and the to dates surround now then it's a priority
         //this will handle cases both are set and where only one or the other is set
@@ -512,56 +483,16 @@ public class Task_Display extends AppCompatActivity {
         } else if((pblnFromTimeSet && pblnToTimeSet) && //Time details exist
                 calNow.after(calFromWithTime) && calNow.before(calToWithTime)){ //Exists w/i time bounds
             result = 'P';
-        } else if (calNow.after(calFrom) && calNow.before(calTo)) {
+        } else if ((calNow.after(calFrom) && calNow.before(calTo)) ||
+                (calNow.equals(calFrom))) {
             result = 'T';
         } else //At this point it will either be past happening (S) or not yet ready (U)
-            if(calNow.after(calTo)) {
+            if(calNow.after(calTo) || calNow.equals(calTo)) {
                 result = 'S';
         } else {
                 result = 'U';
             }
 
-//        if(calNow.after(calFrom) && calNow.before(calTo)){ //Task associated w/ today
-//
-//        }
-//        if (calFromTime != null && calToTime != null){
-//            //Handles where time is between from and to
-//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-//                if (calNow.after(calFromTime) && calNow.before(calToTime)){
-//                    result = 'P';
-//                } else result = 'T';
-//                //Handles circumstance where task was created w/i time window but meant for next day
-//            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
-//                if (calNow.after(calFromTime) && calNow.before(calToTime)){
-//                    result = 'P';
-//                } else result = 'T';
-//            } else result = 'S';
-//            //Same as previous but w/ only from date set
-//        } else if (calFromTime != null) {
-//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-//                if(calNow.after(calFromTime)) {
-//                    result = 'P';
-//                } else result = 'T';
-//            } else if (calCreate.after(calFromBefore) && !fblnRepeat){
-//                if (calNow.after(calFromTime)){
-//                    result = 'P';
-//                } else result = 'T';
-//            } else result = 'S';
-//            //same as previous but w/ only to date set
-//        } else if (calToTime != null) {
-//            if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)){
-//                if(calNow.before(calToTime)) {
-//                    result = 'P';
-//                } else result = 'T';
-//            } else if (calCreate.after(calToBefore) && !fblnRepeat){
-//                if (calNow.after(calToTime)){
-//                    result = 'P';
-//                } else result = 'T';
-//            } else result = 'S';
-//            //no from or to date but task was created today
-//        } else if (calNow.get(Calendar.DAY_OF_YEAR) == calCreate.get(Calendar.DAY_OF_YEAR)) result = 'T';
-//        //task left over from previous days.
-//        else result = 'S';
         return result;
     }
 

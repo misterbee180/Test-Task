@@ -1725,7 +1725,11 @@ public class DatabaseAccess {
 
 
     public static Cursor retrieveActiveTaskInstanceFromTask(Long plngTaskId){
-        String selection = "flngTaskID = ? AND fdtmCompleted = -1 and fdtmSystemCompleted = -1 and fdtmDeleted = -1 and fdtmEdited = -1";
+        String selection = "flngTaskID = ? " +
+                "AND fdtmCompleted = -1 " +
+                "and fdtmSystemCompleted = -1 " +
+                "and fdtmDeleted = -1 " +
+                "and fdtmEdited = -1";
         String[] selectionArgs = {Long.toString(plngTaskId)};
 
         return mDatabase.query("tblTaskInstance",

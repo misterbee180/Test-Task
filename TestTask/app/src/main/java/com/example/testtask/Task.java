@@ -93,4 +93,63 @@ public class Task {
                 mlngTaskID);
         return true;
     }
+
+//    public void generateInstances(Boolean pblnInitial){
+//        Time tempTime = new Time(mlngTimeID);
+//        Cursor tblTimeInstance = getValidGenerationPoints();
+//
+//        while(tblTimeInstance.moveToNext()){
+//            if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
+//                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > tempTime.mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
+//                if(mdtmDeleted == -1){ //Add instance for all non deleted tasks
+//                    TaskInstance ti = new TaskInstance(mlngTaskID,
+//                            mlngTaskDetailID,
+//                            tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
+//                            tempTime.mdtmTo,
+//                            tempTime.mblnFromTime,
+//                            tempTime.mblnToTime,
+//                            tempTime.mblnToDate,
+//                            Task_Display.getCurrentCalendar().getTimeInMillis());
+//                }
+//                if(lngGenID < tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"))){ //Updates
+//                    lngGenID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
+//                }
+//            }
+//        }
+//
+//        if(lngGenID > mlngGenerationID) updateGenerationID(lngGenID);
+//    }
+
+    public void updateTaskDetails(String pstrTitle,
+                                  String pstrDescription){
+        DatabaseAccess.updateRecordFromTable("tblTaskDetail",
+                "flngTaskDetailID",
+                mlngTaskDetailID,
+                new String[]{"fstrTitle","fstrDescription"},
+                new Object[]{pstrTitle,pstrDescription});
+    }
+
+    public void replaceTimeId(long plngTimeId){
+        DatabaseAccess.updateRecordFromTable("tblTask",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"flngTimeID"},
+                new Object[]{plngTimeId});
+    }
+
+    public void updateOneOff(long plngOneOff){
+        DatabaseAccess.updateRecordFromTable("tblTask",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"flngOneOff"},
+                new Object[]{plngOneOff});
+    }
+
+    public void clearActiveInstances(){
+        Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
+        while(curInstances.moveToNext()){
+            TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
+            ti.deleteInstance();
+        }
+    }
 }

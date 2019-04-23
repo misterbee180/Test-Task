@@ -58,8 +58,9 @@ public class Time {
         }
         cursor.close();
     }
-    
-    public Time(Long pdtmFrom,
+
+    public Time(long plngTimeID,
+                Long pdtmFrom,
                 Long pdtmTo,
                 Long pdtmCreated,
                 boolean pblnFromTime,
@@ -73,6 +74,7 @@ public class Time {
                 long plngGenerationID,
                 boolean pblnThru){
 
+        mlngTimeID = plngTimeID;
         mdtmFrom = pdtmFrom;
         mdtmTo = pdtmTo;
         mblnToDate = pblnToDate;
@@ -113,41 +115,78 @@ public class Time {
         if(!mblnComplete) buildTimeInstances();
     }
 
+    //region Session
+    public boolean isSession(){
+        Cursor curSession = DatabaseAccess.getRecordsFromTable("tblSession",
+                "flngTimeID",
+                mlngTimeID);
+        if(curSession.moveToNext()){
+            return true;
+        }
+        return false;
+    }
+
+    public void createSession(String pstrTitle){
+        DatabaseAccess.addRecordToTable("tblSession",
+                new String[] {"flngTimeID","fstrTitle"},
+                new Object[] {mlngTimeID, pstrTitle},
+                "flngTimeID",
+                mlngTimeID);
+    }
+
+    public Cursor getSession(){
+        return DatabaseAccess.getRecordsFromTable("tblSession", "flngTimeID", mlngTimeID);
+    }
+    //endregion
+
+    //region TimeGeneration Class
     public boolean timeInstanceExist(){
         return DatabaseAccess.getRecordsFromTable("tblTimeInstance", "flngTimeID", mlngTimeID).getCount() > 0? true:false;
     }
 
-    public long getMaxPriority(){
-        //UPDATE to return greatest GenerationID and use the priority + thru to get return date
-        Cursor tblGeneration = DatabaseAccess.mDatabase.query("tblTimeInstance",
-                new String[] {"MAX(fdtmPriority) as fdtmPriorityMax"},
+    public long getLatestPriorityAndThru(){
+        //Returns the latest time instance associated w/ a time w/ the inclusing on the thru value.
+        //This is important as you don't want to be evaluating dates already handled by a thru value.
+        Cursor latestTimeInstance = DatabaseAccess.mDatabase.query("tblTimeInstance",
+                null,
                 "flngTimeID = ?",
                 new String[]{Long.toString(mlngTimeID)},
                 null,
                 null,
-                null);
+                "flngGenerationID desc LIMIT 1");
 
-        tblGeneration.moveToFirst();
-        long rtn = tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmPriorityMax"));
-        if(rtn != 0){
-            Calendar temp = Task_Display.getCalendar(rtn);
-            temp.add(Calendar.DAY_OF_YEAR,);
+        if(latestTimeInstance.moveToFirst()){
+            Calendar temp = Task_Display.getCalendar(latestTimeInstance.getLong(latestTimeInstance.getColumnIndex("fdtmPriority")));
+            temp.add(Calendar.DAY_OF_YEAR, latestTimeInstance.getInt(latestTimeInstance.getColumnIndex("fintThru")));
+            return temp.getTimeInMillis();
         }
-        return rtn == 0 ? -1 : rtn;
+        return -1;
     }
 
-    public long getNextPriority(){
+    public long getNextPriority(boolean pblnTo){
         Cursor tblGeneration = DatabaseAccess.mDatabase.query("tblTimeInstance",
-                new String[] {"MIN(fdtmPriority) as fdtmPriority"},
+                null,
                 "flngTimeID = ? AND fdtmPriority > ?",
                 new String[]{Long.toString(mlngTimeID), Long.toString(Task_Display.getCurrentCalendar().getTimeInMillis())},
                 null,
                 null,
-                null);
+                "fdtmPriority asc LIMIT 1");
 
-        tblGeneration.moveToFirst();
-        long rtn = tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmPriority"));
-        return rtn == 0 ? -1 : rtn;
+        if(tblGeneration.moveToFirst()){
+            Calendar calPri = Task_Display.getCalendar(tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmPriority")));
+            if(pblnTo){
+                calPri.add(Calendar.DAY_OF_YEAR,tblGeneration.getInt(tblGeneration.getColumnIndex("fintThru")));
+                if(mblnToTime){
+                    Calendar time = Task_Display.getCalendar(mdtmTo);
+                    calPri.set(Calendar.HOUR,time.get(Calendar.HOUR));
+                    calPri.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
+                    calPri.set(Calendar.SECOND, time.get(Calendar.SECOND));
+                    calPri.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
+                }
+            }
+            return calPri.getTimeInMillis();
+        }
+        return -1;
     }
 
     public long getMaxUpcoming(){
@@ -164,41 +203,37 @@ public class Time {
         return rtn == 0 ? -1 : rtn;
     }
 
-    public long getMaxTimeInstance(){
-        Cursor tblGeneration = DatabaseAccess.mDatabase.query("tblTimeInstance",
-                new String[] {"MAX(flngGenerationID) as flngGenerationIDMax"},
-                "flngTimeID = ?",
-                new String[]{Long.toString(mlngTimeID)},
-                null,
-                null,
-                null);
-
-        tblGeneration.moveToFirst();
-        long rtn = tblGeneration.getLong(tblGeneration.getColumnIndex("flngGenerationIDMax"));
-        return rtn == 0 ? -1 : rtn;
+    public void clearGenerationPoints(){
+        DatabaseAccess.deleteRecordFromTable("tblTimeInstance",
+                "flngTimeID",
+                mlngTimeID);
+        DatabaseAccess.updateRecordFromTable("tblTime",
+                "flngTimeID",
+                mlngTimeID,
+                new String[]{"flngGenerationID"},
+                new Object[]{(long)-1});
     }
-    
-    public void buildTimeInstances(){
-        TimeInstance tGen = new TimeInstance(mlngTimeID);
 
+    public void buildTimeInstances(){
         while(true){
             //While we can still attempt to generate an upcoming task that should be generated before today and while the time isn't already exempt (complete)
+            TimeInstance tGen = new TimeInstance(mlngTimeID);
             Boolean blnSaveGen = true;
             if(getMaxUpcoming() <= Task_Display.getEndCurrentDay().getTimeInMillis() && !mblnComplete){
                 if(mlngRepetition != (long)0){
                     //establish what repetition tasks associated w/ and whether current date fits
                     switch(mintTimeframe){
                         case 0: //Day
-                            evaluateDayGeneration(1, getMaxPriority(), tGen);
+                            evaluateDayGeneration(1, getLatestPriorityAndThru(), tGen);
                             break;
                         case 1: //Week
-                            evaluateWeekGeneration(1, getMaxPriority(), tGen);
+                            evaluateWeekGeneration(1, getLatestPriorityAndThru(), tGen);
                             break;
                         case 2: //Month
-                            evaluateMonthGeneration(1, getMaxPriority(), tGen);
+                            evaluateMonthGeneration(1, getLatestPriorityAndThru(), tGen);
                             break;
                         case 3: //Year
-                            evaluateYearGeneration(1, getMaxPriority(), tGen);
+                            evaluateYearGeneration(1, getLatestPriorityAndThru(), tGen);
                             break;
                     }
                 } else {
@@ -214,76 +249,6 @@ public class Time {
                 break;
             }
         }
-    }
-
-    public void generateInstances(Boolean pblnInitial){
-        long lngGenID = mlngGenerationID;
-        Cursor tblTimeInstance = getValidGenerationPoints();
-
-        while(tblTimeInstance.moveToNext()){
-            if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
-                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
-                Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
-                while (tblTaskCursor.moveToNext()) {
-                    if(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("fdtmDeleted")) == -1){ //Add instance for all non deleted tasks
-                        Calendar calToDate = Task_Display.getCalendar(mdtmTo);
-                        if(mblnThru){
-                            Task_Display.getCalendar(
-                                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
-                            Calendar calToTime = Task_Display.getCalendar(mdtmTo);
-                            calToDate.add(Calendar.DAY_OF_YEAR,
-                                    tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
-                            if(mblnToTime){
-                                calToDate.set(Calendar.HOUR, calToTime.get(Calendar.HOUR));
-                                calToDate.set(Calendar.MINUTE, calToTime.get(Calendar.MINUTE));
-                                calToDate.set(Calendar.SECOND, calToTime.get(Calendar.SECOND));
-                                calToDate.set(Calendar.MILLISECOND, calToTime.get(Calendar.MILLISECOND));
-                            }
-                        }
-
-                        TaskInstance ti = new TaskInstance(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")),
-                                tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskDetailID")),
-                                tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
-                                calToDate.getTimeInMillis(),
-                                mblnFromTime,
-                                mblnToTime,
-                                mblnToDate,
-                                Task_Display.getCurrentCalendar().getTimeInMillis());
-                    }
-                }
-                if(lngGenID < tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"))){ //Updates
-                    lngGenID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
-                }
-            }
-        }
-
-        if(lngGenID > mlngGenerationID) updateGenerationID(lngGenID);
-    }
-
-    public void updateGenerationID(long plngGenID){
-        mlngGenerationID = plngGenID;
-        saveTime();
-    }
-
-    public Cursor getValidGenerationPoints(){
-        String[] strColumns = null;
-        String strSelection = "flngTimeID = ? and fdtmUpcoming <= ? and fdtmPriority >= ?";
-        String[] strParms = new String[]{Long.toString(mlngTimeID),
-                Long.toString(Task_Display.getEndCurrentDay().getTimeInMillis()),
-                Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis())};
-
-        return DatabaseAccess.mDatabase.query("tblTimeInstance",
-                strColumns,
-                strSelection,
-                strParms,
-                null,
-                null,
-                null);
-    }
-
-    public void completeTime(){
-        mblnComplete = true;
-        saveTime();
     }
 
     private void evaluateDate(int upcomingRange, TimeInstance pGen){
@@ -424,7 +389,7 @@ public class Time {
                                    Calendar calEvaluate,
                                    int upcomingRange,
                                    TimeInstance pGen,
-                                   boolean blnFirst){
+                                   boolean pblnFirst){
 
         Boolean blnComplete = false;
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblWeek", "flngWeekID", mlngTimeframeID);
@@ -455,14 +420,14 @@ public class Time {
                     calWeekday.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
                     calWeekday.set(Calendar.MILLISECOND,calFrom.get(Calendar.MILLISECOND));
 
-                    if(pGen.mdtmPriority == -1){
+                    if(pblnFirst){
                         pGen.mdtmPriority = calWeekday.getTimeInMillis();
                         Calendar calUpcoming = (Calendar) calWeekday.clone();
                         calUpcoming.add(Calendar.DAY_OF_YEAR, -1 * upcomingRange);
                         pGen.mdtmUpcoming = calUpcoming.getTimeInMillis();
                     }
                     if(mblnThru){
-                        if(!blnFirst){
+                        if(!pblnFirst){
                             if(Task_Display.getCalendar(calWeekday.getTimeInMillis(),true, false)
                                     .equals(Task_Display.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
                                 pGen.mintThru ++;
@@ -481,17 +446,10 @@ public class Time {
 
                         //Get the thru date
                         recursiveWeekEval(calNow,
-                                       calEvaluate,
-                                       upcomingRange,
-                                       pGen,
+                                calEvaluate,
+                                upcomingRange,
+                                pGen,
                                 false);
-//                        //we only increase this by 1 day because it's obv not thru if it skips a week.
-//                        calWeekday.add(Calendar.DAY_OF_YEAR,1);
-//                        //compare calWeekday w/ calEvaluate to see if they're the same day and if true then ...
-//                        if(!(Task_Display.getCalendar(calWeekday.getTimeInMillis(),true, false)
-//                        == Task_Display.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
-//                            pGen.mintThru ++;
-//                        }
                     }
                     blnComplete = true;
                     break;
@@ -507,7 +465,7 @@ public class Time {
         //Othewise, establish what next evaluated week will be and call itself
         calEvaluate.setWeekDate(calEvaluate.getWeekYear(), calEvaluate.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
         calEvaluate.add(Calendar.WEEK_OF_YEAR, (int)mlngRepetition);
-        recursiveWeekEval(calNow, calEvaluate, upcomingRange, pGen, true);
+        recursiveWeekEval(calNow, calEvaluate, upcomingRange, pGen, pblnFirst);
     }
 
     private void evaluateMonthGeneration(int upcomingRange,
@@ -583,14 +541,15 @@ public class Time {
         calEvaluate.set(Calendar.SECOND, 59);
         calEvaluate.set(Calendar.MILLISECOND, 999);
 
-        recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange,pGen);
+        recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange,pGen, true);
     }
 
     private void recursiveMonthEval(Calendar calNow,
                                     Calendar calEvaluate,
                                     Calendar calEOM,
                                     int upcomingRange,
-                                    TimeInstance pGen) {
+                                    TimeInstance pGen,
+                                    Boolean pblnFirst) {
 
         Boolean blnComplete = false;
         Calendar calMonth = (Calendar) calEvaluate.clone();
@@ -650,14 +609,24 @@ public class Time {
                             calMonth.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
                             calMonth.set(Calendar.MILLISECOND,calFrom.get(Calendar.MILLISECOND));
 
-                            if(pGen.mdtmPriority == -1) {
+                            if(pblnFirst) {
                                 pGen.mdtmPriority = calMonth.getTimeInMillis();
                                 Calendar tempUp = (Calendar) calMonth.clone();
                                 tempUp.add(Calendar.DAY_OF_MONTH, upcomingRange * -1);
                                 pGen.mdtmUpcoming = tempUp.getTimeInMillis();
                             }
                             if(mblnThru){
-                                calEvaluate = (Calendar)calMonth.clone();
+                                if(!pblnFirst){
+                                    if(Task_Display.getCalendar(calMonth.getTimeInMillis(),true, false)
+                                            .equals(Task_Display.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
+                                        pGen.mintThru ++;
+                                    } else {
+                                        blnComplete = true;
+                                        break;
+                                    }
+                                } else {
+                                    calEvaluate = (Calendar)calMonth.clone();
+                                }
                                 //Establish next day
                                 if(calEvaluate.get(Calendar.DAY_OF_MONTH) == calEOM.get(Calendar.DAY_OF_MONTH)){
                                     calEvaluate.set(Calendar.DAY_OF_MONTH,1);
@@ -671,14 +640,7 @@ public class Time {
                                     calEOM.set(Calendar.MILLISECOND, 999);
                                 } else calEvaluate.add(Calendar.DAY_OF_YEAR,1);
                                 //Get the thru date
-                                recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange, pGen);
-                                //we only increase this by 1 day because it's obv not thru if it skips a month.
-                                calMonth.add(Calendar.DAY_OF_YEAR,1);
-                                //compare calWeekday w/ calEvaluate to see if they're the same day and if true then ...
-                                if(!(Task_Display.getCalendar(calMonth.getTimeInMillis(),true, false)
-                                        == Task_Display.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
-                                    pGen.mintThru ++;
-                                }
+                                recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange, pGen, false);
                             }
                             blnComplete = true;
                             break;
@@ -705,7 +667,7 @@ public class Time {
         calEOM.set(Calendar.SECOND, 59);
         calEOM.set(Calendar.MILLISECOND, 999);
 
-        recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange, pGen);
+        recursiveMonthEval(calNow, calEvaluate, calEOM, upcomingRange, pGen, pblnFirst);
     }
 
     private Calendar evaluateYearGeneration(int upcomingRange,
@@ -779,15 +741,107 @@ public class Time {
         }
     }
 
-    public void createSession(String pstrTitle){
-        DatabaseAccess.addRecordToTable("tblSession",
-                new String[] {"flngTimeID","fstrTitle"},
-                new Object[] {mlngTimeID, pstrTitle},
-                "fstrTimeID",
-                mlngTimeID);
+    public void generateInstances(Boolean pblnInitial,
+                                  long plngTaskId){
+        long lngGenID = mlngGenerationID;
+        Cursor tblTimeInstance = getValidGenerationPoints();
+
+        Task tempTask = new Task(plngTaskId);
+        while(tblTimeInstance.moveToNext()){
+            if(pblnInitial || //for initial generation, we want the instance to generate for all possible generation points
+                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > mlngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
+                Calendar tempTo;
+                if(mblnThru){
+                    tempTo = Task_Display.getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
+                    tempTo.add(Calendar.DAY_OF_YEAR,tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
+                    if(mblnToTime){
+                        Calendar time = Task_Display.getCalendar(mdtmTo);
+                        tempTo.set(Calendar.HOUR,time.get(Calendar.HOUR));
+                        tempTo.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
+                        tempTo.set(Calendar.SECOND, time.get(Calendar.SECOND));
+                        tempTo.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
+                    }
+                } else {
+                    tempTo = Task_Display.getCalendar(mdtmTo);
+                }
+
+                if(plngTaskId != -1){
+                    new TaskInstance(tempTask.mlngTaskID,
+                            tempTask.mlngTaskDetailID,
+                            tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
+                            tempTo.getTimeInMillis(),
+                            mblnFromTime,
+                            mblnToTime,
+                            mblnToDate,
+                            Task_Display.getCurrentCalendar().getTimeInMillis());
+                }else{
+                    Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
+                    while (tblTaskCursor.moveToNext()) {
+                        if(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("fdtmDeleted")) == -1){ //Add instance for all non deleted tasks
+                            new TaskInstance(tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskID")),
+                                    tblTaskCursor.getLong(tblTaskCursor.getColumnIndex("flngTaskDetailID")),
+                                    tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
+                                    tempTo.getTimeInMillis(),
+                                    mblnFromTime,
+                                    mblnToTime,
+                                    mblnToDate,
+                                    Task_Display.getCurrentCalendar().getTimeInMillis());
+                        }
+                    }
+                }
+                if(lngGenID < tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"))){ //Updates
+                    lngGenID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
+                }
+            }
+        }
+
+        if(lngGenID > mlngGenerationID) updateGenerationID(lngGenID);
     }
 
-    public Cursor getSession(){
-        return DatabaseAccess.getRecordsFromTable("tblSession", "flngTimeID", mlngTimeID);
+    public Cursor getValidGenerationPoints(){
+        String[] strColumns = null;
+        String strSelection = "flngTimeID = ? and fdtmUpcoming <= ? and fdtmPriority >= ?";
+        String[] strParms = new String[]{Long.toString(mlngTimeID),
+                Long.toString(Task_Display.getEndCurrentDay().getTimeInMillis()),
+                Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis())};
+
+        return DatabaseAccess.mDatabase.query("tblTimeInstance",
+                strColumns,
+                strSelection,
+                strParms,
+                null,
+                null,
+                null);
     }
+
+    //endregion
+
+    //region Specific Updates
+    public void updateGenerationID(long plngGenID){
+        mlngGenerationID = plngGenID;
+        saveTime();
+    }
+
+    public void completeTime(){
+        mblnComplete = true;
+        saveTime();
+    }
+
+    public void refreshInstances(){
+        Cursor curTask = DatabaseAccess.mDatabase.query("tblTask",
+                new String[] {"flngTaskID"},
+                "fdtmDeleted = -1 and flngTimeID = ?",
+                new String[] {Long.toString(mlngTimeID)},
+                null,
+                null,
+                null);
+
+        while (curTask.moveToNext()){
+            Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
+            tempTask.clearActiveInstances();
+        }
+
+        generateInstances(true, -1);
+    }
+    //endregion
 }
