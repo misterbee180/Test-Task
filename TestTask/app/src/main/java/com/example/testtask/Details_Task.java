@@ -338,10 +338,10 @@ public class Details_Task extends AppCompatActivity {
             finish();
 
             DatabaseAccess.mDatabase.setTransactionSuccessful();
-            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
     }
     //endregion
 

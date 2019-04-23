@@ -109,7 +109,15 @@ public class Viewer_Task extends AppCompatActivity {
             builder.setMessage("Delete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteTask(tmpTaskID);
+                            DatabaseAccess.mDatabase.beginTransaction();
+                            try{
+                                Task tempTask = new Task(tmpTaskID);
+                                tempTask.deleteTask();
+                                DatabaseAccess.mDatabase.setTransactionSuccessful();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            DatabaseAccess.mDatabase.endTransaction();
                             setTaskList(mContext);
                         }
                     })
@@ -121,30 +129,6 @@ public class Viewer_Task extends AppCompatActivity {
             // Create the AlertDialog object and return it
             return builder.create();
         }
-    }
-
-    public static void deleteTask(Long plngTaskId){
-        DatabaseAccess.mDatabase.beginTransaction();
-        try{
-            DatabaseAccess.updateRecordFromTable("tblTask",
-                    "flngTaskID",
-                    plngTaskId,
-                    new String[]{"fdtmDeleted"},
-                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
-
-            Cursor curActiveInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskId);
-            if(curActiveInstances.moveToNext()){
-                DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                        "flngInstanceID",
-                        curActiveInstances.getLong(curActiveInstances.getColumnIndex("flngInstanceID")),
-                        new String[]{"fdtmSystemCompleted"},
-                        new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
-            }
-            DatabaseAccess.mDatabase.setTransactionSuccessful();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        DatabaseAccess.mDatabase.endTransaction();
     }
 
     public void createTask() {

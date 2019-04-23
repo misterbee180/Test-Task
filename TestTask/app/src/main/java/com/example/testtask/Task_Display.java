@@ -253,19 +253,16 @@ public class Task_Display extends AppCompatActivity {
                 "fblnComplete = ?",
                 new Object[]{0});
 
-
             while (timeCursor.moveToNext()) {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
-                //if(tempTime.getMaxUpcoming()<= getEndCurrentDay().getTimeInMillis()) { //if possibility that instance needs generating
-                    tempTime.buildTimeInstances(); //build generation points
-                    tempTime.generateInstances(false, -1); //Add any new instances that need adding
-               // }
+                tempTime.buildTimeInstances(); //build generation points
+                tempTime.generateInstances(false, -1); //Add any new instances that need adding
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
-            DatabaseAccess.mDatabase.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
     }
 
     /** Called when the user taps the Send button */

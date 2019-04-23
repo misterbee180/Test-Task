@@ -94,6 +94,25 @@ public class Task {
         return true;
     }
 
+    public void deleteTask(){
+        DatabaseAccess.updateRecordFromTable("tblTask",
+                "flngTaskID",
+                mlngTaskID,
+                new String[]{"fdtmDeleted"},
+                new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+
+        Cursor curActiveInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
+        while(curActiveInstances.moveToNext()){
+            TaskInstance ti = new TaskInstance(curActiveInstances.getLong(curActiveInstances.getColumnIndex("flngInstanceID")));
+            ti.deleteInstance();
+        }
+
+        Time tempTime = new Time(mlngTimeID);
+        if(!tempTime.isSession()){
+            tempTime.completeTime();
+        }
+    }
+
 //    public void generateInstances(Boolean pblnInitial){
 //        Time tempTime = new Time(mlngTimeID);
 //        Cursor tblTimeInstance = getValidGenerationPoints();

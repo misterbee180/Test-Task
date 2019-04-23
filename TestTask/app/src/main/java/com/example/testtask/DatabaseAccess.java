@@ -25,7 +25,7 @@ public class DatabaseAccess {
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
 
         TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 18);
+            super(context, "TaskDatabase.db", null, 19);
         }
 
         //region TABLE CREATE SCRIPTS
@@ -227,6 +227,12 @@ public class DatabaseAccess {
                     if(oldVersion < 18) {
                         upgradeToV18(db);
                     }
+                    if(oldVersion < 19){
+                        upgradeToV19(db);
+                    }
+//                    if(oldVersion < 20){
+//                        upgradeToV20(db);
+//                    }
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1207,6 +1213,16 @@ public class DatabaseAccess {
                     generateContentValues(new String[]{"fdtmCompleted"}, new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()}),
                     "fdtmSystemCompleted = 1554830241995",
                     null);
+        }
+
+        private void upgradeToV19(SQLiteDatabase db) throws Exception{
+            addColumn(db, "tblTime", "fblnThru", 99, true, "0");
+            addColumn(db, "tblTimeGeneration", "fintThru", 99, true, "0");
+            db.execSQL("ALTER TABLE tblTimeGeneration RENAME TO tblTimeInstance");
+        }
+
+        private void upgradeToV20(SQLiteDatabase db) throws Exception{
+            //Use this. Didn't wind up needing.
         }
 
         private void addColumn(SQLiteDatabase db ,

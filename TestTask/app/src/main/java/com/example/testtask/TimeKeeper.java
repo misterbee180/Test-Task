@@ -397,7 +397,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayNoRep.setVisibility(View.VISIBLE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE); //Todo: Fix design to allow yearly to date repetition
+                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
+                //Todo: Fix design to allow yearly to date repetition
                 break;
         }
     }
@@ -836,7 +837,6 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            //Todo: Remove mSetIndicator and use View
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             switch (mSetIndicator) {
                 case 3:
