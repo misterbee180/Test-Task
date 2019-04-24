@@ -63,14 +63,21 @@ public class Details_Instance extends AppCompatActivity {
     public void ConfirmInstance(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            mInstance.updateTaskInstance(getTaskTitle(),
-                    getTaskDesc(),
+            long lngTaskDetailID = DatabaseAccess.addRecordToTable("tblTaskDetail",
+                    new String[] {"fstrTitle", "fstrDescription"},
+                    new Object[] {getTaskTitle(), getTaskDesc()});
+
+            //As the instance is being updated we are assuming new title / desc and new time.
+            //This is logic that in the future might want to be made more robust.
+            mInstance = new TaskInstance(mInstance.mlngInstanceID,
+                    mInstance.mlngTaskID,
+                    lngTaskDetailID,
                     TimeKeeper.getFromDate(),
                     TimeKeeper.getToDate(),
                     TimeKeeper.mblnFromTime,
                     TimeKeeper.mblnToTime,
                     TimeKeeper.mblnToDate,
-                    Task_Display.getCurrentCalendar().getTimeInMillis());
+                    -1);
 
             setResult(RESULT_OK);
             finish();

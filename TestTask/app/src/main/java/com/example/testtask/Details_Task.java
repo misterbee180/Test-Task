@@ -320,7 +320,7 @@ public class Details_Task extends AppCompatActivity {
                                 mTime.mlngTimeframeID);
                     }
                     //Remove instances associated w/ original time
-                    mTask.clearActiveInstances();
+                    mTask.finishActiveInstances(3);
                 }
             } else {
                 if (getOneOff() != -1) {

@@ -117,7 +117,8 @@ public class Task {
             long pdtmTo,
             boolean pblnFromTime,
             boolean pblnToTime,
-            boolean pblnToDate){
+            boolean pblnToDate,
+                                         long plngSession){
         TaskInstance ti = new TaskInstance(mlngTaskID,
                 mlngTaskDetailID,
                 pdtmFrom,
@@ -125,7 +126,7 @@ public class Task {
                 pblnFromTime,
                 pblnToTime,
                 pblnToDate,
-                Task_Display.getCurrentCalendar().getTimeInMillis());
+                plngSession);
 
         return ti;
     }
@@ -155,11 +156,11 @@ public class Task {
                 new Object[]{plngOneOff});
     }
 
-    public void clearActiveInstances(){
+    public void finishActiveInstances(int pintCompleteType){
         Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
         while(curInstances.moveToNext()){
             TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
-            ti.finishInstance(3);
+            ti.finishInstance(pintCompleteType);
         }
     }
 }

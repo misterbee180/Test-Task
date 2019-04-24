@@ -109,7 +109,7 @@ public class Details_LongTerm extends AppCompatActivity {
                             try{
                                 DatabaseAccess.mDatabase.beginTransaction();
                                 Task tempTask = new Task(lngTaskId);
-                                TaskInstance ti = tempTask.generateInstance(-1, -1, false, false, false);
+                                TaskInstance ti = tempTask.generateInstance(-1, -1, false, false, false, -1);
                                 ti.finishInstance(2);
 
                                 DatabaseAccess.mDatabase.setTransactionSuccessful();

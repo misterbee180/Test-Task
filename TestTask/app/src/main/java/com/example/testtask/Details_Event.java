@@ -118,13 +118,12 @@ public class Details_Event extends AppCompatActivity {
     public static class TaskDeleteConfirmationFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long lngTaskId = getArguments().getLong("TaskID");
-//            final Long lngEventId = getArguments().getLong("EventID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Delete Event Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteTask(lngTaskId);
+                            Task tempTask = new Task(getArguments().getLong("TaskID"));
+                            tempTask.deleteTask();
                             retrieveEventTasks();
                         }
                     })
@@ -135,22 +134,6 @@ public class Details_Event extends AppCompatActivity {
                     });
             // Create the AlertDialog object and return it
             return builder.create();
-        }
-    }
-
-    public static void deleteTask(Long plngTaskId){
-        DatabaseAccess.updateRecordFromTable("tblTask",
-                "flngTaskID",
-                plngTaskId,
-                new String[]{"fblnActive"},
-                new Object[]{false});
-        Cursor cursor = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskId);
-        if(cursor.moveToNext()){
-            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                    new String[]{"fblnSystemComplete"},
-                    new Object[]{true});
         }
     }
 

@@ -18,6 +18,7 @@ public class TaskInstance {
     long mdtmSystemCompleted;
     long mdtmDeleted;
     long mdtmEdited;
+    long mlngSessionID;
 
     public TaskInstance(long plngInstanceID){
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "flngInstanceID", plngInstanceID);
@@ -39,6 +40,7 @@ public class TaskInstance {
             mdtmSystemCompleted = cursor.getLong(cursor.getColumnIndex("fdtmSystemCompleted"));
             mdtmDeleted = cursor.getLong(cursor.getColumnIndex("fdtmDeleted"));
             mdtmEdited = cursor.getLong(cursor.getColumnIndex("fdtmEdited"));
+            mlngSessionID = cursor.getLong(cursor.getColumnIndex("flngSessionID"));
         } else {
             System.out.println("Unable to find instance for id " + plngInstanceID);
         }
@@ -51,7 +53,28 @@ public class TaskInstance {
                         Boolean pblnFromTime,
                         Boolean pblnToTime,
                         boolean pblnToDate,
-                        long pdtmCreated){
+                        long plngSessionID){
+        this(-1,
+                plngTaskID,
+                plngTaskDetailID,
+                pdtmFrom,
+                pdtmTo,
+                pblnFromTime,
+                pblnToTime,
+                pblnToDate,
+                plngSessionID);
+    }
+
+    public TaskInstance(long plngInstanceID,
+                        long plngTaskID,
+                        long plngTaskDetailID,
+                        long pdtmFrom,
+                        long pdtmTo,
+                        Boolean pblnFromTime,
+                        Boolean pblnToTime,
+                        boolean pblnToDate,
+                        long plngSessionID){
+        mlngInstanceID = plngInstanceID;
         mlngTaskID = plngTaskID;
         mlngTaskDetailID = plngTaskDetailID;
         mdtmFrom = pdtmFrom;
@@ -59,56 +82,22 @@ public class TaskInstance {
         mdtmTo = pdtmTo;
         mblnToTime = pblnToTime;
         mblnToDate = pblnToDate;
-        mdtmCreated = pdtmCreated;
+        if(mlngInstanceID == -1){
+            mdtmCreated = Task_Display.getCurrentCalendar().getTimeInMillis();
+        } else {
+            mdtmEdited = Task_Display.getCurrentCalendar().getTimeInMillis();
+        }
+        mlngSessionID = plngSessionID;
 
         createTaskInstance();
     }
 
-    public void updateTaskInstance(String pstrTitle,
-                        String pstrDescription,
-                        long pdtmFrom,
-                        long pdtmTo,
-                        Boolean pblnFromTime,
-                        Boolean pblnToTime,
-                        boolean pblnToDate,
-                        long pdtmEdited){
-        mstrTitle = pstrTitle;
-        mstrDescription = pstrDescription;
-        mdtmFrom = pdtmFrom;
-        mblnFromTime = pblnFromTime;
-        mdtmTo = pdtmTo;
-        mblnToTime = pblnToTime;
-        mblnToDate = pblnToDate;
-        mdtmEdited = pdtmEdited;
-
-        DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmEdited"},
-                new Object[] {mlngTaskID,
-                        DatabaseAccess.addRecordToTable("tblTaskDetail",
-                                new String[] {"fstrTitle", "fstrDescription"},
-                                new Object[] {mstrTitle, mstrDescription}),
-                        mdtmFrom,
-                        mdtmTo,
-                        mblnFromTime,
-                        mblnToTime,
-                        mblnToDate,
-                        mdtmEdited},
+    public void createTaskInstance(){
+        mlngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
+                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited"},
+                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited},
                 "flngInstanceID",
                 mlngInstanceID);
-    }
-
-    public boolean createTaskInstance(){
-
-        long flngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated"},
-                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated});
-
-        if (flngInstanceID == -1) {
-            System.out.println("Unable to create instance id");
-            return false;
-        }
-
-        return true;
     }
 
     public void finishInstance(int pintCompleteType){

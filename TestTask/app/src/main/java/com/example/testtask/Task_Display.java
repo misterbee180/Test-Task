@@ -175,11 +175,8 @@ public class Task_Display extends AppCompatActivity {
                                         "flngTimeID",
                                         tblSession.getLong(tblSession.getColumnIndex("flngTimeID")));
                                 while(tblTask.moveToNext()){
-                                    DatabaseAccess.mDatabase.update("tblTaskInstance",
-                                            DatabaseAccess.generateContentValues(new String[]{"fdtmCompleted"},
-                                                    new Object[]{getCurrentCalendar().getTimeInMillis()}),
-                                            "flngTaskID = ? and fdtmCompleted = ? and fdtmSystemCompleted = ? and fdtmDeleted = ?",
-                                            DatabaseAccess.objectArrayToStringArray(new Object[]{tblTask.getLong(tblTask.getColumnIndex("flngTaskID")),-1,-1,-1}));
+                                    Task tempTask = new Task(tblTask.getLong(tblTask.getColumnIndex("flngTaskID")));
+                                    tempTask.finishActiveInstances(2);
                                 }
                                 tblTask.close();
                             }

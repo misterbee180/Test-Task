@@ -768,7 +768,8 @@ public class Time {
                             tempTo.getTimeInMillis(),
                             mblnFromTime,
                             mblnToTime,
-                            mblnToDate);
+                            mblnToDate,
+                            isSession() ? mlngTimeID : -1);
                 }else{
                     Cursor tblTaskCursor = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID);
                     while (tblTaskCursor.moveToNext()) {
@@ -778,7 +779,8 @@ public class Time {
                                     tempTo.getTimeInMillis(),
                                     mblnFromTime,
                                     mblnToTime,
-                                    mblnToDate);
+                                    mblnToDate,
+                                    isSession() ? mlngTimeID : -1);
                         }
                     }
                 }
@@ -831,7 +833,7 @@ public class Time {
 
         while (curTask.moveToNext()){
             Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
-            tempTask.clearActiveInstances();
+            tempTask.finishActiveInstances(3);
         }
 
         generateInstances(true, -1);
