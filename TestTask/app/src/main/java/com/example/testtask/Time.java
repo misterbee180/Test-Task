@@ -823,13 +823,7 @@ public class Time {
     }
 
     public void refreshInstances(){
-        Cursor curTask = DatabaseAccess.mDatabase.query("tblTask",
-                new String[] {"flngTaskID"},
-                "fdtmDeleted = -1 and flngTimeID = ?",
-                new String[] {Long.toString(mlngTimeID)},
-                null,
-                null,
-                null);
+        Cursor curTask = getTasks();
 
         while (curTask.moveToNext()){
             Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
@@ -837,6 +831,25 @@ public class Time {
         }
 
         generateInstances(true, -1);
+    }
+
+    public Cursor getTasks(){
+        return DatabaseAccess.mDatabase.query("tblTask",
+                new String[] {"flngTaskID"},
+                "fdtmDeleted = -1 and flngTimeID = ?",
+                new String[] {Long.toString(mlngTimeID)},
+                null,
+                null,
+                null);
+    }
+
+    public void finishTaskInstances(int pintCompleteType){
+        Cursor curTask = getTasks();
+
+        while(curTask.moveToNext()){
+            Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
+            tempTask.finishActiveInstances(pintCompleteType);
+        }
     }
     //endregion
 }
