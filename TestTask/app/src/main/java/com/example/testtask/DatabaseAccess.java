@@ -1713,6 +1713,7 @@ public class DatabaseAccess {
                 "ON tm.flngTimeID = t.flngTimeID \n" +
                 "LEFT JOIN tblSession s \n" +
                 "ON s.flngTimeID = tm.flngTimeID \n" +
+                "OR s.flngTimeID = t.flngOneOff \n" +
                 "WHERE i.fdtmCompleted = -1 \n" +
                 "AND i.fdtmSystemCompleted = -1 \n" +
                 "AND i.fdtmDeleted = -1 \n" +

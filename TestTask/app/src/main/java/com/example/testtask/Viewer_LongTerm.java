@@ -21,6 +21,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_longterm);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -52,14 +53,14 @@ public class Viewer_LongTerm extends AppCompatActivity {
     }
 
     public  void createNewLongTermTask() {
-        Intent intent = new Intent(this, Task_LongTerm.class);
+        Intent intent = new Intent(this, Details_LongTerm.class);
         startActivity(intent);
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Intent intent = new Intent(getBaseContext(), Task_LongTerm.class);
+            Intent intent = new Intent(getBaseContext(), Details_LongTerm.class);
             switch(parent.getId()){
                 case R.id.lsvLongTermListUnc:
                     intent.putExtra("EXTRA_LONGTERM_ID", mLongTermListUnc.getID(position));

@@ -20,6 +20,7 @@ public class Viewer_Groups extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_groups);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -48,11 +49,9 @@ public class Viewer_Groups extends AppCompatActivity {
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("GroupID", mGroupList.getID(position));
-            DialogFragment newFragment = new EditGroupFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Group");
+            Intent intent = new Intent(getBaseContext(), Details_Group.class);
+            intent.putExtra("EXTRA_GROUP_ID", mGroupList.getID(position));
+            startActivity(intent);
         }
     };
 
@@ -92,31 +91,8 @@ public class Viewer_Groups extends AppCompatActivity {
         }
     }
 
-    public static class EditGroupFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpGroupID = getArguments().getLong("GroupID");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Group")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Group.class);
-                            intent.putExtra("EXTRA_GROUP_ID", tmpGroupID);
-                            startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
     public  void createNewGroup() {
-        Intent intent = new Intent(this, Task_Group.class);
+        Intent intent = new Intent(this, Details_Group.class);
         startActivity(intent);
     }
 

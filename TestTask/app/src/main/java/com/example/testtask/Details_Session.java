@@ -21,6 +21,7 @@ public class Details_Session extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_session);
         timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
         timeKeeper.setMode(2);
@@ -80,6 +81,7 @@ public class Details_Session extends AppCompatActivity{
         DatabaseAccess.mDatabase.beginTransaction();
         try {
             //todo: add validation to session before it attempts to be created
+            //todo: update uncompleted one off tasks to take advantage of altered session details
             if(mTime.mlngTimeID != -1){
                 mTime.clearGenerationPoints();
             }

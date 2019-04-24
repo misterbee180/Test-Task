@@ -12,7 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class Task_Group extends AppCompatActivity {
+public class Details_Group extends AppCompatActivity {
 
     static ArrayListContainer mGroupTask;
     Long mlngGroupId = (long)-1;
@@ -22,6 +22,7 @@ public class Task_Group extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_group);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -67,16 +68,10 @@ public class Task_Group extends AppCompatActivity {
         if (mlngGroupId == -1){
             fab.setVisibility(View.GONE);
             findViewById(R.id.lsvGroupTaskList).setVisibility(View.GONE);
-            findViewById(R.id.btnGroupConfirm).setVisibility(View.VISIBLE);
         } else {
             //No Tasks Associated with Event
             fab.setVisibility(View.VISIBLE);
-            findViewById(R.id.btnGroupConfirm).setVisibility(View.GONE);
-            if (mGroupTask.mArrayList.size() == 0){
-                findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
-            } else {
-                findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
-            }
+            findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
         }
     }
 
@@ -93,46 +88,36 @@ public class Task_Group extends AppCompatActivity {
             setGroupTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
         }
 
-        cursor = DatabaseAccess.getRecordsFromTable("tblTask","flngGroupID", mlngGroupId,"fstrTitle");
+        cursor = DatabaseAccess.getRecordsFromTable("tblTask","fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = -1", new Object[] {mlngGroupId});
         mGroupTask.Clear();
         while (cursor.moveToNext()){
-            mGroupTask.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            mGroupTask.Add(tempTask.mstrTitle,
+                    tempTask.mlngTaskID);
         }
         mGroupTask.mAdapter.notifyDataSetChanged();
     }
 
     public void ceaseGroupCreation(View view) {
-        Intent intent = new Intent(this, Task_Display.class);
-        if (view.getId() == R.id.btnGroupConfirm) {
-            if (mlngGroupId == -1){
-                createGroup(getGroupTitle());
-            } else {
-                updateGroupRecord();
+        boolean blnInitial = mlngGroupId == -1;
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            mlngGroupId = DatabaseAccess.addRecordToTable("tblGroup",
+                    new String[] {"fstrTitle"},
+                    new String[] {getGroupTitle()},
+                    "flngGroupID",
+                    mlngGroupId);
+            setupInitialVisibility();
+
+            if(!blnInitial) {
+                setResult(RESULT_OK);
+                finish();
             }
-
-            //use the result to determine if a session was added.
-            setResult(RESULT_OK, intent);
-            finish();
-        } else {
-            //use the result to determine if a session was added.
-            setResult(RESULT_CANCELED, intent);
-            finish();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch(Exception e) {
+            e.printStackTrace();
         }
-    }
-
-    private void updateGroupRecord() {
-        String rawUpdateGroupRecord = "UPDATE tblGroup \n" +
-                "SET fstrTitle = '" + getGroupTitle() + "' \n" +
-                "WHERE flngGroupID = " + Long.toString(mlngGroupId);
-        Cursor c = DatabaseAccess.mDatabase.rawQuery(rawUpdateGroupRecord,null);
-        c.moveToFirst();
-        c.close();
-    }
-
-    private long createGroup(String pstrTitle){
-        ContentValues values = new ContentValues();
-        values.put("fstrTitle", pstrTitle);
-        return DatabaseAccess.mDatabase.insertOrThrow("tblGroup",null,values);
+        DatabaseAccess.mDatabase.endTransaction();
     }
 
     public String getGroupTitle() {

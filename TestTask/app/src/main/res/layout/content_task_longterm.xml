@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Task_LongTerm"
+    tools:context=".Details_LongTerm"
     tools:showIn="@layout/activity_task_long_term"
     android:orientation="vertical">
 

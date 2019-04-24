@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".Details_Instance"></activity>
         <activity
-            android:name=".Task_LongTerm"
+            android:name=".Details_LongTerm"
             android:label="@string/title_activity_task_long_term"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -50,7 +50,7 @@
             android:label="@string/title_activity_viewer__events"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Task_Event"
+            android:name=".Details_Event"
             android:label="@string/title_activity_task__event"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -61,7 +61,7 @@
             android:label="@string/title_activity_viewer__groups"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Task_Group"
+            android:name=".Details_Group"
             android:label="@string/title_activity_task_group"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
