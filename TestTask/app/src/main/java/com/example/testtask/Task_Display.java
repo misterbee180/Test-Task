@@ -171,14 +171,8 @@ public class Task_Display extends AppCompatActivity {
                                     "flngSessionID",
                                     tmpSessionID);
                             if(tblSession.moveToFirst()){
-                                Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
-                                        "flngTimeID",
-                                        tblSession.getLong(tblSession.getColumnIndex("flngTimeID")));
-                                while(tblTask.moveToNext()){
-                                    Task tempTask = new Task(tblTask.getLong(tblTask.getColumnIndex("flngTaskID")));
-                                    tempTask.finishActiveInstances(2);
-                                }
-                                tblTask.close();
+                                Time tempTime = new Time(tblSession.getLong(tblSession.getColumnIndex("flngTimeID")));
+                                tempTime.finishTaskInstances(2);
                             }
                             tblSession.close();
                             loadTasksFromDatabase(mContext);
