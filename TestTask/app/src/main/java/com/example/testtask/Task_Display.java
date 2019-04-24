@@ -32,9 +32,22 @@ public class Task_Display extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mContext = this;
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+//        Bundle extras = getIntent().getExtras();
+//        if (extras != null){
+//            Bundle bundle = new Bundle();
+//            bundle.putString("Error", getIntent().getStringExtra("EXTRA_ERROR"));
+//
+//            DialogFragment newFragment;
+//            FragmentActivity activity;
+//            newFragment = new ErrorConfirmationFragment();
+//            newFragment.setArguments(bundle);
+//            newFragment.show(this.getSupportFragmentManager(), "Error Handled");
+//        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -73,6 +86,7 @@ public class Task_Display extends AppCompatActivity {
                     break;
                 case 2:
                     bundle.putLong("SessionID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
+//                    bundle.putString("Section", ((CustomAdapter.ViewHolder)v.getTag()).section.getText().toString());
                     newFragment = new Task_Display.CompleteSessionConfirmationFragment();
                     newFragment.setArguments(bundle);
                     activity = (FragmentActivity)parent.getContext();
@@ -100,11 +114,8 @@ public class Task_Display extends AppCompatActivity {
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                                    "flngInstanceID",
-                                    tmpInstanceID,
-                                    new String[]{"fdtmCompleted"},
-                                    new Object[]{getCurrentCalendar().getTimeInMillis()});
+                            TaskInstance ti = new TaskInstance(tmpInstanceID);
+                            ti.finishInstance(1);
                             loadTasksFromDatabase(mContext);
                         }
                     })
@@ -118,14 +129,44 @@ public class Task_Display extends AppCompatActivity {
         }
     }
 
+    public static class ErrorConfirmationFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final String strError = getArguments().getString("Error");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(strError)
+                    .setPositiveButton("Acknowledged", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            loadTasksFromDatabase(mContext);
+                        }
+                    })
+                    .setNegativeButton("Report", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            loadTasksFromDatabase(mContext);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
     public static class CompleteSessionConfirmationFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpSessionID = getArguments().getLong("SessionID");
+//            final String tmpSection = getArguments().getString("Section");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Complete Session Tasks?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+//                            for(int i=0; i<mAdapter.getCount(); i++){
+//                                if(((CustomAdapter.itemDetail)mAdapter.getItem(i)).mSection == tmpSection){
+//                                    if(mAdapter.getItemViewType(i) == CustomAdapter.TYPE_ITEM){
+//                                        TaskInstance ti = new TaskInstance(((CustomAdapter.itemDetail)mAdapter.getItem(i)).mId);
+//                                        ti.finishInstance(2);
+//                                    }
+//                                }
+//                            }
                             Cursor tblSession = DatabaseAccess.getRecordsFromTable("tblSession",
                                     "flngSessionID",
                                     tmpSessionID);

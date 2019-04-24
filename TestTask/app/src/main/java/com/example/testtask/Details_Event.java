@@ -17,7 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class Task_Event extends AppCompatActivity {
+public class Details_Event extends AppCompatActivity {
 
     static ArrayListContainer mEventTasks = new ArrayListContainer();
     static Long mlngEventID = (long)-1;
@@ -27,6 +27,7 @@ public class Task_Event extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_event);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -70,7 +71,7 @@ public class Task_Event extends AppCompatActivity {
             Bundle bundle = new Bundle();
             bundle.putLong("TaskID", mEventTasks.getID(position));
             bundle.putLong("EventID",mlngEventID);
-            DialogFragment newFragment = new Task_Event.TaskEditConfirmationFragment();
+            DialogFragment newFragment = new Details_Event.TaskEditConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Edit Task");
         }
@@ -82,7 +83,7 @@ public class Task_Event extends AppCompatActivity {
             Bundle bundle = new Bundle();
             bundle.putLong("TaskID", mEventTasks.getID(position));
             bundle.putLong("EventID",mlngEventID);
-            DialogFragment newFragment = new Task_Event.TaskDeleteConfirmationFragment();
+            DialogFragment newFragment = new Details_Event.TaskDeleteConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Delete Task");
             return true;
@@ -265,14 +266,14 @@ public class Task_Event extends AppCompatActivity {
             case R.id.action_delete_event:
                 bundle = new Bundle();
                 bundle.putLong("EventID", mlngEventID);
-                newFragment = new Task_Event.EventDeleteConfirmationFragment();
+                newFragment = new Details_Event.EventDeleteConfirmationFragment();
                 newFragment.setArguments(bundle);
                 newFragment.show(getSupportFragmentManager(), "Delete Task");
                 break;
             case R.id.action_clear_event:
                 bundle = new Bundle();
                 bundle.putLong("EventID", mlngEventID);
-                newFragment = new Task_Event.EventClearConfirmationFragment();
+                newFragment = new Details_Event.EventClearConfirmationFragment();
                 newFragment.setArguments(bundle);
                 newFragment.show(getSupportFragmentManager(), "Clear Task");
             /*case R.id.action_session:

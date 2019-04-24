@@ -35,6 +35,7 @@ public class Details_Task extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_details);
         mTitle = (TextView) findViewById(R.id.txbTaskTitle);
         mDescription = (TextView) findViewById(R.id.txbTaskDescription);
@@ -46,6 +47,9 @@ public class Details_Task extends AppCompatActivity {
         mlngLongTermID = -1;
         mlngGroupID = -1;
         mblnLoaded = false;
+
+//        Cursor c = DatabaseAccess.getRecordsFromTable("tblLongTerm");
+//        c.getLong(15);
 
         mGroup = (Spinner) findViewById(R.id.spnTaskGroupSel);
         mGroupList = new ArrayListContainer();
@@ -206,6 +210,8 @@ public class Details_Task extends AppCompatActivity {
             (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
             (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
             timeKeeper.setMode(4);
+        } else if (mlngGroupID != -1 && !mblnLoaded){ //Group
+            (findViewById(R.id.spnTaskGroupSel)).setEnabled(false);
         }
         (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
     }
@@ -224,13 +230,17 @@ public class Details_Task extends AppCompatActivity {
                 setTaskDesc(mTask.mstrDescription);
                 if (mTask.mintTaskType == 1) mlngEventID = mTask.mlngTaskTypeID;
                 if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
-                if (mTask.mintTaskType == 3) mlngGroupID = mTask.mlngTaskTypeID;
+                if (mTask.mintTaskType == 3) {
+                    mlngGroupID = mTask.mlngTaskTypeID;
+
+                }
                 mTime = new Time(mTask.mlngTimeID);
                 timeKeeper.loadTimeDetails(mTime);
+            } else {
+                mlngEventID = extras.getLong("EXTRA_EVENT_ID", -1);
+                mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", -1);
+                mlngGroupID = extras.getLong("EXTRA_GROUP_ID", -1);
             }
-            mlngEventID = extras.getLong("EXTRA_EVENT_ID",-1);
-            mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID",-1);
-            mlngGroupID = extras.getLong("EXTRA_GROUP_ID",-1);
         }
     }
 

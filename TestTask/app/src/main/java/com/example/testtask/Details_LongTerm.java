@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class Task_LongTerm extends AppCompatActivity {
+public class Details_LongTerm extends AppCompatActivity {
     static ArrayListContainer mLongTermTasksUnc = new ArrayListContainer();
     static ArrayListContainer mLongTermTasksCmp = new ArrayListContainer();
     static Long mlngTaskCount = (long)0;
@@ -30,6 +30,7 @@ public class Task_LongTerm extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_long_term);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

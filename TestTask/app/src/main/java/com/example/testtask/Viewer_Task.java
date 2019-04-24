@@ -39,6 +39,7 @@ public class Viewer_Task extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         try{
             super.onCreate(savedInstanceState);
+            //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
             setContentView(R.layout.activity_viewer_task);
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);

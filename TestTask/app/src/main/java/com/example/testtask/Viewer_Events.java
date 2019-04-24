@@ -22,6 +22,7 @@ public class Viewer_Events extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_events);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -102,7 +103,7 @@ public class Viewer_Events extends AppCompatActivity {
             builder.setMessage("Edit Event")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Task_Event.class);
+                            Intent intent = new Intent(getActivity(), Details_Event.class);
                             intent.putExtra("EXTRA_EVENT_ID", tmpEventID);
                             startActivity(intent);
                         }
@@ -183,7 +184,7 @@ public class Viewer_Events extends AppCompatActivity {
     }
 
     public  void createNewEvent() {
-        Intent intent = new Intent(this, Task_Event.class);
+        Intent intent = new Intent(this, Details_Event.class);
         startActivity(intent);
     }
 

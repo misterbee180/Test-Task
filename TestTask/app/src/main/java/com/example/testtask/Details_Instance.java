@@ -22,6 +22,7 @@ public class Details_Instance extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_instance_details);
         mTitle = (TextView) findViewById(R.id.txbTaskTitle);
         mDescription = (TextView) findViewById(R.id.txbTaskDescription);
@@ -97,6 +98,7 @@ public class Details_Instance extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()){
             case R.id.action_delete_instance:
+                //Todo: Delete task if instance is associated w/ non-repeating task. Possibly show additional fragment
                 DialogFragment newFragment = new InstanceDeleteConfirmationFragment();
                 newFragment.show(getSupportFragmentManager(), "Delete Instance");
                 break;
@@ -137,7 +139,6 @@ public class Details_Instance extends AppCompatActivity {
     public static class InstanceDeleteConfirmationFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpInstanceID = getArguments().getLong("InstanceID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Delete Instance?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
