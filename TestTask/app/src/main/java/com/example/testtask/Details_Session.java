@@ -1,9 +1,7 @@
 package com.example.testtask;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -57,17 +55,10 @@ public class Details_Session extends AppCompatActivity{
     }
 
     private void LoadSession() {
-        Cursor curSession = mTime.getSession();
+        setSessionTitle(mTime.getSessionTitle());
+        timeKeeper.loadTimeKeeper(mTime);
 
-        if(curSession.moveToNext()){
-            setSessionTitle(curSession.getString(curSession.getColumnIndex("fstrTitle")));
-            timeKeeper.loadTimeDetails(mTime);
-        }
-
-        Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
-                "flngTimeID",
-                mTime.mlngTimeID);
-
+        Cursor tblTask = mTime.getTasks();
         mSessionTaskList.Clear();
         while (tblTask.moveToNext()){
             Task tempTask = new Task(tblTask.getLong(tblTask.getColumnIndex("flngTaskID")));
@@ -87,9 +78,22 @@ public class Details_Session extends AppCompatActivity{
             }
             mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
                     mTime.mintTimeframe,
-                    mTime.mlngTimeframeID);
-            mTime.createSession(getSessionTitle());
+                    mTime.mlngTimeframeID,
+                    true,
+                    mTime.mlngSessionDetailID,
+                    getSessionTitle(),
+                    "");
             mTime.refreshInstances();
+
+            Cursor oneOffs = mTime.findOneOffs();
+            while (oneOffs.moveToNext()){
+                Task tempTask = new Task(oneOffs.getLong(oneOffs.getColumnIndex("flngTaskID")));
+                new Time(tempTask.mlngTimeID).clearGenerationPoints();
+                Time tempTime = mTime.createOneOff(tempTask.mlngTimeID);//because we're supplying the time ID we shouldn't need to replace the session id
+
+                tempTask.finishActiveInstances(3);
+                tempTime.generateInstances(true, tempTask.mlngTaskID);
+            }
 
             DatabaseAccess.mDatabase.setTransactionSuccessful();
 

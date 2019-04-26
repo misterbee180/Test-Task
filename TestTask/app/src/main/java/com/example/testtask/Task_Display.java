@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -85,7 +86,7 @@ public class Task_Display extends AppCompatActivity {
                     newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
                     break;
                 case 2:
-                    bundle.putLong("SessionID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
+                    bundle.putLong("TimeID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
 //                    bundle.putString("Section", ((CustomAdapter.ViewHolder)v.getTag()).section.getText().toString());
                     newFragment = new Task_Display.CompleteSessionConfirmationFragment();
                     newFragment.setArguments(bundle);
@@ -116,7 +117,7 @@ public class Task_Display extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             TaskInstance ti = new TaskInstance(tmpInstanceID);
                             ti.finishInstance(1);
-                            loadTasksFromDatabase(mContext);
+                            loadTasksFromDatabase();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -137,12 +138,12 @@ public class Task_Display extends AppCompatActivity {
             builder.setMessage(strError)
                     .setPositiveButton("Acknowledged", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            loadTasksFromDatabase(mContext);
+                            loadTasksFromDatabase();
                         }
                     })
                     .setNegativeButton("Report", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            loadTasksFromDatabase(mContext);
+                            loadTasksFromDatabase();
                         }
                     });
             // Create the AlertDialog object and return it
@@ -153,8 +154,6 @@ public class Task_Display extends AppCompatActivity {
     public static class CompleteSessionConfirmationFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpSessionID = getArguments().getLong("SessionID");
-//            final String tmpSection = getArguments().getString("Section");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Complete Session Tasks?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
@@ -167,24 +166,9 @@ public class Task_Display extends AppCompatActivity {
 //                                    }
 //                                }
 //                            }
-                            Cursor tblSession = DatabaseAccess.getRecordsFromTable("tblSession",
-                                    "flngSessionID",
-                                    tmpSessionID);
-                            if(tblSession.moveToFirst()){
-                                Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask",
-                                        "flngTimeID",
-                                        tblSession.getLong(tblSession.getColumnIndex("flngTimeID")));
-                                while(tblTask.moveToNext()){
-                                    DatabaseAccess.mDatabase.update("tblTaskInstance",
-                                            DatabaseAccess.generateContentValues(new String[]{"fdtmCompleted"},
-                                                    new Object[]{getCurrentCalendar().getTimeInMillis()}),
-                                            "flngTaskID = ? and fdtmCompleted = ? and fdtmSystemCompleted = ? and fdtmDeleted = ?",
-                                            DatabaseAccess.objectArrayToStringArray(new Object[]{tblTask.getLong(tblTask.getColumnIndex("flngTaskID")),-1,-1,-1}));
-                                }
-                                tblTask.close();
-                            }
-                            tblSession.close();
-                            loadTasksFromDatabase(mContext);
+                            Time tempTime = new Time(getArguments().getLong("TimeID"));
+                            tempTime.finishTaskInstances(2);
+                            loadTasksFromDatabase();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -202,7 +186,7 @@ public class Task_Display extends AppCompatActivity {
         try{
             super.onResume();
             generateTaskInstances();
-            loadTasksFromDatabase(this);
+            loadTasksFromDatabase();
         }catch(Exception e){
             e.printStackTrace();
             setResult(RESULT_CANCELED);
@@ -290,20 +274,49 @@ public class Task_Display extends AppCompatActivity {
     private void generateTaskInstances() {
         DatabaseAccess.mDatabase.beginTransaction();
         try{
-            Cursor timeCursor = DatabaseAccess.getRecordsFromTable("tblTime",
-                "fblnComplete = ?",
-                new Object[]{0});
-
+            Cursor timeCursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null);
             while (timeCursor.moveToNext()) {
                 Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 tempTime.buildTimeInstances(); //build generation points
-                tempTime.generateInstances(false, -1); //Add any new instances that need adding
+            }
+
+            timeCursor = getValidGenerationPoints(true, false);
+            while(timeCursor.moveToNext()){
+                Time tempTime = new Time(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
+                if (timeCursor.getLong(timeCursor.getColumnIndex("flngGenerationID")) > tempTime.mlngGenerationID){
+                    Calendar tempTo = Task_Display.getCalendar(timeCursor.getLong(timeCursor.getColumnIndex("fdtmPriority")));
+                    if(tempTime.mblnThru) {
+                        tempTo.add(Calendar.DAY_OF_YEAR, timeCursor.getInt(timeCursor.getColumnIndex("fintThru")));
+                    }
+                    tempTime.generateInstance(timeCursor.getLong(timeCursor.getColumnIndex("fdtmPriority")),
+                            tempTo.getTimeInMillis()); //Add any new instances that need adding
+                }
             }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
         }
         DatabaseAccess.mDatabase.endTransaction();
+    }
+
+    public Cursor getValidGenerationPoints(boolean pblnIncludeThru,
+                                           boolean pblnAll){
+
+        //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
+        String strSelection = "fdtmUpcoming <= " + Long.toString(Task_Display.getEndCurrentDay().getTimeInMillis());
+        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis());
+        else strSelection += " and fdtmPriority >= " + Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis());
+
+        String orderBy = null;
+        if(!pblnAll) orderBy = "fdtmPriority LIMIT 1";
+
+        return DatabaseAccess.mDatabase.query("tblTimeInstance",
+                null,
+                strSelection,
+                null,
+                null,
+                null,
+                orderBy);
     }
 
     /** Called when the user taps the Send button */
@@ -342,7 +355,7 @@ public class Task_Display extends AppCompatActivity {
         startActivity(intent);
     }
 
-    static void loadTasksFromDatabase(Context pContext){
+    static void loadTasksFromDatabase(){
         class taskInstances{
             private String mTitle;
             private Long mId;
@@ -374,27 +387,27 @@ public class Task_Display extends AppCompatActivity {
             if (result == 'P') {
                 priorityList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionDetailID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             } else if (result == 'T') {
                 todayList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionDetailID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             } else if (result == 'S') {
                 standardList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionDetailID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             } else if (result == 'U') {
                 upcomingList.add(new taskInstances(cursor.getString(cursor.getColumnIndex("fstrTitle")),
                         cursor.getLong(cursor.getColumnIndex("flngInstanceID")),
-                        cursor.getLong(cursor.getColumnIndex("flngSessionID")),
+                        cursor.getLong(cursor.getColumnIndex("flngSessionDetailID")),
                         cursor.getString(cursor.getColumnIndex("fstrSessionTitle"))));
             }
         }
 
-        mAdapter = new CustomAdapter(pContext);
+        mAdapter = new CustomAdapter(mContext);
 
         //Load Events
           cursor = DatabaseAccess.retrieveEventTaskInstances();

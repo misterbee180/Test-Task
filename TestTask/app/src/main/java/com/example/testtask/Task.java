@@ -95,37 +95,50 @@ public class Task {
     }
 
     public void deleteTask(){
-        DatabaseAccess.updateRecordFromTable("tblTask",
-                "flngTaskID",
-                mlngTaskID,
-                new String[]{"fdtmDeleted"},
-                new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            DatabaseAccess.updateRecordFromTable("tblTask",
+                    "flngTaskID",
+                    mlngTaskID,
+                    new String[]{"fdtmDeleted"},
+                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
 
-        Cursor curActiveInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
-        while(curActiveInstances.moveToNext()){
-            TaskInstance ti = new TaskInstance(curActiveInstances.getLong(curActiveInstances.getColumnIndex("flngInstanceID")));
-            ti.finishInstance(3);
-        }
+            finishActiveInstances(3);
 
-        Time tempTime = new Time(mlngTimeID);
-        if(!tempTime.isSession()){
-            tempTime.completeTime();
+            Time tempTime = new Time(mlngTimeID);
+            if(tempTime.mlngRepetition == 0){
+                tempTime.completeTime();
+            }
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch (Exception e){
+            e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
     }
 
     public TaskInstance generateInstance(long pdtmFrom,
-            long pdtmTo,
-            boolean pblnFromTime,
-            boolean pblnToTime,
-            boolean pblnToDate){
-        TaskInstance ti = new TaskInstance(mlngTaskID,
+                                        long pdtmTo,
+                                        boolean pblnFromTime,
+                                        boolean pblnToTime,
+                                        boolean pblnToDate,
+                                         long plngSessionDetailID){
+
+        //replace -1 w/ proper session detail id if one off
+        long lngSessionDetailID = plngSessionDetailID;
+        if(mlngOneOff != -1){
+            Time tempTime = new Time(mlngOneOff);
+            lngSessionDetailID = tempTime.mlngSessionDetailID;
+        }
+
+        TaskInstance ti = new TaskInstance(-1,
+                mlngTaskID,
                 mlngTaskDetailID,
                 pdtmFrom,
                 pdtmTo,
                 pblnFromTime,
                 pblnToTime,
                 pblnToDate,
-                Task_Display.getCurrentCalendar().getTimeInMillis());
+                lngSessionDetailID);
 
         return ti;
     }
@@ -155,11 +168,11 @@ public class Task {
                 new Object[]{plngOneOff});
     }
 
-    public void clearActiveInstances(){
+    public void finishActiveInstances(int pintCompleteType){
         Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID);
         while(curInstances.moveToNext()){
             TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
-            ti.finishInstance(3);
+            ti.finishInstance(pintCompleteType);
         }
     }
 }

@@ -128,14 +128,15 @@ public class Viewer_Events extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(tmpEventID);
                             while (cursor.moveToNext()){
-                                TaskInstance ti = new TaskInstance(cursor.getLong(cursor.getColumnIndex("flngTaskID")),
+                                new TaskInstance(-1,
+                                        cursor.getLong(cursor.getColumnIndex("flngTaskID")),
                                         cursor.getLong(cursor.getColumnIndex("flngTaskDetailID")),
                                         (long) -1,
                                         (long) -1,
                                         false,
                                         false,
                                         false,
-                                        Task_Display.getCurrentCalendar().getTimeInMillis());
+                                        -1);
                             }
                             setEventsList();
                         }

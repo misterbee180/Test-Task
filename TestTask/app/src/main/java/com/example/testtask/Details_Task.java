@@ -68,6 +68,34 @@ public class Details_Task extends AppCompatActivity {
         LoadGroupSpinner();
     }
 
+    private void retrieveExtras() {
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null){
+            mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
+            if(mTask.mlngTaskID != -1){
+                mblnLoaded = true;
+                //Get all data from the task and apply it to the control
+                setSession(mTask.mlngTimeID);
+                setOneOff(mTask.mlngOneOff);
+                setTaskTitle(mTask.mstrTitle);
+                setTaskDesc(mTask.mstrDescription);
+                if (mTask.mintTaskType == 1) mlngEventID = mTask.mlngTaskTypeID;
+                if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
+                if (mTask.mintTaskType == 3) {
+                    mlngGroupID = mTask.mlngTaskTypeID;
+
+                }
+                mTime = new Time(mTask.mlngTimeID);
+                timeKeeper.loadTimeKeeper(mTime);
+            } else {
+                mlngEventID = extras.getLong("EXTRA_EVENT_ID", -1);
+                mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", -1);
+                mlngGroupID = extras.getLong("EXTRA_GROUP_ID", -1);
+            }
+        }
+    }
+
     @Override
     protected void onResume(){
         super.onResume();
@@ -154,7 +182,7 @@ public class Details_Task extends AppCompatActivity {
 
     public boolean wasSessionSessionReplaced(){
         if(mTask.mlngTaskID != -1) { //Task was loaded
-            if (isSessionSet() && mTime.isSession()
+            if (isSessionSet() && mTime.mblnSession
                     && (getSession() != mTime.mlngTimeID)) {
                 return true;
             }
@@ -164,7 +192,7 @@ public class Details_Task extends AppCompatActivity {
 
     public boolean wasSessionTimeReplaced(){
         if(mTask.mlngTaskID != -1){ //Task was loaded
-            if(!isSessionSet() && mTime.isSession()){
+            if(!isSessionSet() && mTime.mblnSession){
                 return true;
             }
         }
@@ -173,7 +201,7 @@ public class Details_Task extends AppCompatActivity {
 
     public boolean wasTimeSessionReplaced(){
         if(mTask.mlngTaskID != -1){
-            if(isSessionSet() && !mTime.isSession()){
+            if(isSessionSet() && !mTime.mblnSession){
                 return true;
             }
         }
@@ -216,42 +244,16 @@ public class Details_Task extends AppCompatActivity {
         (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
     }
 
-    private void retrieveExtras() {
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null){
-            mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
-            if(mTask.mlngTaskID != -1){
-                mblnLoaded = true;
-                //Get all data from the task and apply it to the control
-                setSession(mTask.mlngTimeID);
-                setOneOff(mTask.mlngOneOff);
-                setTaskTitle(mTask.mstrTitle);
-                setTaskDesc(mTask.mstrDescription);
-                if (mTask.mintTaskType == 1) mlngEventID = mTask.mlngTaskTypeID;
-                if (mTask.mintTaskType == 2) mlngLongTermID = mTask.mlngTaskTypeID;
-                if (mTask.mintTaskType == 3) {
-                    mlngGroupID = mTask.mlngTaskTypeID;
-
-                }
-                mTime = new Time(mTask.mlngTimeID);
-                timeKeeper.loadTimeDetails(mTime);
-            } else {
-                mlngEventID = extras.getLong("EXTRA_EVENT_ID", -1);
-                mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", -1);
-                mlngGroupID = extras.getLong("EXTRA_GROUP_ID", -1);
-            }
-        }
-    }
-
     public void LoadSessionSpinner(){
-        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblSession");
+        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1 and fblnComplete = 0",null);
 
         mSessionList.Clear();
         //Add pre-set session so that a value can be grabbed.
         mSessionList.Add("No Session",(long)-1);
         while(cursor.moveToNext()){
-            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+            Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+            mSessionList.Add(tempTime.getSessionTitle(),
+                    tempTime.mlngTimeID);
         }
         mSessionList.mAdapter.notifyDataSetChanged();
     }
@@ -297,7 +299,7 @@ public class Details_Task extends AppCompatActivity {
                     if (wasSessionSessionReplaced()) {
                         mTime = new Time(getSession());
                         if (getOneOff() != -1) {
-                            mTime = oneOffTimeCopy();
+                            mTime = mTime.createOneOff(-1);
                         }
                         //replace time id
                         mTask.replaceTimeId(mTime.mlngTimeID);
@@ -305,7 +307,11 @@ public class Details_Task extends AppCompatActivity {
                         //create new time id and replace.
                         mTime = timeKeeper.createTimeDetails(-1,
                                 -1,
-                                -1);
+                                -1,
+                                false,
+                                -1,
+                                "",
+                                "");
                         mTask.replaceTimeId(mTime.mlngTimeID);
                     } else if (wasTimeSessionReplaced()) {
                         //complete time and replace id
@@ -317,23 +323,31 @@ public class Details_Task extends AppCompatActivity {
                         mTime.clearGenerationPoints();
                         mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
                                 mTime.mintTimeframe,
-                                mTime.mlngTimeframeID);
+                                mTime.mlngTimeframeID,
+                                false,
+                                -1,
+                                "",
+                                "");
                     }
                     //Remove instances associated w/ original time
-                    mTask.clearActiveInstances();
+                    mTask.finishActiveInstances(3);
                 }
             } else {
                 if (getOneOff() != -1) {
                     //TODO: Create button to allow adding to time instance currently active (adding to this weekend during weekend instead of next weekend)
                     mTime = new Time(getSession());
-                    mTime = oneOffTimeCopy();
+                    mTime = mTime.createOneOff(-1);
                 } else if (getSession() != -1) {
                     mTime = new Time(getSession());
                 } else if (mlngEventID == -1 && //Not event task
                         (mlngLongTermID == -1 || timeKeeper.isTimeSet())) { //Not long term w/o time set
                     mTime = timeKeeper.createTimeDetails(-1,
                             -1,
-                            -1);
+                            -1,
+                            false,
+                            -1,
+                            "",
+                            "");
                 }
                 mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function
                         mTime.mlngTimeID,
@@ -366,7 +380,7 @@ public class Details_Task extends AppCompatActivity {
             }
             if(mSessionList.getID(position) != -1){
                 timeKeeper.resetTimeKeeper();
-                timeKeeper.loadTimeDetails(mSessionList.getID(position));
+                timeKeeper.loadTimeKeeper(mSessionList.getID(position));
                 //Deactivate timekeeper for editing
                 timeKeeper.setActiveTimekeeper(false);
                 //Provide one off opportunity
@@ -374,7 +388,7 @@ public class Details_Task extends AppCompatActivity {
                 if(!mblnLoaded)setOneOff(mSessionList.getID(position));
             } else {
                 timeKeeper.resetTimeKeeper();
-                timeKeeper.loadTimeDetails(mTime);
+                timeKeeper.loadTimeKeeper(mTime);
                 //Reactivate timekeeper for editing
                 timeKeeper.setActiveTimekeeper(true);
                 //Remove one off opportunity
@@ -387,23 +401,6 @@ public class Details_Task extends AppCompatActivity {
         public void onNothingSelected(AdapterView<?> adapterView) {
         }
     };
-
-    public Time oneOffTimeCopy(){
-        return new Time(-1,
-                mTime.getNextPriority(false),
-                mTime.getNextPriority(true),
-                Task_Display.getCurrentCalendar().getTimeInMillis(),
-                mTime.mblnFromTime,
-                mTime.mblnToTime,
-                mTime.mblnToDate,
-                -1,
-                -1,
-                0,
-                0,
-                false,
-                -1,
-                false);
-    }
 
     public void StartNewSession(View view) {
         Intent intent = new Intent(this, Details_Session.class);

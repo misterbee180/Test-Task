@@ -110,15 +110,8 @@ public class Viewer_Task extends AppCompatActivity {
             builder.setMessage("Delete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            DatabaseAccess.mDatabase.beginTransaction();
-                            try{
-                                Task tempTask = new Task(tmpTaskID);
-                                tempTask.deleteTask();
-                                DatabaseAccess.mDatabase.setTransactionSuccessful();
-                            } catch (Exception e){
-                                e.printStackTrace();
-                            }
-                            DatabaseAccess.mDatabase.endTransaction();
+                            Task tempTask = new Task(tmpTaskID);
+                            tempTask.deleteTask();
                             setTaskList(mContext);
                         }
                     })
@@ -139,7 +132,7 @@ public class Viewer_Task extends AppCompatActivity {
 
     public static void setTaskList(Context pContext){
         Cursor cursor;
-        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, s.fstrTitle as fstrSession\n" +
+        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, sd.fstrTitle as fstrSession\n" +
                 "FROM tblTask t\n" +
                 "JOIN tblTaskDetail td\n" +
                 "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
@@ -148,8 +141,9 @@ public class Viewer_Task extends AppCompatActivity {
                 "LEFT JOIN tblGroup g\n" +
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
-                "LEFT JOIN tblSession s\n" +
-                "ON s.flngTimeID = t.flngTimeID \n" +
+                "LEFT JOIN tblTaskDetail sd \n" +
+                "ON sd.flngTaskDetailID = tm.flngTaskDetailID" +
+                "and tm.fblnSession = 1" +
                 "WHERE (tm.fblnComplete = 0 \n" +
                 "\tOR NOT EXISTS (SELECT 1\n" +
                 "\t\tFROM tblTaskInstance ti\n" +
