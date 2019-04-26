@@ -37,7 +37,6 @@ public class Viewer_Session extends AppCompatActivity {
         ListView mSessionView = (ListView) findViewById(R.id.lsvSessionList);
         mSessionList = new ArrayListContainer();
         mSessionList.LinkArrayToListView(mSessionView, this);
-        //mEventList.mListView.setOnItemClickListener(itemClickListener);
         mSessionList.mListView.setOnItemClickListener(itemClickListener);
         mSessionList.mListView.setOnItemLongClickListener(itemLongClickListener);
     }
@@ -53,12 +52,6 @@ public class Viewer_Session extends AppCompatActivity {
             Intent intent = new Intent(getBaseContext(), Details_Session.class);
             intent.putExtra("EXTRA_TIME_ID", mSessionList.getID(position));
             startActivity(intent);
-
-//            Bundle bundle = new Bundle();
-//            bundle.putLong("SessionID", mSessionList.getID(position));
-//            DialogFragment newFragment = new Viewer_Session.EditSessionFragment();
-//            newFragment.setArguments(bundle);
-//            newFragment.show(getSupportFragmentManager(), "Edit Session");
         }
     };
 
@@ -80,7 +73,7 @@ public class Viewer_Session extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpSessionID = getArguments().getLong("SessionID");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Delete Session? This will delete all tasks associated with this session as well.")
+            builder.setMessage("Delete Session?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             deleteSession(tmpSessionID);
@@ -97,18 +90,28 @@ public class Viewer_Session extends AppCompatActivity {
         }
     }
 
-    private static void deleteSession(Long plngSessionId){
-        DatabaseAccess.deleteRecordFromTable("tblSession",
-                "flngSessionID",
-                plngSessionId);
+    private static void deleteSession(Long plngTimeId){
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            Time tempTime = new Time(plngTimeId);
 
-        Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithSession(plngSessionId);
-        while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            Cursor cursor = tempTime.getTasks();
+            while(cursor.moveToNext()){
+                Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+                //delete current task instances associated w/ session time
+                tempTask.finishActiveInstances(3);
+                //create new time that mimics deleted session and replace on task.
+                tempTask.replaceTimeId(tempTime.getCopy().mlngTimeID);
+                //re-generation of instances will occur during task display logic.
+            }
+
+            tempTime.deleteTime();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        }catch (Exception e){
+            e.printStackTrace();
         }
+        DatabaseAccess.mDatabase.endTransaction();
+
     }
 
     public  void createNewSession() {
@@ -117,14 +120,12 @@ public class Viewer_Session extends AppCompatActivity {
     }
 
     public static void setSessionList(){
-        Cursor cursor;
-        String rawGetSessions = "SELECT * \n" +
-                "FROM tblSession s \n";
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawGetSessions,null);
-
+        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1 and fblnComplete = 0",null);
         mSessionList.Clear();
         while (cursor.moveToNext()){
-            mSessionList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+            Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+            mSessionList.Add(tempTime.getSessionTitle(),
+                    tempTime.mlngTimeID);
         }
         mSessionList.mAdapter.notifyDataSetChanged();
     }

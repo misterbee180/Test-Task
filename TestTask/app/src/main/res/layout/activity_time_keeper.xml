@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
-        android:id="@+id/spnTimeRange"
+        android:id="@+id/spnTimefange"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spnTimeRange">
+        app:layout_constraintTop_toBottomOf="@+id/spnTimefange">
 
         <Button
             android:id="@+id/Timekeeper_NoFreq_BtnFromDate"

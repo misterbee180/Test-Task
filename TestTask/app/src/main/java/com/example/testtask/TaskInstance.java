@@ -18,9 +18,29 @@ public class TaskInstance {
     long mdtmSystemCompleted;
     long mdtmDeleted;
     long mdtmEdited;
-    long mlngSessionID;
+    long mlngSessionDetailID;
+
+    public TaskInstance(){
+        mlngInstanceID = -1;
+        mlngTaskID = -1;
+        mlngTaskDetailID = -1;
+        mstrTitle = "";
+        mstrDescription = "";
+        mdtmFrom = -1;
+        mdtmTo = -1;
+        mblnFromTime = false;
+        mblnToTime = false;
+        mblnToDate = false;
+        mdtmCreated = -1;
+        mdtmCompleted = -1;
+        mdtmSystemCompleted = -1;
+        mdtmDeleted = -1;
+        mdtmEdited = -1;
+        mlngSessionDetailID = -1;
+    }
 
     public TaskInstance(long plngInstanceID){
+        this();
         Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "flngInstanceID", plngInstanceID);
         if(cursor.moveToFirst()){
             mlngInstanceID = cursor.getLong(cursor.getColumnIndex("flngInstanceID"));
@@ -40,29 +60,10 @@ public class TaskInstance {
             mdtmSystemCompleted = cursor.getLong(cursor.getColumnIndex("fdtmSystemCompleted"));
             mdtmDeleted = cursor.getLong(cursor.getColumnIndex("fdtmDeleted"));
             mdtmEdited = cursor.getLong(cursor.getColumnIndex("fdtmEdited"));
-            mlngSessionID = cursor.getLong(cursor.getColumnIndex("flngSessionID"));
+            mlngSessionDetailID = cursor.getLong(cursor.getColumnIndex("flngSessionDetailID"));
         } else {
             System.out.println("Unable to find instance for id " + plngInstanceID);
         }
-    }
-
-    public TaskInstance(long plngTaskID,
-                        long plngTaskDetailID,
-                        long pdtmFrom,
-                        long pdtmTo,
-                        Boolean pblnFromTime,
-                        Boolean pblnToTime,
-                        boolean pblnToDate,
-                        long plngSessionID){
-        this(-1,
-                plngTaskID,
-                plngTaskDetailID,
-                pdtmFrom,
-                pdtmTo,
-                pblnFromTime,
-                pblnToTime,
-                pblnToDate,
-                plngSessionID);
     }
 
     public TaskInstance(long plngInstanceID,
@@ -73,7 +74,8 @@ public class TaskInstance {
                         Boolean pblnFromTime,
                         Boolean pblnToTime,
                         boolean pblnToDate,
-                        long plngSessionID){
+                        long plngSessionDetailID){
+        this();
         mlngInstanceID = plngInstanceID;
         mlngTaskID = plngTaskID;
         mlngTaskDetailID = plngTaskDetailID;
@@ -87,15 +89,15 @@ public class TaskInstance {
         } else {
             mdtmEdited = Task_Display.getCurrentCalendar().getTimeInMillis();
         }
-        mlngSessionID = plngSessionID;
+        mlngSessionDetailID = plngSessionDetailID;
 
         createTaskInstance();
     }
 
     public void createTaskInstance(){
         mlngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited"},
-                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited},
+                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionDetailID"},
+                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited, mlngSessionDetailID},
                 "flngInstanceID",
                 mlngInstanceID);
     }
