@@ -10,7 +10,6 @@ import android.os.Build;
 public class ExceptionHandler implements
         java.lang.Thread.UncaughtExceptionHandler {
     private final Activity myContext;
-    private final String LINE_SEPARATOR = "\n";
 
 
     public ExceptionHandler(Activity context) {
@@ -18,38 +17,40 @@ public class ExceptionHandler implements
     }
 
     public void uncaughtException(Thread thread, Throwable exception) {
+        final String LINE_SEPARATOR = "\n";
+
         StringWriter stackTrace = new StringWriter();
         exception.printStackTrace(new PrintWriter(stackTrace));
-        StringBuilder errorReport = new StringBuilder();
-        errorReport.append("************ CAUSE OF ERROR ************\n\n");
-        errorReport.append(stackTrace.toString());
+        String errorReport = new String();
+        errorReport += "************ CAUSE OF ERROR ************\n\n";
+        errorReport += stackTrace.toString();
 
-        errorReport.append("\n************ DEVICE INFORMATION ***********\n");
-        errorReport.append("Brand: ");
-        errorReport.append(Build.BRAND);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Device: ");
-        errorReport.append(Build.DEVICE);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Model: ");
-        errorReport.append(Build.MODEL);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Id: ");
-        errorReport.append(Build.ID);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Product: ");
-        errorReport.append(Build.PRODUCT);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("\n************ FIRMWARE ************\n");
-        errorReport.append("SDK: ");
-        errorReport.append(Build.VERSION.SDK);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Release: ");
-        errorReport.append(Build.VERSION.RELEASE);
-        errorReport.append(LINE_SEPARATOR);
-        errorReport.append("Incremental: ");
-        errorReport.append(Build.VERSION.INCREMENTAL);
-        errorReport.append(LINE_SEPARATOR);
+        errorReport += "\n************ DEVICE INFORMATION ***********\n";
+        errorReport += "Brand: ";
+        errorReport += Build.BRAND;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Device: ";
+        errorReport += Build.DEVICE;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Model: ";
+        errorReport += Build.MODEL;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Id: ";
+        errorReport += Build.ID;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Product: ";
+        errorReport += Build.PRODUCT;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "\n************ FIRMWARE ************\n";
+        errorReport += "SDK: ";
+        errorReport += Build.VERSION.SDK;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Release: ";
+        errorReport += Build.VERSION.RELEASE;
+        errorReport += LINE_SEPARATOR;
+        errorReport += "Incremental: ";
+        errorReport += Build.VERSION.INCREMENTAL;
+        errorReport += LINE_SEPARATOR;
 
         Intent intent = new Intent(myContext, Task_Display.class);
         intent.putExtra("EXTRA_ERROR", errorReport.toString());

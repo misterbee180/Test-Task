@@ -23,9 +23,8 @@ public class DatabaseAccess {
     }
 
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
-
         TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 19);
+            super(context, "TaskDatabase.db", null, 20);
         }
 
         //region TABLE CREATE SCRIPTS
@@ -38,14 +37,14 @@ public class DatabaseAccess {
         private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY, flngTaskID INTEGER NOT NULL DEFAULT -1," +
                 "flngTaskDetailID INTEGER NOT NULL DEFAULT -1, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
                 "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
-                "fdtmCompleted INTEGER NOT NULL DEFAULT -1, fdtmSystemCompleted INTEGER NOT NULL DEFAULT -1, fdtmDeleted INTEGER NOT NULL DEFAULT -1, fdtmEdited INTEGER NOT NULL DEFAULT -1)";
-
-        private static final String CREATE_SESSION_TABLE = "CREATE TABLE tblSession (flngSessionID INTEGER PRIMARY KEY , fstrTitle TEXT , flngTimeID INTEGER )";
+                "fdtmCompleted INTEGER NOT NULL DEFAULT -1, fdtmSystemCompleted INTEGER NOT NULL DEFAULT -1, fdtmDeleted INTEGER NOT NULL DEFAULT -1, fdtmEdited INTEGER NOT NULL DEFAULT -1," +
+                "flngSessionDetailID INTEGER NOT NULL DEFAULT -1)";
 
         private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
                 "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fintTimeframe INTEGER NOT NULL DEFAULT -1, " +
                 "flngTimeframeID INTEGER NOT NULL DEFAULT -1, flngRepetition INTEGER NOT NULL DEFAULT -1, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
-                "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1, fblnThru INTEGER NOT NULL DEFAULT 0)";
+                "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1, fblnThru INTEGER NOT NULL DEFAULT 0, " +
+                "fblnSession INTEGER NOT NULL DEFAULT 0, flngSessionDetailID INTEGER NOT NULL DEFAULT -1)";
 
         private static final String CREATE_TIME_INSTANCE_TABLE = "CREATE TABLE tblTimeInstance (flngGenerationID INTEGER PRIMARY KEY, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
                 "fdtmUpcoming INTEGER NOT NULL DEFAULT -1, fdtmPriority INTEGER NOT NULL DEFAULT -1, fintThru INTEGER NOT NULL DEFAULT 0)";
@@ -142,7 +141,6 @@ public class DatabaseAccess {
             db.execSQL(CREATE_TASK_TABLE);
             db.execSQL(CREATE_TASKDETAIL_TABLE);
             db.execSQL(CREATE_TASKINSTANCE_TABLE);
-            db.execSQL(CREATE_SESSION_TABLE);
             db.execSQL(CREATE_TIME_TABLE);
             db.execSQL(CREATE_WEEK_TABLE);
             db.execSQL(CREATE_EVENT_TABLE);
@@ -228,11 +226,11 @@ public class DatabaseAccess {
                         upgradeToV18(db);
                     }
                     if(oldVersion < 19){
-                        upgradeToV19(db);
+                        //upgradeToV19(db);
                     }
-//                    if(oldVersion < 20){
-//                        upgradeToV20(db);
-//                    }
+                    if(oldVersion < 20){
+                        upgradeToV20(db);
+                    }
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1222,7 +1220,19 @@ public class DatabaseAccess {
         }
 
         private void upgradeToV20(SQLiteDatabase db) throws Exception{
-            //Use this. Didn't wind up needing.
+            addColumn(db,"tblTime","fblnSession",99, true, "0");
+            addColumn(db,"tblTime","flngSessionDetailID",99, true, "-1");
+
+            Cursor session = DatabaseAccess.getRecordsFromTable("tblSession");
+
+            while(session.moveToNext()){
+                Time tblTime = new Time(session.getLong(session.getColumnIndex("flngTimeID")));
+                tblTime.setAsSession(-1, session.getString(session.getColumnIndex("fstrTitle")),"");
+            }
+
+            db.execSQL(DROP_SESSION_TABLE);
+
+            addColumn(db, "tblTaskInstance", "flngSessionDetailID", 99, true, "-1");
         }
 
         private void addColumn(SQLiteDatabase db ,
@@ -1599,11 +1609,14 @@ public class DatabaseAccess {
 
     //wound up not working as intended
     public static String[] objectArrayToStringArray(Object[] pobjArray){
-        String[] strArray = new String[pobjArray.length];
-        for (int i = 0; i < pobjArray.length; i++){
-            strArray[i] = pobjArray[i].toString();
+        if(pobjArray != null){
+            String[] strArray = new String[pobjArray.length];
+            for (int i = 0; i < pobjArray.length; i++){
+                strArray[i] = pobjArray[i].toString();
+            }
+            return strArray;
         }
-        return strArray;
+        return new String[]{};
     }
 
     public static ContentValues generateContentValues(String[] pstrColumns,
@@ -1703,23 +1716,20 @@ public class DatabaseAccess {
     }
 
     public static Cursor getTaskInstancesWithDetails(){
-        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(s.flngSessionID,-1) as flngSessionID, IFNULL(s.fstrTitle,'') as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(sd.fstrTitle,'') as fstrSessionTitle  \n" +
                 "FROM tblTaskInstance i \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
                 "JOIN tblTask t \n" +
-                "ON t.flngTaskID = i.flngTaskID \n" +
-                "JOIN tblTime tm \n" +
-                "ON tm.flngTimeID = t.flngTimeID \n" +
-                "LEFT JOIN tblSession s \n" +
-                "ON s.flngTimeID = tm.flngTimeID \n" +
-                "OR s.flngTimeID = t.flngOneOff \n" +
+                "ON t.flngTaskID = i.flngTaskID\n" +
+                "AND t.fintTaskType <> 1\n" + //Event
+                "LEFT JOIN tblTaskDetail sd\n" +
+                "ON sd.flngTaskDetailID = i.flngSessionDetailID\n" +
                 "WHERE i.fdtmCompleted = -1 \n" +
                 "AND i.fdtmSystemCompleted = -1 \n" +
                 "AND i.fdtmDeleted = -1 \n" +
-                "AND t.fintTaskType <> 1\n" + //Event
                 //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
-                "ORDER BY s.flngSessionID";
+                "ORDER BY i.flngSessionDetailID, i.flngTaskID";
 
         return mDatabase.rawQuery(rawQuery,null);
     }
