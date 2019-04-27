@@ -42,24 +42,25 @@ class TaskInstance {
     TaskInstance(long plngInstanceID){
         this();
         try(Cursor tblTaskInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "flngInstanceID", plngInstanceID)){
-            tblTaskInstance.moveToFirst();
-            mlngInstanceID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngInstanceID"));
-            mlngTaskID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngTaskID"));
-            mlngTaskDetailID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngTaskDetailID"));
-            TaskDetail td = new TaskDetail(mlngTaskDetailID);
-            mstrTitle = td.mstrTitle;
-            mstrDescription = td.mstrDescription;
-            mdtmFrom = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmFrom"));
-            mdtmTo = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmTo"));
-            mblnFromTime = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnFromTime")) == 1;
-            mblnToTime = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnToTime")) == 1;
-            mblnToDate = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnToDate")) == 1;
-            mdtmCreated = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmCreated"));
-            mdtmCompleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmCompleted"));
-            mdtmSystemCompleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmSystemCompleted"));
-            mdtmDeleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmDeleted"));
-            mdtmEdited = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmEdited"));
-            mlngSessionDetailID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngSessionDetailID"));
+            if(tblTaskInstance.moveToFirst()){
+                mlngInstanceID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngInstanceID"));
+                mlngTaskID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngTaskID"));
+                mlngTaskDetailID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngTaskDetailID"));
+                TaskDetail td = new TaskDetail(mlngTaskDetailID);
+                mstrTitle = td.mstrTitle;
+                mstrDescription = td.mstrDescription;
+                mdtmFrom = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmFrom"));
+                mdtmTo = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmTo"));
+                mblnFromTime = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnFromTime")) == 1;
+                mblnToTime = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnToTime")) == 1;
+                mblnToDate = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fblnToDate")) == 1;
+                mdtmCreated = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmCreated"));
+                mdtmCompleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmCompleted"));
+                mdtmSystemCompleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmSystemCompleted"));
+                mdtmDeleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmDeleted"));
+                mdtmEdited = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmEdited"));
+                mlngSessionDetailID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngSessionDetailID"));
+            }
         }
     }
 

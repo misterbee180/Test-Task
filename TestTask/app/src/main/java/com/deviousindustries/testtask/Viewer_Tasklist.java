@@ -86,12 +86,12 @@ public class Viewer_Tasklist extends AppCompatActivity {
                     newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
                     break;
                 case 2:
-                    bundle.putLong("TimeID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
-//                    bundle.putString("Section", ((CustomAdapter.ViewHolder)v.getTag()).section.getText().toString());
-                    newFragment = new Viewer_Tasklist.CompleteSessionConfirmationFragment();
-                    newFragment.setArguments(bundle);
-                    activity = (FragmentActivity)parent.getContext();
-                    newFragment.show(activity.getSupportFragmentManager(), "Complete Session Task");
+//                    bundle.putLong("TimeID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
+////                    bundle.putString("Section", ((CustomAdapter.ViewHolder)v.getTag()).section.getText().toString());
+//                    newFragment = new Viewer_Tasklist.CompleteSessionConfirmationFragment();
+//                    newFragment.setArguments(bundle);
+//                    activity = (FragmentActivity)parent.getContext();
+//                    newFragment.show(activity.getSupportFragmentManager(), "Complete Session Task");
                     break;
             }
         }
@@ -283,7 +283,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
-                try(Cursor tblTimeInstance = getValidGenerationPoints(true, true)){
+                try(Cursor tblTimeInstance = getValidGenerationPoints()){
                     while (tblTimeInstance.moveToNext()) {
                         Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
                         long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
@@ -307,16 +307,11 @@ public class Viewer_Tasklist extends AppCompatActivity {
         DatabaseAccess.mDatabase.endTransaction();
     }
 
-    public Cursor getValidGenerationPoints(boolean pblnIncludeThru,
-                                           boolean pblnAll){
+    public Cursor getValidGenerationPoints(){
 
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
         String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();
-        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + getBeginningCurentDay().getTimeInMillis();
-        else strSelection += " and fdtmPriority >= " + getBeginningCurentDay().getTimeInMillis();
-
-        String orderBy = null;
-        if(!pblnAll) orderBy = "fdtmPriority LIMIT 1";
+        strSelection += " and fdtmPriority + 86400000 * fintThru >= " + getBeginningCurentDay().getTimeInMillis();
 
         return DatabaseAccess.mDatabase.query("tblTimeInstance",
                 null,
@@ -324,7 +319,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 null,
                 null,
                 null,
-                orderBy);
+                null);
     }
 
     /** Called when the user taps the Send button */

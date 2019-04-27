@@ -47,23 +47,24 @@ public class Time {
     public Time(long plngTimeId){
         this();
         try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime", "flngTimeID", plngTimeId)){
-            tblTime.moveToFirst();
-            mlngTimeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeID"));
-            mdtmFrom = tblTime.getLong(tblTime.getColumnIndex("fdtmFrom"));
-            mdtmTo = tblTime.getLong(tblTime.getColumnIndex("fdtmTo"));
-            mblnFromTime = tblTime.getLong(tblTime.getColumnIndex("fblnFromTime")) == 1;
-            mblnToTime = tblTime.getLong(tblTime.getColumnIndex("fblnToTime")) == 1;
-            mblnToDate = tblTime.getLong(tblTime.getColumnIndex("fblnToDate")) == 1;
-            mintTimeframe = tblTime.getInt(tblTime.getColumnIndex("fintTimeframe"));
-            mlngTimeframeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeframeID"));
-            mlngRepetition = tblTime.getLong(tblTime.getColumnIndex("flngRepetition"));
-            mdtmCreated = tblTime.getLong(tblTime.getColumnIndex("fdtmCreated"));
-            mintStarting = tblTime.getInt(tblTime.getColumnIndex("fintStarting"));
-            mblnComplete = tblTime.getLong(tblTime.getColumnIndex("fblnComplete")) == 1;
-            mlngGenerationID = tblTime.getInt(tblTime.getColumnIndex("flngGenerationID"));
-            mblnThru = tblTime.getInt(tblTime.getColumnIndex("fblnThru")) == 1;
-            mblnSession = tblTime.getLong(tblTime.getColumnIndex("fblnSession")) == 1;
-            mlngSessionDetailID = tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID"));
+            if(tblTime.moveToFirst()){
+                mlngTimeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeID"));
+                mdtmFrom = tblTime.getLong(tblTime.getColumnIndex("fdtmFrom"));
+                mdtmTo = tblTime.getLong(tblTime.getColumnIndex("fdtmTo"));
+                mblnFromTime = tblTime.getLong(tblTime.getColumnIndex("fblnFromTime")) == 1;
+                mblnToTime = tblTime.getLong(tblTime.getColumnIndex("fblnToTime")) == 1;
+                mblnToDate = tblTime.getLong(tblTime.getColumnIndex("fblnToDate")) == 1;
+                mintTimeframe = tblTime.getInt(tblTime.getColumnIndex("fintTimeframe"));
+                mlngTimeframeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeframeID"));
+                mlngRepetition = tblTime.getLong(tblTime.getColumnIndex("flngRepetition"));
+                mdtmCreated = tblTime.getLong(tblTime.getColumnIndex("fdtmCreated"));
+                mintStarting = tblTime.getInt(tblTime.getColumnIndex("fintStarting"));
+                mblnComplete = tblTime.getLong(tblTime.getColumnIndex("fblnComplete")) == 1;
+                mlngGenerationID = tblTime.getInt(tblTime.getColumnIndex("flngGenerationID"));
+                mblnThru = tblTime.getInt(tblTime.getColumnIndex("fblnThru")) == 1;
+                mblnSession = tblTime.getLong(tblTime.getColumnIndex("fblnSession")) == 1;
+                mlngSessionDetailID = tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID"));
+            }
         }
     }
 
@@ -765,15 +766,17 @@ public class Time {
 
     private Cursor getValidGenerationPoints(boolean pblnIncludeThru,
                                             boolean pblnAll){
-
+        //All is not really the right variable name. It's really a question of valid generation for oneoffs vs valid generation for every day tasks.
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
-        String strSelection = "flngTimeID = " + Long.toString(mlngTimeID) +
-                " and fdtmUpcoming <= " + Viewer_Tasklist.getEndCurrentDay().getTimeInMillis();
+        String strSelection = "flngTimeID = " + Long.toString(mlngTimeID);
+        String orderBy = null;
+        if(pblnAll) {
+            strSelection += " and fdtmUpcoming <= " + Viewer_Tasklist.getEndCurrentDay().getTimeInMillis();
+        } else {
+            orderBy = "fdtmPriority LIMIT 1";
+        }
         if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + Viewer_Tasklist.getBeginningCurentDay().getTimeInMillis();
         else strSelection += " and fdtmPriority >= " + Viewer_Tasklist.getBeginningCurentDay().getTimeInMillis();
-
-        String orderBy = null;
-        if(!pblnAll) orderBy = "fdtmPriority LIMIT 1";
 
         return DatabaseAccess.mDatabase.query("tblTimeInstance",
                 null,

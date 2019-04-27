@@ -52,12 +52,13 @@ public class Details_LongTerm extends AppCompatActivity {
         mLongTermTasksUnc.mListView.setOnItemLongClickListener(itemLongClickListener);
         ListView LongTermTaskViewCmp = findViewById(R.id.lsvLongTermTaskListCmp);
         mLongTermTasksCmp.LinkArrayToListView(LongTermTaskViewCmp, this);
+
+        retrieveExtras();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        retrieveExtras();
         retrieveLongTermTasks();
         setupInitialVisibility();
         setupViews();
@@ -199,7 +200,6 @@ public class Details_LongTerm extends AppCompatActivity {
         } else {
             //No Tasks Associated with LongTerm
             fab.setVisibility(View.VISIBLE);
-            findViewById(R.id.btnLongTermConfirm).setVisibility(View.GONE);
             if (mlngTaskCount == 0){
                 findViewById(R.id.txtLongTermAddReq).setVisibility(View.VISIBLE);
                 findViewById(R.id.txtLongTermUnc).setVisibility(View.GONE);
@@ -312,7 +312,7 @@ public class Details_LongTerm extends AppCompatActivity {
             builder.setMessage("Delete LongTerm? This will also delete all tasks associated with LongTerm.")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteLongTerm(tmpLongTermId);
+                            ((Details_LongTerm)getActivity()).deleteLongTerm(tmpLongTermId);
                             getActivity().setResult(RESULT_OK);
                             getActivity().finish();
                         }
@@ -336,7 +336,7 @@ public class Details_LongTerm extends AppCompatActivity {
             builder.setMessage("Clear LongTerm")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            clearLongTerm(tmpLongTermId);
+                            ((Details_LongTerm)getActivity()).clearLongTerm(tmpLongTermId);
                             ((Details_LongTerm)getActivity()).retrieveLongTermTasks();
                         }
                     })
@@ -350,7 +350,7 @@ public class Details_LongTerm extends AppCompatActivity {
         }
     }
 
-    public static void deleteLongTerm(Long plngLongTermId){
+    public void deleteLongTerm(Long plngLongTermId){
         DatabaseAccess.deleteRecordFromTable("tblLongTerm",
                 "flngLongTermID",
                 plngLongTermId);
@@ -358,7 +358,7 @@ public class Details_LongTerm extends AppCompatActivity {
         clearLongTerm(plngLongTermId);
     }
 
-    public static void clearLongTerm(Long plngLongTermId){
+    public void clearLongTerm(Long plngLongTermId){
         Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithLongTerm(plngLongTermId);
         while(cursor.moveToNext()){
             Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));

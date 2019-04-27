@@ -75,11 +75,11 @@ public class Details_Instance extends AppCompatActivity {
             mInstance = new TaskInstance(mInstance.mlngInstanceID,
                     mInstance.mlngTaskID,
                     lngTaskDetailID,
-                    TimeKeeper.getFromDate(),
-                    TimeKeeper.getToDate(),
-                    TimeKeeper.mblnFromTime,
-                    TimeKeeper.mblnToTime,
-                    TimeKeeper.mblnToDate,
+                    timeKeeper.getFromDate(),
+                    timeKeeper.getToDate(),
+                    timeKeeper.mblnFromTime,
+                    timeKeeper.mblnToTime,
+                    timeKeeper.mblnToDate,
                     -1);
 
             setResult(RESULT_OK);

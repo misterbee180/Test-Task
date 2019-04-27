@@ -78,7 +78,7 @@ public class Viewer_Session extends AppCompatActivity {
             builder.setMessage("Delete Session?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteSession(tmpSessionID);
+                            ((Viewer_Session)getActivity()).deleteSession(tmpSessionID);
                             ((Viewer_Session)getActivity()).setSessionList();
                         }
                     })
@@ -92,7 +92,7 @@ public class Viewer_Session extends AppCompatActivity {
         }
     }
 
-    private static void deleteSession(Long plngTimeId){
+    private void deleteSession(Long plngTimeId){
         try{
             DatabaseAccess.mDatabase.beginTransaction();
             Time tempTime = new Time(plngTimeId);

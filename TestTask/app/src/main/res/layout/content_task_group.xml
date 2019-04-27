@@ -32,6 +32,7 @@
         android:layout_height="wrap_content"
         android:onClick="ceaseGroupCreation"
         android:text="@string/Button_Confirm"
+        android:layout_gravity="bottom"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lsvGroupTaskList" />
 

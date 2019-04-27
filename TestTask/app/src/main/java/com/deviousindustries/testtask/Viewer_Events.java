@@ -76,47 +76,19 @@ public class Viewer_Events extends AppCompatActivity {
     AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            Bundle bundle = new Bundle();
+            Intent intent = new Intent(getBaseContext(), Details_Event.class);
             switch(parent.getId()){
                 case R.id.lsvEventList:
-                    bundle.putLong("EventID", mEventList.getID(position));
+                    intent.putExtra("EXTRA_EVENT_ID", mEventList.getID(position));
                     break;
                 case R.id.lsvActiveList:
-                    bundle.putLong("EventID", mActiveList.getID(position));
+                    intent.putExtra("EXTRA_EVENT_ID", mActiveList.getID(position));
                     break;
             }
-            DialogFragment newFragment = new Viewer_Events.ConfirmationFragment();
-            newFragment.setArguments(bundle);
-            newFragment.show(getSupportFragmentManager(), "Edit Event");
-
+            startActivity(intent);
             return true;
         }
     };
-
-    //TODO: remove confirmation of edit
-    public static class ConfirmationFragment extends DialogFragment {
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Long tmpEventID = getArguments().getLong("EventID");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Edit Event")
-                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(getActivity(), Details_Event.class);
-                            intent.putExtra("EXTRA_EVENT_ID", tmpEventID);
-                            startActivity(intent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
 
     public static class ActivateTaskFragment extends DialogFragment {
         @NonNull

@@ -35,16 +35,16 @@ import java.util.Calendar;
 
 public class TimeKeeper extends ConstraintLayout implements View.OnClickListener {
 
-    static int mSetIndicator = -1; //Used to determine which time button was selected
-    static int[] arrSpecificDays;
-    static int intArrayCounter;
-    static long mdtmFrom = -1;
-    static long mdtmTo = -1;
-    static boolean mblnFromTime;
-    static boolean mblnToTime;
-    static boolean mblnToDate;
+    int mSetIndicator = -1; //Used to determine which time button was selected
+    int[] arrSpecificDays;
+    int intArrayCounter;
+    long mdtmFrom = -1;
+    long mdtmTo = -1;
+    boolean mblnFromTime;
+    boolean mblnToTime;
+    boolean mblnToDate;
     boolean mblnLoaded = false;
-    static int mintMode = 1; //Used for visability 1: Normal 2: Session 3: Task Instance
+    int mintMode = 1; //Used for visability 1: Normal 2: Session 3: Task Instance
     Month mMonth;
     Week mWeek;
 
@@ -183,11 +183,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         return tempMonth;
     }
 
-    public static long getFromDate(){
+    public long getFromDate(){
         return (mdtmFrom == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmFrom;
     }
 
-    public static long getToDate(){
+    public long getToDate(){
         return (mdtmTo == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmTo;
     }
 
@@ -761,25 +761,29 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
+
+
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
+            TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
+
             int hour = Viewer_Tasklist.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
             int minute = Viewer_Tasklist.getCurrentCalendar().get(Calendar.MINUTE);
-            if(mSetIndicator == 1 && mblnFromTime){
-                Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
+            if(tempTime.mSetIndicator == 1 && tempTime.mblnFromTime){
+                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
                 hour = fromCal.get(Calendar.HOUR_OF_DAY);
                 minute = fromCal.get(Calendar.MINUTE);
             }
-            else if (mSetIndicator == 2){
-                if(mblnToTime){
-                    Calendar ToCal = Viewer_Tasklist.getCalendar(mdtmTo);
+            else if (tempTime.mSetIndicator == 2){
+                if(tempTime.mblnToTime){
+                    Calendar ToCal = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
                     hour = ToCal.get(Calendar.HOUR_OF_DAY);
                     minute = ToCal.get(Calendar.MINUTE);
                 }
-                else if(mblnFromTime){
-                    Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
+                else if(tempTime.mblnFromTime){
+                    Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
                     hour = fromCal.get(Calendar.HOUR_OF_DAY);
                     minute = fromCal.get(Calendar.MINUTE);
                 }
@@ -793,24 +797,24 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             // Do something with the time chosen by the user
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
-            if (mSetIndicator == 1) {
-                mblnFromTime = true;
-                if(mdtmFrom == -1){
+            if (tempTime.mSetIndicator == 1) {
+                tempTime.mblnFromTime = true;
+                if(tempTime.mdtmFrom == -1){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
-                Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
+                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
                 fromCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
                 fromCal.set(Calendar.MINUTE,minute);
                 tempTime.setFromTime(fromCal.getTimeInMillis());
-            } else if (mSetIndicator == 2) {
-                mblnToTime = true;
+            } else if (tempTime.mSetIndicator == 2) {
+                tempTime.mblnToTime = true;
                 //Curent logic is that if a to time is set a from and to date must also be set.
-                if(mdtmFrom == -1){
+                if(tempTime.mdtmFrom == -1){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
                 Calendar toCal;
-                if(mdtmTo != -1){
-                    toCal = Viewer_Tasklist.getCalendar(mdtmTo);
+                if(tempTime.mdtmTo != -1){
+                    toCal = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
                 } else {
                     toCal = Viewer_Tasklist.getCurrentCalendar();
                 }
@@ -827,14 +831,16 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         @NonNull
         public Dialog onCreateDialog(Bundle savedInstanceState) {
+            TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
+
             // Use the current time as the default values for the picker
             Calendar temp = Viewer_Tasklist.getCurrentCalendar();
             int year = temp.get(Calendar.YEAR);
             int month = temp.get(Calendar.MONTH);
             int day = temp.get(Calendar.DAY_OF_MONTH);
 
-            if(mdtmFrom != -1){
-                Calendar tempFrom = Viewer_Tasklist.getCalendar(mdtmFrom);
+            if(tempTime.mdtmFrom != -1){
+                Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
                 year = tempFrom.get(Calendar.YEAR);
                 month = tempFrom.get(Calendar.MONTH);
                 day = tempFrom.get(Calendar.DAY_OF_MONTH);
@@ -846,17 +852,17 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
-            switch (mSetIndicator) {
+            switch (tempTime.mSetIndicator) {
                 case 3:
-                    Calendar tempFrom = Viewer_Tasklist.getCalendar(mdtmFrom);
+                    Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
                     tempFrom.set(Calendar.YEAR, year);
                     tempFrom.set(Calendar.MONTH, month);
                     tempFrom.set(Calendar.DAY_OF_MONTH, day);
                     tempTime.setFromDate(tempFrom.getTimeInMillis());
                     break;
                 case 4:
-                    Calendar tempTo = Viewer_Tasklist.getCalendar(mdtmTo);
-                    if(mdtmFrom == -1){
+                    Calendar tempTo = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
+                    if(tempTime.mdtmFrom == -1){
                         tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                     }
                     tempTo.set(Calendar.YEAR, year);
@@ -886,14 +892,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    arrSpecificDays[intArrayCounter] = numberPicker.getValue();
-                    intArrayCounter++;
+                    tempTime.arrSpecificDays[tempTime.intArrayCounter] = numberPicker.getValue();
+                    tempTime.intArrayCounter++;
                     StringBuilder value = new StringBuilder();
-                    for(int i=0; i< intArrayCounter; i++){
+                    for(int i=0; i< tempTime.intArrayCounter; i++){
                         if (i != 0){
                             value.append(", ");
                         }
-                        value.append(arrSpecificDays[i]);
+                        value.append(tempTime.arrSpecificDays[i]);
                     }
                     tempTime.txtMonthlyDays.setText(value);
                 }

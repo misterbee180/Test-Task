@@ -43,13 +43,10 @@
     <ListView
         android:id="@+id/lsvEventTaskList"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="top"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/btnEventConfirm"
@@ -58,8 +55,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="confirmEventCreation"
-
         android:text="@string/Button_Confirm"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lsvEventTaskList"
         app:layout_constraintLeft_toLeftOf="parent" />
 </LinearLayout>

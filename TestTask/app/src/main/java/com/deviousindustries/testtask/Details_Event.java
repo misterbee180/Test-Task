@@ -23,7 +23,7 @@ import android.widget.TextView;
 public class Details_Event extends AppCompatActivity {
 
     ArrayListContainer mEventTasks = new ArrayListContainer();
-    static Long mlngEventID = (long)-1;
+    long mlngEventID = -1;
 
     FloatingActionButton fab;
 
@@ -193,6 +193,7 @@ public class Details_Event extends AppCompatActivity {
 
     public void confirmEventCreation(View view){
         try{
+            boolean blnInitial = mlngEventID == -1;
             DatabaseAccess.mDatabase.beginTransaction();
             mlngEventID = DatabaseAccess.addRecordToTable("tblEvent",
                     new String[] {"fstrTitle","fstrDescription"},
@@ -200,8 +201,11 @@ public class Details_Event extends AppCompatActivity {
                     "flngEventID",
                     mlngEventID);
             setupInitialVisibility();
-            setResult(RESULT_OK);
-            finish();
+
+            if(!blnInitial) {
+                setResult(RESULT_OK);
+                finish();
+            }
             DatabaseAccess.mDatabase.setTransactionSuccessful();
         } catch(Exception e){
             e.printStackTrace();

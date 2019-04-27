@@ -34,18 +34,19 @@ public class Task {
     public Task(Long plngTaskID){
         this();
         try(Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask", "flngTaskID", plngTaskID)) {
-            tblTask.moveToFirst();
-            mlngTaskID = tblTask.getLong(tblTask.getColumnIndex("flngTaskID"));
-            mlngTimeID = tblTask.getLong(tblTask.getColumnIndex("flngTimeID"));
-            mlngTaskDetailID = tblTask.getLong(tblTask.getColumnIndex("flngTaskDetailID"));
-            TaskDetail td = new TaskDetail(mlngTaskDetailID);
-            mstrTitle = td.mstrTitle;
-            mstrDescription = td.mstrDescription;
-            mdtmCreated = tblTask.getLong(tblTask.getColumnIndex("fdtmCreated"));
-            mdtmDeleted = tblTask.getLong(tblTask.getColumnIndex("fdtmDeleted"));
-            mintTaskType = tblTask.getInt(tblTask.getColumnIndex("fintTaskType"));
-            mlngTaskTypeID = tblTask.getLong(tblTask.getColumnIndex("flngTaskTypeID"));
-            mlngOneOff = tblTask.getLong(tblTask.getColumnIndex("flngOneOff"));
+            if(tblTask.moveToFirst()){
+                mlngTaskID = tblTask.getLong(tblTask.getColumnIndex("flngTaskID"));
+                mlngTimeID = tblTask.getLong(tblTask.getColumnIndex("flngTimeID"));
+                mlngTaskDetailID = tblTask.getLong(tblTask.getColumnIndex("flngTaskDetailID"));
+                TaskDetail td = new TaskDetail(mlngTaskDetailID);
+                mstrTitle = td.mstrTitle;
+                mstrDescription = td.mstrDescription;
+                mdtmCreated = tblTask.getLong(tblTask.getColumnIndex("fdtmCreated"));
+                mdtmDeleted = tblTask.getLong(tblTask.getColumnIndex("fdtmDeleted"));
+                mintTaskType = tblTask.getInt(tblTask.getColumnIndex("fintTaskType"));
+                mlngTaskTypeID = tblTask.getLong(tblTask.getColumnIndex("flngTaskTypeID"));
+                mlngOneOff = tblTask.getLong(tblTask.getColumnIndex("flngOneOff"));
+            }
         }
     }
 
