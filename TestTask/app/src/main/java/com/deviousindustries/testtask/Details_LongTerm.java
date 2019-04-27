@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -17,16 +18,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.Calendar;
-
 //Todo: re-add confirm btn visibility afer initial confirm
 //Todo: fix issue of not showing tasks on intial task addition after long term creation
 //Todo: add option to make long term task out of task display instances
 public class Details_LongTerm extends AppCompatActivity {
-    static ArrayListContainer mLongTermTasksUnc = new ArrayListContainer();
-    static ArrayListContainer mLongTermTasksCmp = new ArrayListContainer();
-    static Long mlngTaskCount = (long)0;
-    static Long mlngLongTermID = (long)-1;
+    ArrayListContainer mLongTermTasksUnc = new ArrayListContainer();
+    ArrayListContainer mLongTermTasksCmp = new ArrayListContainer();
+    Long mlngTaskCount = (long)0;
+    Long mlngLongTermID = (long)-1;
 
     FloatingActionButton fab;
 
@@ -38,7 +37,7 @@ public class Details_LongTerm extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -47,11 +46,11 @@ public class Details_LongTerm extends AppCompatActivity {
         });
 
         //set up listviewer for later task insersion
-        ListView LongTermTaskViewUnc = (ListView) findViewById(R.id.lsvLongTermTaskListUnc);
+        ListView LongTermTaskViewUnc = findViewById(R.id.lsvLongTermTaskListUnc);
         mLongTermTasksUnc.LinkArrayToListView(LongTermTaskViewUnc, this);
         mLongTermTasksUnc.mListView.setOnItemClickListener(itemClickListener);
         mLongTermTasksUnc.mListView.setOnItemLongClickListener(itemLongClickListener);
-        ListView LongTermTaskViewCmp = (ListView) findViewById(R.id.lsvLongTermTaskListCmp);
+        ListView LongTermTaskViewCmp = findViewById(R.id.lsvLongTermTaskListCmp);
         mLongTermTasksCmp.LinkArrayToListView(LongTermTaskViewCmp, this);
     }
 
@@ -101,10 +100,10 @@ public class Details_LongTerm extends AppCompatActivity {
     };
 
     public static class TaskCompleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long lngTaskId = getArguments().getLong("TaskID");
-            final Calendar currentCalendar = Task_Display.getCurrentCalendar();
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Complete Task")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
@@ -120,7 +119,7 @@ public class Details_LongTerm extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             DatabaseAccess.mDatabase.endTransaction();
-                            retrieveLongTermTasks();
+                            ((Details_LongTerm)getActivity()).retrieveLongTermTasks();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -133,7 +132,7 @@ public class Details_LongTerm extends AppCompatActivity {
         }
     }
 
-    private static void retrieveLongTermTasks() {
+    private void retrieveLongTermTasks() {
         String rawGetUnCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
                 "FROM tblTask t \n" +
                 "JOIN tblTaskDetail td \n" +
@@ -272,7 +271,6 @@ public class Details_LongTerm extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
         Bundle bundle;
         DialogFragment newFragment;
 
@@ -306,6 +304,7 @@ public class Details_LongTerm extends AppCompatActivity {
     }
 
     public static class LongTermDeleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpLongTermId = getArguments().getLong("LongTermID");
@@ -329,6 +328,7 @@ public class Details_LongTerm extends AppCompatActivity {
     }
 
     public static class LongTermClearConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpLongTermId = getArguments().getLong("LongTermID");
@@ -337,7 +337,7 @@ public class Details_LongTerm extends AppCompatActivity {
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             clearLongTerm(tmpLongTermId);
-                            retrieveLongTermTasks();
+                            ((Details_LongTerm)getActivity()).retrieveLongTermTasks();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

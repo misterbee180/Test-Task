@@ -3,6 +3,7 @@ package com.deviousindustries.testtask;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -14,19 +15,19 @@ import android.widget.TextView;
 
 public class Details_Instance extends AppCompatActivity {
 
-    static TimeKeeper timeKeeper;
-    static TextView mTitle;
-    static TextView mDescription;
-    static TaskInstance mInstance;
+    TimeKeeper timeKeeper;
+    TextView mTitle;
+    TextView mDescription;
+    TaskInstance mInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_instance_details);
-        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
-        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
-        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
+        mTitle = findViewById(R.id.txbTaskTitle);
+        mDescription = findViewById(R.id.txbTaskDescription);
+        timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(3);
         retrieveExtras();
     }
@@ -134,26 +135,21 @@ public class Details_Instance extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case (1) : {
-                if (resultCode == RESULT_OK) {
-                    setResult(RESULT_OK);
-                    finish();
-                }
-                break;
-            }
-        }
+        if(requestCode == 1 && resultCode == RESULT_OK)
+            setResult(RESULT_OK);
+            finish();
     }
 
     public static class InstanceDeleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Delete Instance?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            mInstance.finishInstance(3);
-                            Intent intent = new Intent(getActivity(), Task_Display.class);
+                            ((Details_Instance)getActivity()).mInstance.finishInstance(3);
+                            Intent intent = new Intent(getActivity(), Viewer_Tasklist.class);
                             startActivity(intent);
                         }
                     })

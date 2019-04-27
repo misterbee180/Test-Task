@@ -184,18 +184,18 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public static long getFromDate(){
-        return (mdtmFrom == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmFrom;
+        return (mdtmFrom == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmFrom;
     }
 
     public static long getToDate(){
-        return (mdtmTo == -1) ? Task_Display.getCurrentCalendar().getTimeInMillis():mdtmTo;
+        return (mdtmTo == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmTo;
     }
 
 
     public void setFromDate(long pdtmFrom) {
         mdtmFrom = pdtmFrom;
         if(pdtmFrom != -1) {
-            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             //java.text.DateFormat dateFormat = SimpleDateFormat.getDateInstance();
             String strFromDate = "From Date: " + dateFormat.format(pcalFrom.getTime()); 
@@ -207,7 +207,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         mdtmTo = pdtmTo;
         if(pdtmTo != -1){
             mblnToDate = true;
-            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             String strToDate = "To Date: " + dateFormat.format(pcalTo.getTime()); 
             btnToDate.setText(strToDate);
@@ -218,7 +218,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         mdtmFrom = pdtmFrom;
         if(pdtmFrom != -1){
             mblnFromTime = true;
-            Calendar pcalFrom = Task_Display.getCalendar(pdtmFrom);
+            Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
             String strFromTime = "From Time: " + dateFormat.format(pcalFrom.getTime()); 
             btnFromTime.setText(strFromTime);
@@ -229,7 +229,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         mdtmTo = pdtmTo;
         if(pdtmTo != -1){
             mblnToTime = true;
-            Calendar pcalTo = Task_Display.getCalendar(pdtmTo);
+            Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
             String strToTime = "To Time: " + dateFormat.format(pcalTo.getTime());
             btnToTime.setText(strToTime);
@@ -372,6 +372,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             cLayWeekly.setVisibility(View.GONE);
             cLayMonthly.setVisibility(View.GONE);
             mTimeframeSpinner.setVisibility(View.GONE);
+            findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
+            findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.VISIBLE);
         } else {
             mTimeframeSpinner.setVisibility(View.VISIBLE);
         }
@@ -643,7 +645,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         Time returnTime = new Time(plngTimeID,
                 getFromDate(),
                 getToDate(),
-                Task_Display.getCurrentCalendar().getTimeInMillis(),
+                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
                 mblnFromTime,
                 mblnToTime,
                 mblnToDate,
@@ -763,21 +765,21 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            int hour = Task_Display.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
-            int minute = Task_Display.getCurrentCalendar().get(Calendar.MINUTE);
+            int hour = Viewer_Tasklist.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
+            int minute = Viewer_Tasklist.getCurrentCalendar().get(Calendar.MINUTE);
             if(mSetIndicator == 1 && mblnFromTime){
-                Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
                 hour = fromCal.get(Calendar.HOUR_OF_DAY);
                 minute = fromCal.get(Calendar.MINUTE);
             }
             else if (mSetIndicator == 2){
                 if(mblnToTime){
-                    Calendar ToCal = Task_Display.getCalendar(mdtmTo);
+                    Calendar ToCal = Viewer_Tasklist.getCalendar(mdtmTo);
                     hour = ToCal.get(Calendar.HOUR_OF_DAY);
                     minute = ToCal.get(Calendar.MINUTE);
                 }
                 else if(mblnFromTime){
-                    Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                    Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
                     hour = fromCal.get(Calendar.HOUR_OF_DAY);
                     minute = fromCal.get(Calendar.MINUTE);
                 }
@@ -794,9 +796,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             if (mSetIndicator == 1) {
                 mblnFromTime = true;
                 if(mdtmFrom == -1){
-                    tempTime.setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
+                    tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
-                Calendar fromCal = Task_Display.getCalendar(mdtmFrom);
+                Calendar fromCal = Viewer_Tasklist.getCalendar(mdtmFrom);
                 fromCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
                 fromCal.set(Calendar.MINUTE,minute);
                 tempTime.setFromTime(fromCal.getTimeInMillis());
@@ -804,13 +806,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 mblnToTime = true;
                 //Curent logic is that if a to time is set a from and to date must also be set.
                 if(mdtmFrom == -1){
-                    tempTime.setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
+                    tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
                 Calendar toCal;
                 if(mdtmTo != -1){
-                    toCal = Task_Display.getCalendar(mdtmTo);
+                    toCal = Viewer_Tasklist.getCalendar(mdtmTo);
                 } else {
-                    toCal = Task_Display.getCurrentCalendar();
+                    toCal = Viewer_Tasklist.getCurrentCalendar();
                 }
                 toCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
                 toCal.set(Calendar.MINUTE,minute);
@@ -826,13 +828,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         @NonNull
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current time as the default values for the picker
-            Calendar temp = Task_Display.getCurrentCalendar();
+            Calendar temp = Viewer_Tasklist.getCurrentCalendar();
             int year = temp.get(Calendar.YEAR);
             int month = temp.get(Calendar.MONTH);
             int day = temp.get(Calendar.DAY_OF_MONTH);
 
             if(mdtmFrom != -1){
-                Calendar tempFrom = Task_Display.getCalendar(mdtmFrom);
+                Calendar tempFrom = Viewer_Tasklist.getCalendar(mdtmFrom);
                 year = tempFrom.get(Calendar.YEAR);
                 month = tempFrom.get(Calendar.MONTH);
                 day = tempFrom.get(Calendar.DAY_OF_MONTH);
@@ -846,16 +848,16 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
             switch (mSetIndicator) {
                 case 3:
-                    Calendar tempFrom = Task_Display.getCalendar(mdtmFrom);
+                    Calendar tempFrom = Viewer_Tasklist.getCalendar(mdtmFrom);
                     tempFrom.set(Calendar.YEAR, year);
                     tempFrom.set(Calendar.MONTH, month);
                     tempFrom.set(Calendar.DAY_OF_MONTH, day);
                     tempTime.setFromDate(tempFrom.getTimeInMillis());
                     break;
                 case 4:
-                    Calendar tempTo = Task_Display.getCalendar(mdtmTo);
+                    Calendar tempTo = Viewer_Tasklist.getCalendar(mdtmTo);
                     if(mdtmFrom == -1){
-                        tempTime.setFromDate(Task_Display.getCurrentCalendar().getTimeInMillis());
+                        tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                     }
                     tempTo.set(Calendar.YEAR, year);
                     tempTo.set(Calendar.MONTH, month);

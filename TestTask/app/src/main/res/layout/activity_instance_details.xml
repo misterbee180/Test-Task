@@ -17,7 +17,7 @@
         android:ems="10"
         android:hint="@string/TextBox_Task"
 
-        android:selectAllOnFocus="false"
+        android:inputType="" android:selectAllOnFocus="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>

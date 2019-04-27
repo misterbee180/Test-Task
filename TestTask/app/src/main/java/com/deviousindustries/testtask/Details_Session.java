@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 public class Details_Session extends AppCompatActivity{
 
-    static ArrayListContainer mSessionTaskList;
-    TimeKeeper timeKeeper;;
+    ArrayListContainer mSessionTaskList;
+    TimeKeeper timeKeeper;
     Intent mIntent;
     Time mTime;
 
@@ -21,7 +21,7 @@ public class Details_Session extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_session);
-        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
+        timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(2);
         mTime = new Time();
 
@@ -31,7 +31,7 @@ public class Details_Session extends AppCompatActivity{
             mTime = new Time(getIntent().getLongExtra("EXTRA_TIME_ID",-1));
         }
 
-        ListView mSessionView = (ListView) findViewById(R.id.lsvSessionTaskList);
+        ListView mSessionView = findViewById(R.id.lsvSessionTaskList);
         mSessionTaskList = new ArrayListContainer();
         mSessionTaskList.LinkArrayToListView(mSessionView, this);
         mSessionTaskList.mListView.setOnItemClickListener(itemClickListener);
@@ -110,12 +110,12 @@ public class Details_Session extends AppCompatActivity{
     }
 
     public String getSessionTitle() {
-        TextView SessionTitle = (TextView) findViewById(R.id.txbSessionTitle);
+        TextView SessionTitle = findViewById(R.id.txbSessionTitle);
         return SessionTitle.getText().toString();
     }
 
     public void setSessionTitle(String pSessionTitle) {
-        TextView SessionTitle = (TextView) findViewById(R.id.txbSessionTitle);
+        TextView SessionTitle = findViewById(R.id.txbSessionTitle);
         SessionTitle.setText(pSessionTitle);
     }
 }

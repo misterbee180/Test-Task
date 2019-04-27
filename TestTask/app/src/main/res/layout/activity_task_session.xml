@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/TextBox_SessionTitle"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" android:inputType=""/>
 
     <com.deviousindustries.testtask.TimeKeeper
         android:id="@+id/timeKeeper"

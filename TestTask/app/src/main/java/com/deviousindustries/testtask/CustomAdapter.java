@@ -38,19 +38,19 @@ public class CustomAdapter extends BaseAdapter {
         mInflater = (LayoutInflater)pContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public void  addItem(final String pName, Long pId) {
+    void  addItem(final String pName, Long pId) {
         mData.add(new itemDetail(pName, pId));
         notifyDataSetChanged();
     }
 
-    public void addSeparatorItem(final String pName) {
+    void addSeparatorItem(final String pName) {
         mData.add(new itemDetail(pName, (long)-1));
         // save separator position
         mSeparatorsSet.add(mData.size() - 1);
         notifyDataSetChanged();
     }
 
-    public void addGroupItem(final String pName, final Long pSession){
+    void addGroupItem(final String pName, final Long pSession){
         mData.add(new itemDetail(pName, pSession));
         //save group position
         mGroupsSet.add(mData.size() - 1);
@@ -101,7 +101,7 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     public static class ViewHolder {
-        public TextView textView;
+        TextView textView;
         public TextView id;
     }
 
@@ -115,17 +115,17 @@ public class CustomAdapter extends BaseAdapter {
             switch (type) {
                 case TYPE_ITEM:
                     convertView = mInflater.inflate(R.layout.task_item1, null);
-                    holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
-                    holder.id = (TextView)convertView.findViewById(R.id.taskId);
+                    holder.textView = convertView.findViewById(android.R.id.text1);
+                    holder.id = convertView.findViewById(R.id.taskId);
                     break;
                 case TYPE_SEPARATOR:
                     convertView = mInflater.inflate(R.layout.seperator_item1, null);
-                    holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+                    holder.textView = convertView.findViewById(android.R.id.text1);
                     holder.id = new TextView(convertView.getContext());
                     break;
                 case TYPE_GROUP:
                     convertView = mInflater.inflate(R.layout.task_group1, null);
-                    holder.textView = (TextView)convertView.findViewById(android.R.id.text1);
+                    holder.textView = convertView.findViewById(android.R.id.text1);
                     holder.id = new TextView(convertView.getContext());
                     break;
             }

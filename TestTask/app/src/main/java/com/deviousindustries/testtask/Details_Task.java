@@ -27,7 +27,7 @@ public class Details_Task extends AppCompatActivity {
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
-    static TimeKeeper timeKeeper;
+    TimeKeeper timeKeeper;
     TextView mTitle;
     TextView mDescription;
 
@@ -37,9 +37,9 @@ public class Details_Task extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_details);
-        mTitle = (TextView) findViewById(R.id.txbTaskTitle);
-        mDescription = (TextView) findViewById(R.id.txbTaskDescription);
-        timeKeeper = (TimeKeeper) findViewById(R.id.timeKeeper);
+        mTitle = findViewById(R.id.txbTaskTitle);
+        mDescription = findViewById(R.id.txbTaskDescription);
+        timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(1);
         mTask = new Task();
         mTime = new Time();
@@ -51,11 +51,11 @@ public class Details_Task extends AppCompatActivity {
 //        Cursor c = DatabaseAccess.getRecordsFromTable("tblLongTerm");
 //        c.getLong(15);
 
-        mGroup = (Spinner) findViewById(R.id.spnTaskGroupSel);
+        mGroup = findViewById(R.id.spnTaskGroupSel);
         mGroupList = new ArrayListContainer();
         mGroupList.LinkArrayToSpinner(mGroup, this);
 
-        mSession = (Spinner) findViewById(R.id.spnTaskSessSel);
+        mSession = findViewById(R.id.spnTaskSessSel);
         mSessionList = new ArrayListContainer();
         mSessionList.LinkArrayToSpinner(mSession, this);
         mSessionList.mSpinner.setOnItemSelectedListener(sessionListener);
@@ -124,8 +124,7 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean isSessionSet(){
-        if(mSessionList.mSpinner.getSelectedItemPosition() != 0) return true;
-        return false;
+        return (mSessionList.mSpinner.getSelectedItemPosition() != 0);
     }
 
     public void setSession(long plngTimeId){
@@ -174,42 +173,31 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean wasDetailsEdited(){
-        if (!mTitle.getText().toString().equals(mTask.mstrTitle)
-        || !mDescription.getText().toString().equals(mTask.mstrDescription))
-            return true;
-        return false;
+        return (!mTitle.getText().toString().equals(mTask.mstrTitle)
+                || !mDescription.getText().toString().equals(mTask.mstrDescription));
     }
 
     public boolean wasSessionSessionReplaced(){
-        if(mTask.mlngTaskID != -1) { //Task was loaded
-            if (isSessionSet() && mTime.mblnSession
-                    && (getSession() != mTime.mlngTimeID)) {
-                return true;
-            }
-        }
-        return false;
+        return mblnLoaded &&
+                isSessionSet() &&
+                mTime.mblnSession &&
+                (getSession() != mTime.mlngTimeID);
     }
 
     public boolean wasSessionTimeReplaced(){
-        if(mTask.mlngTaskID != -1){ //Task was loaded
-            if(!isSessionSet() && mTime.mblnSession){
-                return true;
-            }
-        }
-        return false;
+        return mblnLoaded &&
+                !isSessionSet() &&
+                mTime.mblnSession;
     }
 
     public boolean wasTimeSessionReplaced(){
-        if(mTask.mlngTaskID != -1){
-            if(isSessionSet() && !mTime.mblnSession){
-                return true;
-            }
-        }
-        return false;
+        return mblnLoaded &&
+                isSessionSet() &&
+                !mTime.mblnSession;
     }
     //endregion
 
-    //region ACTIVITY INITIALIZAION
+    //region ACTIVITY INITIALIZATION
     private void setupViews() {
         if (mlngGroupID != -1){//Group
             mGroupList.setIDSpinner(mTask.mlngTaskTypeID);
@@ -353,7 +341,7 @@ public class Details_Task extends AppCompatActivity {
                     }
                     mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function
                             mTime.mlngTimeID,
-                            Task_Display.getCurrentCalendar().getTimeInMillis(),
+                            Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
                             getTaskTitle(),
                             getTaskDesc(),
                             (long) -1,
@@ -412,14 +400,10 @@ public class Details_Task extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case (1) : {
-                if (resultCode == RESULT_OK) {
-                    LoadSessionSpinner();
-                    setSession(data.getLongExtra("EXTRA_SESSION_ID", -1));
-                }
-                break;
-            }
+        if (requestCode == 1 &&
+                resultCode == RESULT_OK) {
+            LoadSessionSpinner();
+            setSession(data.getLongExtra("EXTRA_SESSION_ID", -1));
         }
     }
 
@@ -430,8 +414,8 @@ public class Details_Task extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
 
         //noinspection SimplifiableIfStatement
-        switch (item.getItemId()){
-            /*case R.id.action_delete_task:
+        /*switch (item.getItemId()){
+            case R.id.action_delete_task:
                 Bundle bundle = new Bundle();
                 bundle.putLong("TaskID", mTask.mlngTaskID);
                 DialogFragment newFragment = new Details_Task.TaskDeleteConfirmationFragment();
@@ -445,8 +429,8 @@ public class Details_Task extends AppCompatActivity {
                 break;
             case R.id.action_event  :
                 viewEvents();
-                break;*/
-        }
+                break;
+        }*/
 
         return super.onOptionsItemSelected(item);
     }

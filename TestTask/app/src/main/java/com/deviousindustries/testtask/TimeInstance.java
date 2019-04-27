@@ -1,27 +1,25 @@
 package com.deviousindustries.testtask;
 
-public class TimeInstance {
-    long mlngGenerationID;
-    long mlngTimeID;
+class TimeInstance {
+    private long mlngTimeID;
     long mdtmUpcoming;
     long mdtmPriority;
     int mintThru;
 
-    public TimeInstance(){
-        mlngGenerationID = -1;
+    private TimeInstance(){
         mlngTimeID = -1;
         mdtmUpcoming = -1;
         mdtmPriority = -1;
         mintThru = 0;
     }
-    public TimeInstance(long plngTimeID){
+    TimeInstance(long plngTimeID){
         this();
         mlngTimeID = plngTimeID;
     }
 
-    public void save(){
+    void save(){
         if(mdtmUpcoming != -1){
-            mlngGenerationID = DatabaseAccess.addRecordToTable("tblTimeInstance",
+            DatabaseAccess.addRecordToTable("tblTimeInstance",
                     new String[]{"flngTimeID","fdtmUpcoming","fdtmPriority","fintThru"},
                     new Object[]{mlngTimeID, mdtmUpcoming, mdtmPriority, mintThru});
         }

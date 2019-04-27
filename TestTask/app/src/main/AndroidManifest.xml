@@ -23,7 +23,7 @@
             android:label="@string/title_activity_viewer__long_term"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Task_Display"
+            android:name=".Viewer_Tasklist"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

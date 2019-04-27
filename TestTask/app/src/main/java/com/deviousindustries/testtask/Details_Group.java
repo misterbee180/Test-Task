@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 public class Details_Group extends AppCompatActivity {
 
-    static ArrayListContainer mGroupTask;
+    ArrayListContainer mGroupTask;
     Long mlngGroupId = (long)-1;
 
     FloatingActionButton fab;
@@ -23,7 +23,7 @@ public class Details_Group extends AppCompatActivity {
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_group);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -37,7 +37,7 @@ public class Details_Group extends AppCompatActivity {
             mlngGroupId = getIntent().getLongExtra("EXTRA_GROUP_ID",-1);
         }
 
-        ListView mGroupView = (ListView) findViewById(R.id.lsvGroupTaskList);
+        ListView mGroupView = findViewById(R.id.lsvGroupTaskList);
         mGroupTask = new ArrayListContainer();
         mGroupTask.LinkArrayToListView(mGroupView, this);
         mGroupTask.mListView.setOnItemClickListener(itemClickListener);

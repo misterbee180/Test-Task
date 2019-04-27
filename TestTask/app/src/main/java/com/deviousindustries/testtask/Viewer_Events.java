@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -16,18 +17,18 @@ import android.widget.ListView;
 
 public class Viewer_Events extends AppCompatActivity {
 
-    static ArrayListContainer mEventList;
-    static ArrayListContainer mActiveList;
+    ArrayListContainer mEventList;
+    ArrayListContainer mActiveList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_events);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -36,13 +37,13 @@ public class Viewer_Events extends AppCompatActivity {
         });
 
 
-        ListView mEventView = (ListView) findViewById(R.id.lsvEventList);
+        ListView mEventView = findViewById(R.id.lsvEventList);
         mEventList = new ArrayListContainer();
         mEventList.LinkArrayToListView(mEventView, this);
         mEventList.mListView.setOnItemClickListener(itemClickListener);
         mEventList.mListView.setOnItemLongClickListener(itemLongClickListener);
 
-        ListView mActiveView = (ListView) findViewById(R.id.lsvActiveList);
+        ListView mActiveView = findViewById(R.id.lsvActiveList);
         mActiveList = new ArrayListContainer();
         mActiveList.LinkArrayToListView(mActiveView, this);
         mActiveList.mListView.setOnItemClickListener(itemClickListener);
@@ -59,16 +60,13 @@ public class Viewer_Events extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
             Bundle bundle = new Bundle();
-            DialogFragment newFragment = null;
-            switch(parent.getId()){
-                case R.id.lsvEventList:
-                    bundle.putLong("EventID", mEventList.getID(position));
-                    newFragment = new Viewer_Events.ActivateTaskFragment();
-                    break;
-                case R.id.lsvActiveList:
-                    bundle.putLong("EventID", mActiveList.getID(position));
-                    newFragment = new Viewer_Events.CancelActiveTaskFragment();
-                    break;
+            DialogFragment newFragment;
+            if (parent.getId() == R.id.lsvEventList) {
+                bundle.putLong("EventID", mEventList.getID(position));
+                newFragment = new ActivateTaskFragment();
+            } else { //R.id.lsvActiveList
+                bundle.putLong("EventID", mActiveList.getID(position));
+                newFragment = new CancelActiveTaskFragment();
             }
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Event Fragment");
@@ -97,6 +95,7 @@ public class Viewer_Events extends AppCompatActivity {
 
     //TODO: remove confirmation of edit
     public static class ConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpEventID = getArguments().getLong("EventID");
@@ -120,6 +119,7 @@ public class Viewer_Events extends AppCompatActivity {
     }
 
     public static class ActivateTaskFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpEventID = getArguments().getLong("EventID");
@@ -140,7 +140,7 @@ public class Viewer_Events extends AppCompatActivity {
                                             -1);
                                 }
                             }
-                            setEventsList();
+                            ((Viewer_Events)getActivity()).setEventsList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -154,6 +154,7 @@ public class Viewer_Events extends AppCompatActivity {
     }
 
     public static class CancelActiveTaskFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpEventID = getArguments().getLong("EventID");
@@ -174,7 +175,7 @@ public class Viewer_Events extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             DatabaseAccess.mDatabase.endTransaction();
-                            setEventsList();
+                            ((Viewer_Events)getActivity()).setEventsList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -192,7 +193,7 @@ public class Viewer_Events extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public static void setEventsList(){
+    public void setEventsList(){
 
         String rawGetEvents = "SELECT *, \n" +
                 "CASE WHEN EXISTS(SELECT 1 FROM tblTask t \n" +

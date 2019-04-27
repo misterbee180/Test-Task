@@ -16,7 +16,7 @@
         android:ems="10"
         android:hint="@string/TextBox_Event"
 
-        android:selectAllOnFocus="false"
+        android:inputType="" android:selectAllOnFocus="false"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="153dp" />
@@ -30,7 +30,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txbEventTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/txbEventTitle" android:inputType=""  />
 
     <TextView
         android:id="@+id/txtEventAddReq"

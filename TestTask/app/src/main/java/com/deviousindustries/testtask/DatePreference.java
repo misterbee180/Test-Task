@@ -22,17 +22,17 @@ public class DatePreference extends DialogPreference {
     private CharSequence mSummary;
     private DatePicker picker = null;
 
-    public static int getYear(String dateval) {
+    private static int getYear(String dateval) {
         String[] pieces = dateval.split("-");
         return (Integer.parseInt(pieces[0]));
     }
 
-    public static int getMonth(String dateval) {
+    private static int getMonth(String dateval) {
         String[] pieces = dateval.split("-");
         return (Integer.parseInt(pieces[1]));
     }
 
-    public static int getDate(String dateval) {
+    private static int getDate(String dateval) {
         String[] pieces = dateval.split("-");
         return (Integer.parseInt(pieces[2]));
     }

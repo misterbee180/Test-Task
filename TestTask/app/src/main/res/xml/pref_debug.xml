@@ -10,7 +10,7 @@
         android:dependency="enable_debug"
         android:title="Date Preference"
         android:summary="DateSummary"
-        xmlns:android="http://schemas.android.com/apk/res/android" />
+         />
 
     <SwitchPreference
         android:dependency="enable_debug"
@@ -23,6 +23,6 @@
         android:dependency="enable_time"
         android:title="Time Preference"
         android:summary="TimeSummary"
-        xmlns:android="http://schemas.android.com/apk/res/android" />
+         />
 
 </PreferenceScreen>

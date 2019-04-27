@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/TextBox_GroupTitle"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" android:inputType=""/>
 
     <ListView
         android:id="@+id/lsvGroupTaskList"

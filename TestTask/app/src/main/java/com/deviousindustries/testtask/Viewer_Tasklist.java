@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -23,9 +24,9 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class Task_Display extends AppCompatActivity {
-    static ListView mDisplayListView;
-    static CustomAdapter mAdapter;
+public class Viewer_Tasklist extends AppCompatActivity {
+    ListView mDisplayListView;
+    CustomAdapter mAdapter;
     static Context mContext;
 
     @Override
@@ -34,7 +35,7 @@ public class Task_Display extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 //        Bundle extras = getIntent().getExtras();
@@ -49,7 +50,7 @@ public class Task_Display extends AppCompatActivity {
 //            newFragment.show(this.getSupportFragmentManager(), "Error Handled");
 //        }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -61,7 +62,7 @@ public class Task_Display extends AppCompatActivity {
         initializeApplication();
 
         //This sets up member variable and other details specific to this activity.
-        mDisplayListView = (ListView) findViewById(R.id.lsvDisplayList);
+        mDisplayListView = findViewById(R.id.lsvDisplayList);
     }
 
     private void initializeApplication() {
@@ -69,7 +70,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
 
-    static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+    AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long arg3) {
             Bundle bundle = new Bundle();
@@ -79,7 +80,7 @@ public class Task_Display extends AppCompatActivity {
             switch (type) {
                 case 0:
                     bundle.putLong("InstanceID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
-                    newFragment = new Task_Display.CompleteInstanceConfirmationFragment();
+                    newFragment = new Viewer_Tasklist.CompleteInstanceConfirmationFragment();
                     newFragment.setArguments(bundle);
                     activity = (FragmentActivity)parent.getContext();
                     newFragment.show(activity.getSupportFragmentManager(), "Complete Task");
@@ -87,7 +88,7 @@ public class Task_Display extends AppCompatActivity {
                 case 2:
                     bundle.putLong("TimeID", Long.valueOf(((CustomAdapter.ViewHolder)v.getTag()).id.getText().toString()));
 //                    bundle.putString("Section", ((CustomAdapter.ViewHolder)v.getTag()).section.getText().toString());
-                    newFragment = new Task_Display.CompleteSessionConfirmationFragment();
+                    newFragment = new Viewer_Tasklist.CompleteSessionConfirmationFragment();
                     newFragment.setArguments(bundle);
                     activity = (FragmentActivity)parent.getContext();
                     newFragment.show(activity.getSupportFragmentManager(), "Complete Session Task");
@@ -96,7 +97,7 @@ public class Task_Display extends AppCompatActivity {
         }
     };
 
-    static AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
+    AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
             Intent intent = new Intent(mContext, Details_Instance.class);
@@ -107,6 +108,7 @@ public class Task_Display extends AppCompatActivity {
     };
 //
     public static class CompleteInstanceConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpInstanceID = getArguments().getLong("InstanceID");
@@ -116,7 +118,7 @@ public class Task_Display extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             TaskInstance ti = new TaskInstance(tmpInstanceID);
                             ti.finishInstance(1);
-                            loadTasksFromDatabase();
+                            ((Viewer_Tasklist)getActivity()).loadTasksFromDatabase();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -129,28 +131,29 @@ public class Task_Display extends AppCompatActivity {
         }
     }
 
-    public static class ErrorConfirmationFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final String strError = getArguments().getString("Error");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(strError)
-                    .setPositiveButton("Acknowledged", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            loadTasksFromDatabase();
-                        }
-                    })
-                    .setNegativeButton("Report", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            loadTasksFromDatabase();
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
+//    public static class ErrorConfirmationFragment extends DialogFragment {
+//        @Override
+//        public Dialog onCreateDialog(Bundle savedInstanceState) {
+//            final String strError = getArguments().getString("Error");
+//            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//            builder.setMessage(strError)
+//                    .setPositiveButton("Acknowledged", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int id) {
+//                            loadTasksFromDatabase();
+//                        }
+//                    })
+//                    .setNegativeButton("Report", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int id) {
+//                            loadTasksFromDatabase();
+//                        }
+//                    });
+//            // Create the AlertDialog object and return it
+//            return builder.create();
+//        }
+//    }
 
     public static class CompleteSessionConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -167,7 +170,7 @@ public class Task_Display extends AppCompatActivity {
 //                            }
                             Time tempTime = new Time(getArguments().getLong("TimeID"));
                             tempTime.finishTaskInstances(2);
-                            loadTasksFromDatabase();
+                            ((Viewer_Tasklist)getActivity()).loadTasksFromDatabase();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -194,7 +197,7 @@ public class Task_Display extends AppCompatActivity {
     }
 
     //region CALENDER FUNCTIONS
-    public static Calendar getBeginningCurentDay(){
+    static public Calendar getBeginningCurentDay(){
         Calendar temp = getCurrentCalendar();
         temp.set(Calendar.HOUR_OF_DAY,0);
         temp.set(Calendar.MINUTE,0);
@@ -204,7 +207,7 @@ public class Task_Display extends AppCompatActivity {
         return temp;
     }
 
-    public static Calendar getEndCurrentDay(){
+    static public Calendar getEndCurrentDay(){
         Calendar temp = getCurrentCalendar();
         temp.set(Calendar.HOUR_OF_DAY,23);
         temp.set(Calendar.MINUTE,59);
@@ -214,15 +217,15 @@ public class Task_Display extends AppCompatActivity {
         return temp;
     }
 
-    public static Calendar getCalendar(long plngMiliDate){
+    static public Calendar getCalendar(long plngMiliDate){
         Calendar tempCal = getCurrentCalendar();
         tempCal.setTimeInMillis(plngMiliDate);
         return tempCal;
     }
 
-    public static Calendar getCalendar(long plngMiliDate,
-                                       boolean pblnBeginning,
-                                       boolean pblnEnd){
+    static public Calendar getCalendar(long plngMiliDate,
+                                boolean pblnBeginning,
+                                boolean pblnEnd){
         Calendar tempCal = getCurrentCalendar();
         tempCal.setTimeInMillis(plngMiliDate);
         if(pblnBeginning){
@@ -240,7 +243,7 @@ public class Task_Display extends AppCompatActivity {
         return tempCal;
     }
 
-    public static Calendar getCurrentCalendar(){
+    static public Calendar getCurrentCalendar(){
         Calendar currentCalendar = Calendar.getInstance();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         if (prefs.getBoolean("enable_debug", false)) {
@@ -280,16 +283,18 @@ public class Task_Display extends AppCompatActivity {
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
-                try(Cursor tblTimeInstance = getValidGenerationPoints(true, false)){
+                try(Cursor tblTimeInstance = getValidGenerationPoints(true, true)){
                     while (tblTimeInstance.moveToNext()) {
                         Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
-                        if (tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > tempTime.mlngGenerationID) {
-                            Calendar tempTo = Task_Display.getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
+                        long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
+                        if (tiGenerationID > tempTime.mlngGenerationID) {
+                            Calendar tempTo = getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
                             if (tempTime.mblnThru) {
                                 tempTo.add(Calendar.DAY_OF_YEAR, tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
                             }
                             tempTime.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
                                     tempTo.getTimeInMillis()); //Add any new instances that need adding
+                            tempTime.updateGenerationID(tiGenerationID);
                         }
                     }
                 }
@@ -306,9 +311,9 @@ public class Task_Display extends AppCompatActivity {
                                            boolean pblnAll){
 
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
-        String strSelection = "fdtmUpcoming <= " + Long.toString(Task_Display.getEndCurrentDay().getTimeInMillis());
-        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis());
-        else strSelection += " and fdtmPriority >= " + Long.toString(Task_Display.getBeginningCurentDay().getTimeInMillis());
+        String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();
+        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + getBeginningCurentDay().getTimeInMillis();
+        else strSelection += " and fdtmPriority >= " + getBeginningCurentDay().getTimeInMillis();
 
         String orderBy = null;
         if(!pblnAll) orderBy = "fdtmPriority LIMIT 1";
@@ -358,7 +363,7 @@ public class Task_Display extends AppCompatActivity {
         startActivity(intent);
     }
 
-    static void loadTasksFromDatabase(){
+    void loadTasksFromDatabase(){
         class taskInstances{
             private String mTitle;
             private Long mId;
@@ -375,10 +380,10 @@ public class Task_Display extends AppCompatActivity {
 
         mAdapter = new CustomAdapter(mContext);
 
-        ArrayList<taskInstances> priorityList = new ArrayList();
-        ArrayList<taskInstances> todayList = new ArrayList();
-        ArrayList<taskInstances> standardList = new ArrayList();
-        ArrayList<taskInstances> upcomingList = new ArrayList();
+        ArrayList<taskInstances> priorityList = new ArrayList<>();
+        ArrayList<taskInstances> todayList = new ArrayList<>();
+        ArrayList<taskInstances> standardList = new ArrayList<>();
+        ArrayList<taskInstances> upcomingList = new ArrayList<>();
         
         try(Cursor displayInstance = DatabaseAccess.getTaskInstancesForDisplay()){
             while(displayInstance.moveToNext()){
@@ -386,7 +391,6 @@ public class Task_Display extends AppCompatActivity {
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmTo")),
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnFromTime")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnToTime")) == 1,
-                        displayInstance.getLong(displayInstance.getColumnIndex("fblnToDate")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmCreated")));
                 if (result == 'P') {
                     priorityList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
@@ -414,7 +418,7 @@ public class Task_Display extends AppCompatActivity {
         
         //Load Events
         try(Cursor eventDisplayInstance = DatabaseAccess.retrieveEventTaskInstances()){
-            Long lngEventId = (long)-1;
+            long lngEventId = -1;
             while(eventDisplayInstance.moveToNext()){
                 if (lngEventId != eventDisplayInstance.getLong(eventDisplayInstance.getColumnIndex("flngEventID"))) {
                     lngEventId = eventDisplayInstance.getLong(eventDisplayInstance.getColumnIndex("flngEventID"));
@@ -475,20 +479,19 @@ public class Task_Display extends AppCompatActivity {
         mDisplayListView.setOnItemLongClickListener(itemLongClickListener);
     }
 
-    private static char determineListForTask(Long pdtmFrom,
+    private char determineListForTask(Long pdtmFrom,
                                              Long pdtmTo,
                                              Boolean pblnFromTimeSet,
                                              Boolean pblnToTimeSet,
-                                             Boolean pblnToDateSet,
                                              Long pdtmCreated) {
 
         //Todo: redesign to not use as many booleans. Make considerations for thru tasks.
-        char result = ' ';
+        char result;
         Calendar calNow = getCurrentCalendar(); //represents the time now
         Calendar calFromWithTime = null;
         Calendar calToWithTime = null;
-        Calendar calFrom = null; //represents the from time of a task
-        Calendar calTo = null; //represents the to time of a task
+        Calendar calFrom; //represents the from time of a task
+        Calendar calTo; //represents the to time of a task
         Calendar calCreate = getCurrentCalendar(); //represents when the task was created
         calCreate.setTimeInMillis(pdtmCreated);
 
@@ -554,7 +557,6 @@ public class Task_Display extends AppCompatActivity {
         } else {
                 result = 'U';
             }
-
         return result;
     }
 

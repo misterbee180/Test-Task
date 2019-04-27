@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -16,17 +17,17 @@ import android.widget.ListView;
 
 public class Viewer_Session extends AppCompatActivity {
 
-    static ArrayListContainer mSessionList;
+    ArrayListContainer mSessionList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_session);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -34,7 +35,7 @@ public class Viewer_Session extends AppCompatActivity {
             }
         });
 
-        ListView mSessionView = (ListView) findViewById(R.id.lsvSessionList);
+        ListView mSessionView = findViewById(R.id.lsvSessionList);
         mSessionList = new ArrayListContainer();
         mSessionList.LinkArrayToListView(mSessionView, this);
         mSessionList.mListView.setOnItemClickListener(itemClickListener);
@@ -69,6 +70,7 @@ public class Viewer_Session extends AppCompatActivity {
     };
 
     public static class DeleteSessionFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpSessionID = getArguments().getLong("SessionID");
@@ -77,7 +79,7 @@ public class Viewer_Session extends AppCompatActivity {
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             deleteSession(tmpSessionID);
-                            setSessionList();
+                            ((Viewer_Session)getActivity()).setSessionList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -120,7 +122,7 @@ public class Viewer_Session extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public static void setSessionList(){
+    public void setSessionList(){
         try(Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1 and fblnComplete = 0",null)){
             mSessionList.Clear();
             while (cursor.moveToNext()){

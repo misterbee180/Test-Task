@@ -7,20 +7,20 @@ public class Task {
     long mlngTimeID;
     int mintTaskType;
     long mlngTaskTypeID;
-    long mlngTaskDetailID;
+    private long mlngTaskDetailID;
     long mlngOneOff;
     //Create task detail object
     String mstrTitle;
     String mstrDescription;
 
-    long mdtmCreated;
+    private long mdtmCreated;
     long mdtmDeleted;
 
     public Task(){
         mlngTaskID = -1;
         mlngTimeID = -1;
         mlngTaskDetailID = -1;
-        mdtmCreated = Task_Display.getCurrentCalendar().getTimeInMillis();
+        mdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
         mdtmDeleted = -1;
         mintTaskType = 0;
         mlngTaskTypeID = -1;
@@ -68,10 +68,6 @@ public class Task {
         mlngTaskTypeID = plngTaskTypeID;
         mlngOneOff = plngOneOff;
 
-        saveTask();
-    }
-
-    public boolean saveTask(){
         //Handles updates and initial creates
         mlngTaskDetailID = DatabaseAccess.addRecordToTable("tblTaskDetail",
                 new String[] {"fstrTitle", "fstrDescription"},
@@ -88,17 +84,16 @@ public class Task {
                         mlngOneOff},
                 "flngTaskID",
                 mlngTaskID);
-        return true;
     }
 
-    public void deleteTask(){
+    void deleteTask(){
         try{
             DatabaseAccess.mDatabase.beginTransaction();
             DatabaseAccess.updateRecordFromTable("tblTask",
                     "flngTaskID",
                     mlngTaskID,
                     new String[]{"fdtmDeleted"},
-                    new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()});
+                    new Object[]{Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()});
 
             finishActiveInstances(3);
 
@@ -113,12 +108,12 @@ public class Task {
         DatabaseAccess.mDatabase.endTransaction();
     }
 
-    public TaskInstance generateInstance(long pdtmFrom,
-                                        long pdtmTo,
-                                        boolean pblnFromTime,
-                                        boolean pblnToTime,
-                                        boolean pblnToDate,
-                                         long plngSessionDetailID){
+    TaskInstance generateInstance(long pdtmFrom,
+                                  long pdtmTo,
+                                  boolean pblnFromTime,
+                                  boolean pblnToTime,
+                                  boolean pblnToDate,
+                                  long plngSessionDetailID){
 
         //replace -1 w/ proper session detail id if one off
         long lngSessionDetailID = plngSessionDetailID;
@@ -127,7 +122,7 @@ public class Task {
             lngSessionDetailID = tempTime.mlngSessionDetailID;
         }
 
-        TaskInstance ti = new TaskInstance(-1,
+        return new TaskInstance(-1,
                 mlngTaskID,
                 mlngTaskDetailID,
                 pdtmFrom,
@@ -136,11 +131,9 @@ public class Task {
                 pblnToTime,
                 pblnToDate,
                 lngSessionDetailID);
-
-        return ti;
     }
 
-    public void updateTaskDetails(String pstrTitle,
+    void updateTaskDetails(String pstrTitle,
                                   String pstrDescription){
         DatabaseAccess.updateRecordFromTable("tblTaskDetail",
                 "flngTaskDetailID",
@@ -149,7 +142,7 @@ public class Task {
                 new Object[]{pstrTitle,pstrDescription});
     }
 
-    public void replaceTimeId(long plngTimeId){
+    void replaceTimeId(long plngTimeId){
         DatabaseAccess.updateRecordFromTable("tblTask",
                 "flngTaskID",
                 mlngTaskID,
@@ -157,7 +150,7 @@ public class Task {
                 new Object[]{plngTimeId});
     }
 
-    public void updateOneOff(long plngOneOff){
+    void updateOneOff(long plngOneOff){
         DatabaseAccess.updateRecordFromTable("tblTask",
                 "flngTaskID",
                 mlngTaskID,
@@ -165,7 +158,7 @@ public class Task {
                 new Object[]{plngOneOff});
     }
 
-    public void finishActiveInstances(int pintCompleteType){
+    void finishActiveInstances(int pintCompleteType){
         try(Cursor curInstances = DatabaseAccess.retrieveActiveTaskInstanceFromTask(mlngTaskID)) {
             while (curInstances.moveToNext()) {
                 TaskInstance ti = new TaskInstance(curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));

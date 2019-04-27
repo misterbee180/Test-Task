@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -15,8 +16,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 public class Viewer_LongTerm extends AppCompatActivity {
-    static ArrayListContainer mLongTermListUnc;
-    static ArrayListContainer mLongTermListCmp;
+    ArrayListContainer mLongTermListUnc;
+    ArrayListContainer mLongTermListCmp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +35,13 @@ public class Viewer_LongTerm extends AppCompatActivity {
             }
         });
 
-        ListView mLongTermViewUnc = (ListView) findViewById(R.id.lsvLongTermListUnc);
+        ListView mLongTermViewUnc = findViewById(R.id.lsvLongTermListUnc);
         mLongTermListUnc = new ArrayListContainer();
         mLongTermListUnc.LinkArrayToListView(mLongTermViewUnc, this);
         mLongTermListUnc.mListView.setOnItemClickListener(itemClickListener);
         mLongTermListUnc.mListView.setOnItemLongClickListener(itemLongClickListener);
 
-        ListView mLongTermViewCmp = (ListView) findViewById(R.id.lsvLongTermListCmp);
+        ListView mLongTermViewCmp = findViewById(R.id.lsvLongTermListCmp);
         mLongTermListCmp = new ArrayListContainer();
         mLongTermListCmp.LinkArrayToListView(mLongTermViewCmp, this);
         mLongTermListCmp.mListView.setOnItemClickListener(itemClickListener);
@@ -94,6 +95,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
     };
 
     public static class DeleteLongTermFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -106,7 +108,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
                             DatabaseAccess.deleteRecordFromTable("tblTask",
                                     "flngLongTermID",
                                     getArguments().getLong("LongTermID"));
-                            setLongTermList();
+                            ((Viewer_LongTerm)getActivity()).setLongTermList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -119,7 +121,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
         }
     }
 
-    public static void setLongTermList(){
+    public void setLongTermList(){
         //Populating complete then populating uncomplete by grabbing all and not adding complete ones
         String rawGetCompleteLongTerms = "SELECT lt.flngLongTermID, lt.fstrTitle \n" +
                 "FROM tblLongTerm lt \n" +

@@ -1,10 +1,12 @@
 package com.deviousindustries.testtask;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -25,14 +27,14 @@ import static com.deviousindustries.testtask.DatabaseAccess.mDatabase;
 
 public class Viewer_Task extends AppCompatActivity {
 
-    static ListView mTaskView;
-    static Sorting mSorting;
-    static CustomAdapter mAdapter;
-    static Context mContext;
+    ListView mTaskView;
+    Sorting mSorting;
+    CustomAdapter mAdapter;
+    Context mContext;
 
     enum Sorting
     {
-        Ascending, Created, Group, Session;
+        Ascending, Created, Group, Session
     }
 
     @Override
@@ -41,10 +43,10 @@ public class Viewer_Task extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
             setContentView(R.layout.activity_viewer_task);
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            Toolbar toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
 
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            FloatingActionButton fab = findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -52,7 +54,7 @@ public class Viewer_Task extends AppCompatActivity {
                 }
             });
 
-            mTaskView = (ListView) findViewById(R.id.lsvTaskList);
+            mTaskView = findViewById(R.id.lsvTaskList);
             mSorting = Sorting.Ascending;
             mContext = this;
         } catch (Exception e) {
@@ -65,7 +67,7 @@ public class Viewer_Task extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         try{
-            setTaskList(this);
+            setTaskList();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -74,21 +76,19 @@ public class Viewer_Task extends AppCompatActivity {
         }
     }
 
-    public static AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+    public AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             int type = mAdapter.getItemViewType(position);
-            switch (type) {
-                case 0:
-                    Intent intent = new Intent(mContext, Details_Task.class);
-                    intent.putExtra("EXTRA_TASK_ID", Long.valueOf(((CustomAdapter.ViewHolder)view.getTag()).id.getText().toString()));
-                    mContext.startActivity(intent);
-                    break;
+            if (type == 0) {
+                Intent intent = new Intent(mContext, Details_Task.class);
+                intent.putExtra("EXTRA_TASK_ID", Long.valueOf(((CustomAdapter.ViewHolder) view.getTag()).id.getText().toString()));
+                mContext.startActivity(intent);
             }
         }
     };
 
-    public static AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
+    public AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle bundle = new Bundle();
@@ -103,6 +103,7 @@ public class Viewer_Task extends AppCompatActivity {
     };
 
     public static class TaskDeleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpTaskID = getArguments().getLong("TaskID");
@@ -112,7 +113,7 @@ public class Viewer_Task extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Task tempTask = new Task(tmpTaskID);
                             tempTask.deleteTask();
-                            setTaskList(mContext);
+                            ((Viewer_Task)getActivity()).setTaskList();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -130,7 +131,7 @@ public class Viewer_Task extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public static void setTaskList(Context pContext){
+    public void setTaskList(){
         String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, sd.fstrTitle as fstrSession\n" +
                 "FROM tblTask t\n" +
                 "JOIN tblTaskDetail td\n" +
@@ -141,8 +142,8 @@ public class Viewer_Task extends AppCompatActivity {
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
                 "LEFT JOIN tblTaskDetail sd \n" +
-                "ON sd.flngTaskDetailID = tm.flngTaskDetailID" +
-                "and tm.fblnSession = 1" +
+                "ON sd.flngTaskDetailID = tm.flngSessionDetailID\n" +
+                "and tm.fblnSession = 1\n" +
                 "WHERE (tm.fblnComplete = 0 \n" +
                 "\tOR NOT EXISTS (SELECT 1\n" +
                 "\t\tFROM tblTaskInstance ti\n" +
@@ -170,8 +171,8 @@ public class Viewer_Task extends AppCompatActivity {
 //                rawGetTasks += "ORDER BY s.fstrTitle, t.fstrTitle";
 //                break;
         }
-        mAdapter = new CustomAdapter(pContext);
-        Calendar calCreated = Task_Display.getCurrentCalendar();
+        mAdapter = new CustomAdapter(mContext);
+        Calendar calCreated = Viewer_Tasklist.getCurrentCalendar();
         calCreated.add(Calendar.DAY_OF_YEAR,1);
         Calendar calNewCreated;
         String fstrSession = "";
@@ -185,12 +186,12 @@ public class Viewer_Task extends AppCompatActivity {
                         mAdapter.addItem(curTaskList.getString(curTaskList.getColumnIndex("fstrTitle")),curTaskList.getLong(curTaskList.getColumnIndex("flngTaskID")));
                         break;
                     case Created:
-                        calNewCreated = Task_Display.getCurrentCalendar();
+                        calNewCreated = Viewer_Tasklist.getCurrentCalendar();
                         calNewCreated.setTimeInMillis(curTaskList.getLong(curTaskList.getColumnIndex("fdtmCreated")));
                         if (calNewCreated.get(Calendar.DAY_OF_YEAR) != calCreated.get(Calendar.DAY_OF_YEAR) ||
                                 calNewCreated.get(Calendar.YEAR) != calCreated.get(Calendar.YEAR)){
                             calCreated = calNewCreated;
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+                            @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
                             mAdapter.addSeparatorItem(dateFormat.format(calCreated.getTime()));
                         }
                         mAdapter.addItem(curTaskList.getString(curTaskList.getColumnIndex("fstrTitle")),curTaskList.getLong(curTaskList.getColumnIndex("flngTaskID")));
@@ -224,13 +225,6 @@ public class Viewer_Task extends AppCompatActivity {
         mTaskView.setAdapter(mAdapter);
         mTaskView.setOnItemClickListener(itemClickListener);
         mTaskView.setOnItemLongClickListener(itemLongClickListener);
-
-        //ORIGINAL
-//        mTaskList.Clear();
-//        while (cursor.moveToNext()){
-//            mTaskList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-//        }
-//        mTaskList.mAdapter.notifyDataSetChanged();
     }
 
     public void viewComplete() {
@@ -240,22 +234,22 @@ public class Viewer_Task extends AppCompatActivity {
 
     public void sortCreated() {
         mSorting = Sorting.Created;
-        setTaskList(this);
+        setTaskList();
     }
 
     public void sortGroup() {
         mSorting = Sorting.Group;
-        setTaskList(this);
+        setTaskList();
     }
 
     public void sortSession() {
         mSorting = Sorting.Session;
-        setTaskList(this);
+        setTaskList();
     }
 
     public void sortAscending() {
         mSorting = Sorting.Ascending;
-        setTaskList(this);
+        setTaskList();
     }
 
     @Override

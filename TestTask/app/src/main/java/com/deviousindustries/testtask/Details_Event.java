@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -21,7 +22,7 @@ import android.widget.TextView;
 //Todo: fix positioning of confirm button to be at bottom of screen.
 public class Details_Event extends AppCompatActivity {
 
-    static ArrayListContainer mEventTasks = new ArrayListContainer();
+    ArrayListContainer mEventTasks = new ArrayListContainer();
     static Long mlngEventID = (long)-1;
 
     FloatingActionButton fab;
@@ -31,10 +32,10 @@ public class Details_Event extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_event);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -43,7 +44,7 @@ public class Details_Event extends AppCompatActivity {
         });
 
         //set up listviewer for later task insersion
-        ListView eventTaskView = (ListView) findViewById(R.id.lsvEventTaskList);
+        ListView eventTaskView = findViewById(R.id.lsvEventTaskList);
         mEventTasks.LinkArrayToListView(eventTaskView, this);
         mEventTasks.mListView.setOnItemClickListener(itemClickListener);
         mEventTasks.mListView.setOnItemLongClickListener(itemLongClickListener);
@@ -93,6 +94,7 @@ public class Details_Event extends AppCompatActivity {
     };
 
     public static class TaskEditConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long lngTaskId = getArguments().getLong("TaskID");
@@ -118,6 +120,7 @@ public class Details_Event extends AppCompatActivity {
     }
 
     public static class TaskDeleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -126,7 +129,7 @@ public class Details_Event extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             Task tempTask = new Task(getArguments().getLong("TaskID"));
                             tempTask.deleteTask();
-                            retrieveEventTasks();
+                            ((Details_Event)getActivity()).retrieveEventTasks();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -139,7 +142,7 @@ public class Details_Event extends AppCompatActivity {
         }
     }
 
-    private static void retrieveEventTasks() {
+    private void retrieveEventTasks() {
         Cursor TaskCursor = DatabaseAccess.retrieveEventTasksFromEvent(mlngEventID);
 
         mEventTasks.Clear();
@@ -242,7 +245,6 @@ public class Details_Event extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
         Bundle bundle;
         DialogFragment newFragment;
 
@@ -276,6 +278,7 @@ public class Details_Event extends AppCompatActivity {
     }
 
     public static class EventDeleteConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpEventId = getArguments().getLong("EventID");
@@ -299,6 +302,7 @@ public class Details_Event extends AppCompatActivity {
     }
 
     public static class EventClearConfirmationFragment extends DialogFragment {
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Long tmpEventId = getArguments().getLong("EventID");
@@ -307,7 +311,7 @@ public class Details_Event extends AppCompatActivity {
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             clearEvent(tmpEventId);
-                            retrieveEventTasks();
+                            ((Details_Event)getActivity()).retrieveEventTasks();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

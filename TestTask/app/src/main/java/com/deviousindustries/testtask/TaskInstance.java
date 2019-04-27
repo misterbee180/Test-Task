@@ -2,10 +2,10 @@ package com.deviousindustries.testtask;
 
 import android.database.Cursor;
 
-public class TaskInstance {
-    long mlngInstanceID = (long)-1;
+class TaskInstance {
+    long mlngInstanceID;
     long mlngTaskID;
-    long mlngTaskDetailID;
+    private long mlngTaskDetailID;
     String mstrTitle;
     String mstrDescription;
     long mdtmFrom;
@@ -13,14 +13,14 @@ public class TaskInstance {
     Boolean mblnFromTime;
     Boolean mblnToTime;
     Boolean mblnToDate;
-    long mdtmCreated;
-    long mdtmCompleted;
-    long mdtmSystemCompleted;
-    long mdtmDeleted;
-    long mdtmEdited;
-    long mlngSessionDetailID;
+    private long mdtmCreated;
+    private long mdtmCompleted;
+    private long mdtmSystemCompleted;
+    private long mdtmDeleted;
+    private long mdtmEdited;
+    private long mlngSessionDetailID;
 
-    public TaskInstance(){
+    private TaskInstance(){
         mlngInstanceID = -1;
         mlngTaskID = -1;
         mlngTaskDetailID = -1;
@@ -39,7 +39,7 @@ public class TaskInstance {
         mlngSessionDetailID = -1;
     }
 
-    public TaskInstance(long plngInstanceID){
+    TaskInstance(long plngInstanceID){
         this();
         try(Cursor tblTaskInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "flngInstanceID", plngInstanceID)){
             tblTaskInstance.moveToFirst();
@@ -63,15 +63,15 @@ public class TaskInstance {
         }
     }
 
-    public TaskInstance(long plngInstanceID,
-                        long plngTaskID,
-                        long plngTaskDetailID,
-                        long pdtmFrom,
-                        long pdtmTo,
-                        Boolean pblnFromTime,
-                        Boolean pblnToTime,
-                        boolean pblnToDate,
-                        long plngSessionDetailID){
+    TaskInstance(long plngInstanceID,
+                 long plngTaskID,
+                 long plngTaskDetailID,
+                 long pdtmFrom,
+                 long pdtmTo,
+                 Boolean pblnFromTime,
+                 Boolean pblnToTime,
+                 boolean pblnToDate,
+                 long plngSessionDetailID){
         this();
         mlngInstanceID = plngInstanceID;
         mlngTaskID = plngTaskID;
@@ -82,16 +82,16 @@ public class TaskInstance {
         mblnToTime = pblnToTime;
         mblnToDate = pblnToDate;
         if(mlngInstanceID == -1){
-            mdtmCreated = Task_Display.getCurrentCalendar().getTimeInMillis();
+            mdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
         } else {
-            mdtmEdited = Task_Display.getCurrentCalendar().getTimeInMillis();
+            mdtmEdited = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
         }
         mlngSessionDetailID = plngSessionDetailID;
 
         createTaskInstance();
     }
 
-    public void createTaskInstance(){
+    private void createTaskInstance(){
         mlngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
                 new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionDetailID"},
                 new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited, mlngSessionDetailID},
@@ -99,7 +99,7 @@ public class TaskInstance {
                 mlngInstanceID);
     }
 
-    public void finishInstance(int pintCompleteType){
+    void finishInstance(int pintCompleteType){
         String[] strCompleteType = new String[1];
         switch (pintCompleteType){
             case 1:
@@ -116,6 +116,6 @@ public class TaskInstance {
                 "flngInstanceID",
                 mlngInstanceID,
                 strCompleteType,
-                new Object[] {Task_Display.getCurrentCalendar().getTimeInMillis()});
+                new Object[] {Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()});
     }
 }

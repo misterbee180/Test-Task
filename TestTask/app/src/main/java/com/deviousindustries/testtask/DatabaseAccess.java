@@ -861,7 +861,7 @@ public class DatabaseAccess {
                                     objectArrayToStringArray(new Object[]{timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID"))}));
                         }
                         else{
-                            //Task_Display.ReEvaluateTimeDetails(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
+                            //Viewer_Tasklist.ReEvaluateTimeDetails(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                         }
                         tblInstance.close();
                     } else {
@@ -874,7 +874,7 @@ public class DatabaseAccess {
                     }
                     tblTask.close();
                 } else { //Some sort of repeating time element
-                    //Task_Display.ReEvaluateTimeDetails(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
+                    //Viewer_Tasklist.ReEvaluateTimeDetails(timeCursor.getLong(timeCursor.getColumnIndex("flngTimeID")));
                 }
             }
             timeCursor.close();
@@ -1208,7 +1208,7 @@ public class DatabaseAccess {
 
         private void upgradeToV18(SQLiteDatabase db) throws Exception{
             db.update("tblTaskInstance",
-                    generateContentValues(new String[]{"fdtmCompleted"}, new Object[]{Task_Display.getCurrentCalendar().getTimeInMillis()}),
+                    generateContentValues(new String[]{"fdtmCompleted"}, new Object[]{Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()}),
                     "fdtmSystemCompleted = 1554830241995",
                     null);
         }
@@ -1903,8 +1903,8 @@ public class DatabaseAccess {
                 (long)-1,
                 (long)-1,
                 (long)0,
-                Task_Display.getCurrentCalendar().getTimeInMillis(),
-                Task_Display.getCurrentCalendar().getTimeInMillis()};
+                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
+                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()};
         long lngTimeID = DatabaseAccess.addRecordToTable("tblTime",
                 arrColumns,
                 arrValues);
@@ -1919,7 +1919,7 @@ public class DatabaseAccess {
                 new Object[]{plngTaskID,
                         pblnComplete,
                         pblnSystemComplete,
-                        Task_Display.getCurrentCalendar().getTimeInMillis(),
+                        Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
                         lngTimeID});
     }
     //endregion
