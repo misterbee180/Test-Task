@@ -6,7 +6,7 @@
         android:summary="@string/pref_description_enable_debug"
         android:title="@string/pref_title_enable_debug" />
 
-    <com.example.testtask.DatePreference android:key="DatePref"
+    <com.deviousindustries.testtask.DatePreference android:key="DatePref"
         android:dependency="enable_debug"
         android:title="Date Preference"
         android:summary="DateSummary"
@@ -19,7 +19,7 @@
         android:summary="@string/pref_description_enable_time"
         android:title="@string/pref_title_enable_Time" />
 
-    <com.example.testtask.TimePreference android:key="TimePref"
+    <com.deviousindustries.testtask.TimePreference android:key="TimePref"
         android:dependency="enable_time"
         android:title="Time Preference"
         android:summary="TimeSummary"

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.testtask.Details_Session">
+    tools:context="com.deviousindustries.testtask.Details_Session">
 
     <EditText
         android:id="@+id/txbSessionTitle"
@@ -16,7 +16,7 @@
         android:hint="@string/TextBox_SessionTitle"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <com.example.testtask.TimeKeeper
+    <com.deviousindustries.testtask.TimeKeeper
         android:id="@+id/timeKeeper"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

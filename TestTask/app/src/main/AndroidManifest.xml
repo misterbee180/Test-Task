@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.testtask">
+    package="com.deviousindustries.testtask">
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -35,7 +35,8 @@
         <activity
             android:name=".Details_Task"
             android:label="@string/title_activity_task_task" />
-        <activity android:name=".Details_Session" />
+        <activity android:name=".Details_Session"
+            android:label="@string/title_activity_task_session" />
         <activity android:name=".TimeKeeper" />
         <activity
             android:name=".Viewer_Session"

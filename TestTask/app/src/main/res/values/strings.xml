@@ -29,7 +29,8 @@
     <string name="title_activity_viewer__LongTerm">Long Term List</string>
     <string name="title_activity_task__event">Event</string>
     <string name="title_activity_task_group">Group</string>
-    <string name="title_activity_task_task">Add A Task</string>
+    <string name="title_activity_task_task">Task</string>
+    <string name="title_activity_task_session">Session</string>
     <string name="title_activity_viewer__groups">Task Groups</string>
     <string name="title_activity_viewer__long_term">Long Term Tasks</string>
     <string name="title_activity_task_long_term">Long Term Task List</string>
