@@ -216,21 +216,21 @@ public class Time {
                     //establish what repetition tasks associated w/ and whether current date fits
                     switch(mintTimeframe){
                         case 0: //Day
-                            evaluateDayGeneration(1, getLatestPriorityAndThru(), tGen);
+                            evaluateDayGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_day","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 1: //Week
-                            evaluateWeekGeneration(1, getLatestPriorityAndThru(), tGen);
+                            evaluateWeekGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_week","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 2: //Month
-                            evaluateMonthGeneration(1, getLatestPriorityAndThru(), tGen);
+                            evaluateMonthGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_month","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 3: //Year
-                            evaluateYearGeneration(1, getLatestPriorityAndThru(), tGen);
+                            evaluateYearGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_year","1")), getLatestPriorityAndThru(), tGen);
                             break;
                     }
                 } else {
                     if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only time
-                        evaluateDate(1,tGen);
+                        evaluateDate(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_std","1")),tGen);
                     } else{
                         completeTime();
                         blnSaveGen = false; //Don't want to save a new time generation if all we did was complete the time.
@@ -558,8 +558,7 @@ public class Time {
                                         (calMonth.get(Calendar.DAY_OF_MONTH) == calEOM.get(Calendar.DAY_OF_MONTH) &&
                                                 tblMonth.getLong(tblMonth.getColumnIndex("fblnLast")) == 1) ||
                                         //Middle
-                                        // todo: make fblnMiddle system value
-                                        (calMonth.get(Calendar.DAY_OF_MONTH) == 15 &&
+                                        (calMonth.get(Calendar.DAY_OF_MONTH) == Integer.parseInt(Viewer_Tasklist.mPrefs.getString("middle_month","15")) &&
                                                 tblMonth.getLong(tblMonth.getColumnIndex("fblnMiddle")) == 1)) {
                             if (tblMonth.getLong(tblMonth.getColumnIndex("fblnAfterWkn")) == 1) {
                                 switch (calMonth.get(Calendar.DAY_OF_WEEK)) {
@@ -768,7 +767,7 @@ public class Time {
                                             boolean pblnAll){
         //All is not really the right variable name. It's really a question of valid generation for oneoffs vs valid generation for every day tasks.
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
-        String strSelection = "flngTimeID = " + Long.toString(mlngTimeID);
+        String strSelection = "flngTimeID = " + mlngTimeID;
         String orderBy = null;
         if(pblnAll) {
             strSelection += " and fdtmUpcoming <= " + Viewer_Tasklist.getEndCurrentDay().getTimeInMillis();
@@ -904,7 +903,7 @@ public class Time {
         generateInstances(true, -1);
     }
 
-    public Cursor getTasks(){
+    Cursor getTasks(){
         return DatabaseAccess.mDatabase.query("tblTask",
                 new String[] {"flngTaskID"},
                 "fdtmDeleted = -1 and flngTimeID = ?",

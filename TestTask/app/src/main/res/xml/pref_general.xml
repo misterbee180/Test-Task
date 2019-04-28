@@ -1,33 +1,84 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreference
+    <!--<SwitchPreference-->
+        <!--android:defaultValue="true"-->
+        <!--android:key="example_switch"-->
+        <!--android:summary="@string/pref_description_social_recommendations"-->
+        <!--android:title="@string/pref_title_social_recommendations" />-->
+
+    <!--TODO: Add switch for turning off upcoming tasks-->
+    <PreferenceCategory
+        android:title="Upcoming">
+        <SwitchPreference
         android:defaultValue="true"
-        android:key="example_switch"
-        android:summary="@string/pref_description_social_recommendations"
-        android:title="@string/pref_title_social_recommendations" />
+        android:key="upcoming_switch"
+        android:summary="@string/pref_EnableUpcomingDesc"
+        android:title="Enable Upcoming" />
+
+        <EditTextPreference
+            android:key="upcoming_day"
+            android:defaultValue="1"
+            android:title="@string/pref_UpcomingDay"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:dependency="upcoming_switch"/>
+
+        <EditTextPreference
+            android:key="upcoming_week"
+            android:defaultValue="1"
+            android:title="@string/pref_UpcomingWeek"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:dependency="upcoming_switch"/>
+
+        <EditTextPreference
+            android:key="upcoming_month"
+            android:defaultValue="1"
+            android:title="@string/pref_UpcomingMonth"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:dependency="upcoming_switch"/>
+
+        <EditTextPreference
+            android:key="upcoming_year"
+            android:defaultValue="1"
+            android:title="@string/pref_UpcomingYear"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:dependency="upcoming_switch"/>
+
+        <EditTextPreference
+            android:key="upcoming_std"
+            android:defaultValue="1"
+            android:title="@string/pref_UpcomingStd"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:dependency="upcoming_switch"/>
+    </PreferenceCategory>
+<!--TODO:Re-calculate upcoming dates when upcoming thresholds are saved / changed-->
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <EditTextPreference
-        android:capitalize="words"
-        android:defaultValue="@string/pref_default_display_name"
-        android:inputType="textCapWords"
-        android:key="example_text"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/pref_title_display_name" />
+    <PreferenceCategory
+        android:title="Repetition">
+        <EditTextPreference
+            android:defaultValue="15"
+            android:key="middle_month"
+            android:singleLine="true"
+            android:numeric="integer"
+            android:title="@string/pref_middle_month" />
+    </PreferenceCategory>
 
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-    <ListPreference
-        android:defaultValue="-1"
-        android:entries="@array/pref_example_list_titles"
-        android:entryValues="@array/pref_example_list_values"
-        android:key="example_list"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:title="@string/pref_title_add_friends_to_messages" />
+    <!--<ListPreference-->
+        <!--android:defaultValue="-1"-->
+        <!--android:entries="@array/pref_example_list_titles"-->
+        <!--android:entryValues="@array/pref_example_list_values"-->
+        <!--android:key="example_list"-->
+        <!--android:negativeButtonText="@null"-->
+        <!--android:positiveButtonText="@null"-->
+        <!--android:title="@string/pref_title_add_friends_to_messages" />-->
 
 </PreferenceScreen>

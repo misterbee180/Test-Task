@@ -24,14 +24,17 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+
 public class Viewer_Tasklist extends AppCompatActivity {
     ListView mDisplayListView;
     CustomAdapter mAdapter;
     static Context mContext;
+    static SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         mContext = this;
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);
@@ -245,18 +248,17 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
     static public Calendar getCurrentCalendar(){
         Calendar currentCalendar = Calendar.getInstance();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        if (prefs.getBoolean("enable_debug", false)) {
-            //calNow.set(prefs.getString())
-            String strDatePref = prefs.getString("DatePref", "");
-            String strTimePref = prefs.getString("TimePref", "");
+        if (mPrefs.getBoolean("enable_debug", false)) {
+            //calNow.set(mPrefs.getString())
+            String strDatePref = mPrefs.getString("DatePref", "");
+            String strTimePref = mPrefs.getString("TimePref", "");
             if (!strDatePref.equals("")) {
                 String[] datePieces = strDatePref.split("-");
                 currentCalendar.set(Calendar.YEAR, Integer.parseInt(datePieces[0]));
                 currentCalendar.set(Calendar.MONTH, Integer.parseInt(datePieces[1]) - 1);
                 currentCalendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(datePieces[2]));
 
-                if (prefs.getBoolean("enable_time", false) && !strTimePref.equals("")) {
+                if (mPrefs.getBoolean("enable_time", false) && !strTimePref.equals("")) {
                     String[] timePieces = strTimePref.split(":");
                     currentCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timePieces[0]));
                     currentCalendar.set(Calendar.MINUTE, Integer.parseInt(timePieces[1]));
@@ -458,16 +460,18 @@ public class Viewer_Tasklist extends AppCompatActivity {
             mAdapter.addItem(standardList.get(i).mTitle, standardList.get(i).mId);
             i++;
         }
-        mAdapter.addSeparatorItem("Upcoming");
-        i = 0;
-        lngSessionId = (long)-1;
-        while (i < upcomingList.size()){
-            if (lngSessionId != upcomingList.get(i).mSession){
-                mAdapter.addGroupItem("Session: " + upcomingList.get(i).mSessionTitle, upcomingList.get(i).mSession);
-                lngSessionId = upcomingList.get(i).mSession;
+        if (mPrefs.getBoolean("upcoming_switch", true)){
+            mAdapter.addSeparatorItem("Upcoming");
+            i = 0;
+            lngSessionId = (long)-1;
+            while (i < upcomingList.size()){
+                if (lngSessionId != upcomingList.get(i).mSession){
+                    mAdapter.addGroupItem("Session: " + upcomingList.get(i).mSessionTitle, upcomingList.get(i).mSession);
+                    lngSessionId = upcomingList.get(i).mSession;
+                }
+                mAdapter.addItem(upcomingList.get(i).mTitle, upcomingList.get(i).mId);
+                i++;
             }
-            mAdapter.addItem(upcomingList.get(i).mTitle, upcomingList.get(i).mId);
-            i++;
         }
         mDisplayListView.setAdapter(mAdapter);
         mDisplayListView.setOnItemClickListener(itemClickListener);
