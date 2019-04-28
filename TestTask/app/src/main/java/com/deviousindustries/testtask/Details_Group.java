@@ -64,12 +64,15 @@ public class Details_Group extends AppCompatActivity {
     private void setupInitialVisibility() {
         //New Event Add - Force adding the event before the ability to add tasks is available
         if (mlngGroupId == -1){
+            findViewById(R.id.txtGroupAddReq).setVisibility(View.GONE);
             fab.setVisibility(View.GONE);
-            findViewById(R.id.lsvGroupTaskList).setVisibility(View.GONE);
         } else {
-            //No Tasks Associated with Event
             fab.setVisibility(View.VISIBLE);
-            findViewById(R.id.lsvGroupTaskList).setVisibility(View.VISIBLE);
+            if(mGroupTask.mArrayList.size() == 0){
+                findViewById(R.id.txtGroupAddReq).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.txtGroupAddReq).setVisibility(View.GONE);
+            }
         }
     }
 

@@ -39,7 +39,6 @@
     <string name="TextBox_Task">Enter a Task</string>
     <string name="Button_NewSession">Add New Session</string>
     <string name="TextBox_SessionTitle">Enter a Session Title</string>
-    <string name="TextBox_GroupTitle">Enter a Group Title</string>
     <string name="Button_Confirm">Confirm</string>
     <string name="Button_Cancel">Cancel</string>
     <string name="TextBox_Description">Add a Description</string>
@@ -119,6 +118,10 @@
     <!--Long Term Menu Options-->
     <string name="action_delete_longterm">Delete Long Term</string>
     <string name="action_clear_longterm">Clear Long Term</string>
+
+    <!--Group Add-->
+    <string name="txtGroupAddReq">Associate some tasks to your group</string>
+    <string name="TextBox_GroupTitle">Enter a Group Title</string>
 
     <!-- Strings related to Settings -->
     <string name="title_activity_settings">Settings</string>

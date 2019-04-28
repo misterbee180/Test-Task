@@ -17,6 +17,17 @@
         android:hint="@string/TextBox_GroupTitle"
         app:layout_constraintTop_toTopOf="parent" android:inputType=""/>
 
+    <TextView
+        android:id="@+id/txtGroupAddReq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:text="@string/txtGroupAddReq"
+        android:layout_gravity="top"
+        android:layout_weight="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txbGroupTitle" />
+
     <ListView
         android:id="@+id/lsvGroupTaskList"
         android:layout_width="match_parent"
@@ -32,8 +43,7 @@
         android:layout_height="wrap_content"
         android:onClick="ceaseGroupCreation"
         android:text="@string/Button_Confirm"
-        android:layout_gravity="bottom"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lsvGroupTaskList" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </LinearLayout>
