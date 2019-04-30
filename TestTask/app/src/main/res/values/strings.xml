@@ -58,6 +58,13 @@
         <item>Year</item>
     </string-array>
 
+    <string-array name="Starting">
+        <item>Starting Today</item>
+        <item>Starting at Next Occurrence</item>
+        <item>Starting in two Occurrences</item>
+        <item>Starting in three Occurrences</item>
+    </string-array>
+
     <string-array name="RepetitionArray">
         <item>No Repetition</item>
         <item>Repetes Every </item>

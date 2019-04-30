@@ -18,8 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-//Todo: re-add confirm btn visibility afer initial confirm
-//Todo: fix issue of not showing tasks on intial task addition after long term creation
 //Todo: add option to make long term task out of task display instances
 public class Details_LongTerm extends AppCompatActivity {
     ArrayListContainer mLongTermTasksUnc = new ArrayListContainer();

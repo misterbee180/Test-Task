@@ -51,6 +51,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     //View objects
     Spinner mTimeframeSpinner;
     ArrayListContainer mRepetitionSpinner;
+    Spinner mStartingSpinner;
     ConstraintLayout cLayMonthly;
     ConstraintLayout cLayWeekly;
     ConstraintLayout cLayNoRep;
@@ -68,12 +69,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     public TimeKeeper(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        View.inflate(context, R.layout.activity_time_keeper, this); //This is super important. Inflate loads the screen from XML.
+        View.inflate(context, R.layout.activity_timekeeper, this); //This is super important. Inflate loads the screen from XML.
         //Set member access
         arrSpecificDays = new int[31];
         intArrayCounter = 0;
         mRepetitionSpinner = new ArrayListContainer();
-        mTimeframeSpinner = findViewById(R.id.spnTimefange);
+        mStartingSpinner = findViewById(R.id.spnStarting);
+        mTimeframeSpinner = findViewById(R.id.spnTimeframe);
         mTimeframeSpinner.setOnItemSelectedListener(timeframeListener);
 
         //Target View Groups
@@ -152,7 +154,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public int getStarting(){
-        return 0;
+        return mStartingSpinner.getSelectedItemPosition();
     }
 
     public boolean isTimeSet(){
@@ -372,10 +374,12 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             cLayWeekly.setVisibility(View.GONE);
             cLayMonthly.setVisibility(View.GONE);
             mTimeframeSpinner.setVisibility(View.GONE);
+            mStartingSpinner.setVisibility(View.GONE);
             findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
             findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.VISIBLE);
         } else {
             mTimeframeSpinner.setVisibility(View.VISIBLE);
+            mStartingSpinner.setVisibility(View.VISIBLE);
         }
     }
 
@@ -431,7 +435,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 pTime.mblnThru);
         loadRepetitionDetails(pTime.mlngRepetition,
                 pTime.mintTimeframe,
-                pTime.mlngTimeframeID);
+                pTime.mlngTimeframeID,
+                pTime.mintStarting);
     }
 
     public void loadTimeDetails(long pdtmFrom,
@@ -455,11 +460,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     public void loadRepetitionDetails(long plngRepetition,
                                       int pintTimeframe,
-                                      long plngTimeframeID) {
+                                      long plngTimeframeID,
+                                      int pintStarting) {
         //Set repetition spinner
         if (plngRepetition != 0) {
             mRepetitionSpinner.setIDSpinner(plngRepetition);
             mTimeframeSpinner.setSelection(pintTimeframe);
+            mStartingSpinner.setSelection(pintStarting);
         }
 
         switch (pintTimeframe) {
@@ -578,7 +585,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             setUpRepititionForSession();
         } else if(mintMode == 3){
             findViewById(R.id.spnRepitition).setVisibility(View.GONE);
-            findViewById(R.id.spnTimefange).setVisibility(View.GONE);
+            findViewById(R.id.spnTimeframe).setVisibility(View.GONE);
             evaluateRepetitionView(0);
         } else if(mintMode == 4){
             findViewById(R.id.spnRepitition).setVisibility(View.GONE);

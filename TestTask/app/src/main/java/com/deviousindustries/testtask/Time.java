@@ -17,7 +17,7 @@ public class Time {
     long mlngTimeframeID;
     long mlngRepetition;
     private long mdtmCreated;
-    private int mintStarting;
+    int mintStarting;
     private boolean mblnComplete;
     long mlngGenerationID;
     boolean mblnThru;

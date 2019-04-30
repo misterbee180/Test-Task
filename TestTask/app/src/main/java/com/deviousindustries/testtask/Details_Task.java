@@ -275,7 +275,6 @@ public class Details_Task extends AppCompatActivity {
     public void CreateTask(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            //TODO: replace w/ taskDetail validation function
             if(timeKeeper.validateTimeDetails()){
                 //updating and regular creation can probably be joined together but as it's just as simple to keep
                 //them seperated it will for now be.

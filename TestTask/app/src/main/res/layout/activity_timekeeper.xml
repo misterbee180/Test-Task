@@ -17,21 +17,29 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
-        android:id="@+id/spnTimefange"
+        android:id="@+id/spnTimeframe"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/TimeRange"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spnRepitition" />
 
+    <Spinner
+        android:id="@+id/spnStarting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/Starting"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        app:layout_constraintTop_toBottomOf="@id/spnTimeframe"/>
+
     <android.support.constraint.ConstraintLayout
         android:id="@+id/CLayNoFrequency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spnTimefange">
+        app:layout_constraintTop_toBottomOf="@+id/spnStarting">
 
         <Button
             android:id="@+id/Timekeeper_NoFreq_BtnFromDate"
@@ -79,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/Monday"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <CheckBox
                 android:id="@+id/chkSunday"

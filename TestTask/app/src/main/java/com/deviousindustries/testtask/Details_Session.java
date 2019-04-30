@@ -73,7 +73,6 @@ public class Details_Session extends AppCompatActivity{
     public void createSession (View view) {
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            //todo: add validation to session before it attempts to be created
             if(mTime.mlngTimeID != -1){
                 mTime.clearGenerationPoints();
             }

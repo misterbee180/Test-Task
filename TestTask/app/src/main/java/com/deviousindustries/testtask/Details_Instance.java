@@ -64,8 +64,6 @@ public class Details_Instance extends AppCompatActivity {
     public void ConfirmInstance(View view){
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            //Todo: Only create a new task detail ID once to differentiate it from the task. Then just replace new detail id.
-            //You can probably simply use the edited date to do know if this is already done or not.
             long lngTaskDetailID = DatabaseAccess.addRecordToTable("tblTaskDetail",
                     new String[] {"fstrTitle", "fstrDescription"},
                     new Object[] {getTaskTitle(), getTaskDesc()});
@@ -108,8 +106,11 @@ public class Details_Instance extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()){
             case R.id.action_delete_instance:
-                //Todo: Delete task if instance is associated w/ non-repeating task. Possibly show additional fragment
+                Bundle args = new Bundle();
+                args.putLong("instance",mInstance.mlngInstanceID);
+                args.putLong("task",mInstance.mlngTaskID);
                 DialogFragment newFragment = new InstanceDeleteConfirmationFragment();
+                newFragment.setArguments(args);
                 newFragment.show(getSupportFragmentManager(), "Delete Instance");
                 break;
             case R.id.action_view_task:
@@ -145,12 +146,30 @@ public class Details_Instance extends AppCompatActivity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            Bundle args = getArguments();
+            final long lngInstanceID = args.getLong("instance",-1);
+            final long lngTaskID = args.getLong("task",-1);
             builder.setMessage("Delete Instance?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            ((Details_Instance)getActivity()).mInstance.finishInstance(3);
-                            Intent intent = new Intent(getActivity(), Viewer_Tasklist.class);
-                            startActivity(intent);
+                            try{
+                                DatabaseAccess.mDatabase.beginTransaction();
+                                Task tt = new Task(lngTaskID);
+                                Time tm = new Time(tt.mlngTimeID);
+                                if(tm.mlngRepetition <= 0){
+                                    tt.deleteTask();
+                                } else {
+                                    TaskInstance ti = new TaskInstance(lngInstanceID);
+                                    ti.finishInstance(3);
+                                }
+
+                                DatabaseAccess.mDatabase.setTransactionSuccessful();
+                                Intent intent = new Intent(getActivity(), Viewer_Tasklist.class);
+                                startActivity(intent);
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            DatabaseAccess.mDatabase.endTransaction();
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
