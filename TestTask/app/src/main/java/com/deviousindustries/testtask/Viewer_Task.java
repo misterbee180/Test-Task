@@ -132,7 +132,7 @@ public class Viewer_Task extends AppCompatActivity {
     }
 
     public void setTaskList(){
-        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, sd.fstrTitle as fstrSession\n" +
+        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, tm.fstrTitle as fstrSession\n" +
                 "FROM tblTask t\n" +
                 "JOIN tblTaskDetail td\n" +
                 "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
@@ -141,9 +141,6 @@ public class Viewer_Task extends AppCompatActivity {
                 "LEFT JOIN tblGroup g\n" +
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
-                "LEFT JOIN tblTaskDetail sd \n" +
-                "ON sd.flngTaskDetailID = tm.flngSessionDetailID\n" +
-                "and tm.fblnSession = 1\n" +
                 "WHERE (tm.fblnComplete = 0 \n" +
                 "\tOR NOT EXISTS (SELECT 1\n" +
                 "\t\tFROM tblTaskInstance ti\n" +

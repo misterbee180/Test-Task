@@ -24,7 +24,7 @@ public class DatabaseAccess {
 
     private static class TaskDatabaseHelper extends SQLiteOpenHelper {
         TaskDatabaseHelper(Context context) {
-            super(context, "TaskDatabase.db", null, 20);
+            super(context, "TaskDatabase.db", null, 21);
         }
 
         //region TABLE CREATE SCRIPTS
@@ -38,13 +38,13 @@ public class DatabaseAccess {
                 "flngTaskDetailID INTEGER NOT NULL DEFAULT -1, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
                 "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
                 "fdtmCompleted INTEGER NOT NULL DEFAULT -1, fdtmSystemCompleted INTEGER NOT NULL DEFAULT -1, fdtmDeleted INTEGER NOT NULL DEFAULT -1, fdtmEdited INTEGER NOT NULL DEFAULT -1," +
-                "flngSessionDetailID INTEGER NOT NULL DEFAULT -1)";
+                "flngSessionID INTEGER NOT NULL DEFAULT -1)";
 
         private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
                 "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fintTimeframe INTEGER NOT NULL DEFAULT -1, " +
                 "flngTimeframeID INTEGER NOT NULL DEFAULT -1, flngRepetition INTEGER NOT NULL DEFAULT -1, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
                 "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1, fblnThru INTEGER NOT NULL DEFAULT 0, " +
-                "fblnSession INTEGER NOT NULL DEFAULT 0, flngSessionDetailID INTEGER NOT NULL DEFAULT -1)";
+                "fblnSession INTEGER NOT NULL DEFAULT 0, fstrTitle TEXT NOT NULL DEFAULT '')";
 
         private static final String CREATE_TIME_INSTANCE_TABLE = "CREATE TABLE tblTimeInstance (flngGenerationID INTEGER PRIMARY KEY, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
                 "fdtmUpcoming INTEGER NOT NULL DEFAULT -1, fdtmPriority INTEGER NOT NULL DEFAULT -1, fintThru INTEGER NOT NULL DEFAULT 0)";
@@ -230,6 +230,9 @@ public class DatabaseAccess {
                     }
                     if(oldVersion < 20){
                         upgradeToV20(db);
+                    }
+                    if(oldVersion < 21){
+                        upgradeToV21(db);
                     }
                     db.setTransactionSuccessful();
                 } catch (Exception e) {
@@ -1227,12 +1230,40 @@ public class DatabaseAccess {
 
             while(session.moveToNext()){
                 Time tblTime = new Time(session.getLong(session.getColumnIndex("flngTimeID")));
-                tblTime.setAsSession(-1, session.getString(session.getColumnIndex("fstrTitle")),"");
+                tblTime.setAsSession(session.getString(session.getColumnIndex("fstrTitle")));
             }
 
             db.execSQL(DROP_SESSION_TABLE);
 
             addColumn(db, "tblTaskInstance", "flngSessionDetailID", 99, true, "-1");
+        }
+
+        private void upgradeToV21(SQLiteDatabase db) throws Exception{
+            addColumn(db,"tblTime","fstrTitle",99, true, "''");
+
+            Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1",null);
+
+            while(tblTime.moveToNext()){
+                TaskDetail td = new TaskDetail(tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")));
+
+                //Replace time session IDs w/ Titles
+                DatabaseAccess.updateRecordFromTable("tblTime","fstrTimeID",
+                        tblTime.getLong(tblTime.getColumnIndex("flngTimeID")),
+                        new String[]{"fstrTitle"}, new Object[]{td.mstrTitle});
+
+                //Replace instance session ID's w/ Time ID's
+                DatabaseAccess.updateRecordFromTable("tblTaskInstance","fstrSessionDetailID",
+                        tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")),
+                        new String[]{"flngSessionID"}, new Object[]{tblTime.getLong(tblTime.getColumnIndex("flngTimeID"))});
+
+                //Delete the unnecessary session detail ID
+                DatabaseAccess.deleteRecordFromTable("tblTaskDetail", "flngTaskDetailID",
+                        tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")));
+            }
+            tblTime.close();
+
+            deleteColumn(db, "tblTime", "flngSessionDetailID");
+            updateColumn(db, "tblTaskInstance", "flngSessionDetailID", "flngSessionID", true, "-1", false);
         }
 
         private void addColumn(SQLiteDatabase db ,
@@ -1716,20 +1747,20 @@ public class DatabaseAccess {
     }
 
     public static Cursor getTaskInstancesForDisplay(){
-        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(sd.fstrTitle,'') as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
                 "FROM tblTaskInstance i \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
                 "JOIN tblTask t \n" +
                 "ON t.flngTaskID = i.flngTaskID\n" +
                 "AND t.fintTaskType <> 1\n" + //Event
-                "LEFT JOIN tblTaskDetail sd\n" +
-                "ON sd.flngTaskDetailID = i.flngSessionDetailID\n" +
+                "LEFT JOIN tblTime tm\n" +
+                "ON tm.flngTimeID = i.flngSessionID\n" +
                 "WHERE i.fdtmCompleted = -1 \n" +
                 "AND i.fdtmSystemCompleted = -1 \n" +
                 "AND i.fdtmDeleted = -1 \n" +
                 //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
-                "ORDER BY i.flngSessionDetailID, i.flngTaskID";
+                "ORDER BY i.flngSessionID, i.flngTaskID";
 
         return mDatabase.rawQuery(rawQuery,null);
     }

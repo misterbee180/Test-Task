@@ -22,7 +22,7 @@ public class Time {
     long mlngGenerationID;
     boolean mblnThru;
     boolean mblnSession;
-    long mlngSessionDetailID;
+    String mstrTitle;
 
     //region Constructors
     public Time(){
@@ -41,7 +41,7 @@ public class Time {
         mlngGenerationID = -1;
         mblnThru = false;
         mblnSession = false;
-        mlngSessionDetailID = -1;
+        mstrTitle = "";
     }
 
     public Time(long plngTimeId){
@@ -63,7 +63,7 @@ public class Time {
                 mlngGenerationID = tblTime.getInt(tblTime.getColumnIndex("flngGenerationID"));
                 mblnThru = tblTime.getInt(tblTime.getColumnIndex("fblnThru")) == 1;
                 mblnSession = tblTime.getLong(tblTime.getColumnIndex("fblnSession")) == 1;
-                mlngSessionDetailID = tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID"));
+                mstrTitle = tblTime.getString(tblTime.getColumnIndex("fstrTitle"));
             }
         }
     }
@@ -100,7 +100,7 @@ public class Time {
 
         mlngTimeID = DatabaseAccess.addRecordToTable("tblTime",
                 new String[] {"fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate","fintTimeframe", "flngTimeframeID", "flngRepetition",
-                        "fdtmCreated", "fintStarting", "fblnComplete", "flngGenerationID", "fblnThru","fblnSession","flngSessionDetailID"},
+                        "fdtmCreated", "fintStarting", "fblnComplete", "flngGenerationID", "fblnThru","fblnSession","fstrTitle"},
                 new Object[] {mdtmFrom,
                         mdtmTo,
                         mblnFromTime,
@@ -115,26 +115,13 @@ public class Time {
                         mlngGenerationID,
                         mblnThru,
                         mblnSession,
-                        mlngSessionDetailID},
+                        mstrTitle},
                 "flngTimeID",
                 mlngTimeID);
 
         if(!mblnComplete) buildTimeInstances();
     }
     //endregion
-
-    //region Getters/Setters
-    String getSessionTitle(){
-        TaskDetail td = new TaskDetail(mlngSessionDetailID);
-        return td.mstrTitle;
-    }
-
-//    public String getSessionDesc(){
-//        TaskDetail td = new TaskDetail(mlngSessionDetailID);
-//        return td.mstrDescription;
-//    }
-    //endregion
-
 
     //region TimeGeneration Class
     private boolean timeInstanceExist(){
@@ -806,7 +793,7 @@ public class Time {
                         mblnFromTime,
                         mblnToTime,
                         mblnToDate,
-                        mblnSession ? mlngSessionDetailID : -1);
+                        mblnSession ? mlngTimeID : -1);
             }
         }
     }
@@ -841,7 +828,7 @@ public class Time {
                                 mblnFromTime,
                                 mblnToTime,
                                 mblnToDate,
-                                mblnSession ? mlngSessionDetailID : -1);
+                                mblnSession ? mlngTimeID : -1);
                     }else{
                         try(Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", mlngTimeID)){
                             while (tblTask.moveToNext()) {
@@ -852,7 +839,7 @@ public class Time {
                                             mblnFromTime,
                                             mblnToTime,
                                             mblnToDate,
-                                            mblnSession ? mlngSessionDetailID : -1);
+                                            mblnSession ? mlngTimeID : -1);
                                 }
                             }
                         }
@@ -870,12 +857,12 @@ public class Time {
     //endregion
 
     //region Specific Updates
-    void setAsSession(long plngSessionDetailID, String pstrTitle, String pstrDescription){
+    void setAsSession(String pstrSessionTitle){
         mblnSession = true;
-        mlngSessionDetailID = new TaskDetail(plngSessionDetailID, pstrTitle, pstrDescription).mlngTaskDetailId;
+        mstrTitle = pstrSessionTitle;
         DatabaseAccess.updateRecordFromTable("tblTime","flngTimeID",mlngTimeID,
-                new String[]{"fblnSession","flngSessionDetailID"},
-                new Object[]{mblnSession, mlngSessionDetailID});
+                new String[]{"fblnSession","fstrTitle"},
+                new Object[]{mblnSession, mstrTitle});
     }
 
     void updateGenerationID(long plngGenID){

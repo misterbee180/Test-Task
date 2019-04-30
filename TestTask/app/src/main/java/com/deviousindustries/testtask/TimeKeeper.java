@@ -633,9 +633,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                   int pintOrigTimeframe,
                                   long plngOrigTimeframeID,
                                   boolean pblnSession,
-                                  long plngSessionDetailID,
-                                  String pstrTitle,
-                                  String pstrDescription){
+                                  String pstrTitle){
         long lngTimeframeId = (long)-1;
 
         //Determine and create appropriate data element for repetition type
@@ -664,7 +662,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 -1,
                 getThru());
 
-        if(pblnSession) returnTime.setAsSession(plngSessionDetailID, pstrTitle, pstrDescription);
+        if(pblnSession) returnTime.setAsSession(pstrTitle);
 
         return returnTime;
     }

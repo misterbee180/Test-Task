@@ -240,7 +240,7 @@ public class Details_Task extends AppCompatActivity {
         mSessionList.Add("No Session",(long)-1);
         while(cursor.moveToNext()){
             Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
-            mSessionList.Add(tempTime.getSessionTitle(),
+            mSessionList.Add(tempTime.mstrTitle,
                     tempTime.mlngTimeID);
         }
         mSessionList.mAdapter.notifyDataSetChanged();
@@ -298,8 +298,6 @@ public class Details_Task extends AppCompatActivity {
                                     -1,
                                     -1,
                                     false,
-                                    -1,
-                                    "",
                                     "");
                             mTask.replaceTimeId(mTime.mlngTimeID);
                         } else if (wasTimeSessionReplaced()) {
@@ -314,8 +312,6 @@ public class Details_Task extends AppCompatActivity {
                                     mTime.mintTimeframe,
                                     mTime.mlngTimeframeID,
                                     false,
-                                    -1,
-                                    "",
                                     "");
                         }
                         //Remove instances associated w/ original time
@@ -334,8 +330,6 @@ public class Details_Task extends AppCompatActivity {
                                 -1,
                                 -1,
                                 false,
-                                -1,
-                                "",
                                 "");
                     }
                     mTask = new Task(mTask.mlngTaskID, //need this because effectively calling new object function

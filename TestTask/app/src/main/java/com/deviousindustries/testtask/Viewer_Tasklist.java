@@ -392,22 +392,22 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 if (result == 'P') {
                     priorityList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
                             displayInstance.getLong(displayInstance.getColumnIndex("flngInstanceID")),
-                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionDetailID")),
+                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionID")),
                             displayInstance.getString(displayInstance.getColumnIndex("fstrSessionTitle"))));
                 } else if (result == 'T') {
                     todayList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
                             displayInstance.getLong(displayInstance.getColumnIndex("flngInstanceID")),
-                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionDetailID")),
+                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionID")),
                             displayInstance.getString(displayInstance.getColumnIndex("fstrSessionTitle"))));
                 } else if (result == 'S') {
                     standardList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
                             displayInstance.getLong(displayInstance.getColumnIndex("flngInstanceID")),
-                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionDetailID")),
+                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionID")),
                             displayInstance.getString(displayInstance.getColumnIndex("fstrSessionTitle"))));
                 } else if (result == 'U') {
                     upcomingList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
                             displayInstance.getLong(displayInstance.getColumnIndex("flngInstanceID")),
-                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionDetailID")),
+                            displayInstance.getLong(displayInstance.getColumnIndex("flngSessionID")),
                             displayInstance.getString(displayInstance.getColumnIndex("fstrSessionTitle"))));
                 }
             }

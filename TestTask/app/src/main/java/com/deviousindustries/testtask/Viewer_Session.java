@@ -127,7 +127,7 @@ public class Viewer_Session extends AppCompatActivity {
             mSessionList.Clear();
             while (cursor.moveToNext()){
                 Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
-                mSessionList.Add(tempTime.getSessionTitle(),
+                mSessionList.Add(tempTime.mstrTitle,
                         tempTime.mlngTimeID);
             }
             mSessionList.mAdapter.notifyDataSetChanged();

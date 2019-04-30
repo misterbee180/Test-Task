@@ -55,7 +55,7 @@ public class Details_Session extends AppCompatActivity{
     }
 
     private void LoadSession() {
-        setSessionTitle(mTime.getSessionTitle());
+        setSessionTitle(mTime.mstrTitle);
         timeKeeper.loadTimeKeeper(mTime);
 
         try(Cursor tblTask = mTime.getTasks()){
@@ -80,9 +80,7 @@ public class Details_Session extends AppCompatActivity{
                     mTime.mintTimeframe,
                     mTime.mlngTimeframeID,
                     true,
-                    mTime.mlngSessionDetailID,
-                    getSessionTitle(),
-                    "");
+                    getSessionTitle());
             mTime.refreshInstances();
 
             try(Cursor oneOffs = mTime.findOneOffs()) {

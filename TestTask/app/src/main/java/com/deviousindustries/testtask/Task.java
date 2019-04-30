@@ -114,14 +114,7 @@ public class Task {
                                   boolean pblnFromTime,
                                   boolean pblnToTime,
                                   boolean pblnToDate,
-                                  long plngSessionDetailID){
-
-        //replace -1 w/ proper session detail id if one off
-        long lngSessionDetailID = plngSessionDetailID;
-        if(mlngOneOff != -1){
-            Time tempTime = new Time(mlngOneOff);
-            lngSessionDetailID = tempTime.mlngSessionDetailID;
-        }
+                                  long plngSessionID){
 
         return new TaskInstance(-1,
                 mlngTaskID,
@@ -131,7 +124,7 @@ public class Task {
                 pblnFromTime,
                 pblnToTime,
                 pblnToDate,
-                lngSessionDetailID);
+                mlngOneOff == -1 ? plngSessionID : mlngOneOff); //replace -1 w/ proper session detail id if one off
     }
 
     void updateTaskDetails(String pstrTitle,

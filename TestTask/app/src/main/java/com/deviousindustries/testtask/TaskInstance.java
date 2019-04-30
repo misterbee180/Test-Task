@@ -18,7 +18,7 @@ class TaskInstance {
     private long mdtmSystemCompleted;
     private long mdtmDeleted;
     private long mdtmEdited;
-    private long mlngSessionDetailID;
+    private long mlngSessionID;
 
     private TaskInstance(){
         mlngInstanceID = -1;
@@ -36,7 +36,7 @@ class TaskInstance {
         mdtmSystemCompleted = -1;
         mdtmDeleted = -1;
         mdtmEdited = -1;
-        mlngSessionDetailID = -1;
+        mlngSessionID = -1;
     }
 
     TaskInstance(long plngInstanceID){
@@ -59,7 +59,7 @@ class TaskInstance {
                 mdtmSystemCompleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmSystemCompleted"));
                 mdtmDeleted = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmDeleted"));
                 mdtmEdited = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("fdtmEdited"));
-                mlngSessionDetailID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngSessionDetailID"));
+                mlngSessionID = tblTaskInstance.getLong(tblTaskInstance.getColumnIndex("flngSessionID"));
             }
         }
     }
@@ -72,7 +72,7 @@ class TaskInstance {
                  Boolean pblnFromTime,
                  Boolean pblnToTime,
                  boolean pblnToDate,
-                 long plngSessionDetailID){
+                 long plngSessionID){
         this();
         mlngInstanceID = plngInstanceID;
         mlngTaskID = plngTaskID;
@@ -87,15 +87,15 @@ class TaskInstance {
         } else {
             mdtmEdited = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
         }
-        mlngSessionDetailID = plngSessionDetailID;
+        mlngSessionID = plngSessionID;
 
         createTaskInstance();
     }
 
     private void createTaskInstance(){
         mlngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionDetailID"},
-                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited, mlngSessionDetailID},
+                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionID"},
+                new Object[] {mlngTaskID, mlngTaskDetailID, mdtmFrom, mdtmTo, mblnFromTime, mblnToTime, mblnToDate, mdtmCreated, mdtmEdited, mlngSessionID},
                 "flngInstanceID",
                 mlngInstanceID);
     }
