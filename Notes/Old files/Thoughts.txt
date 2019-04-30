@@ -1,0 +1,92 @@
+When a note repeats when the scheduled day for the task comes up again you want to regenerate the task. So starting with daily notes you want to remove and re-add the notes every day. You'll probably want a button that simulates this day change.
+
+Todo: create button that simulated day change
+
+You want to be able to edit a note and a session. I want a quick view of session specific information
+
+Todo: create a way to edit note and session
+Todo: create viewer for session details
+
+When you click a task it should confirm that you want to complete the task. "Are you sure you want to complete: [Task Name]"
+
+In the long run I think I want two views. One view contains 2 sections. Urgent tasks and other tasks. Urgent tasks are tasks that need to be completed w/i the next hour (configurable). The other tasks are tasks that are not completed. This section will exclude urgent tasks so that it doesn't double show the tasks. The second view will be all tasks you've created.
+
+Todo: Update main list to include the two views (urgent and other).
+Todo: Make an all tasks view
+Todo: Have a settings page. Settings page will allow you to turn on debug mode to simulate day and hour changes. It'll also contain the urgent window.
+
+Urgent will not occur for tasks w/o a time. If the task has a time then the urgent window will populate with it when it reaches the urgent window. Otherwise the task is just a regular task and will not become urgent.
+
+WE need to keep track of the tme. Do we? If we simply regerate the tasks every time an action happens then we could check if a task was generated the same day as the current day. We can, on create (for now), store a value to the database indicating system settings. Ideally when the last time tasks were generated. We do task generation on a daily basis (might need to be adjusted for items added that day). We can create a new function that creates new tasks and does the current task loading that's going on. It will only create new tasks if the date of task creation is different than the current day. It'll then save the updated date to the database to be checked next time.
+
+How will task creation work? We have all the time instances saved. We could retrieve every time instance that has repeat set for it. This will include session times and non session times. We then need to evaluate that time to determine if anything needs to be created for it. For all time frames we need to determine when the last time that time frame was evaluated. Maybe instead of having that as another table we just have the date storred on each time row. If the time is not equal to the current date then we evaluate whether that tasks needs to be created. Regardless of how evaluation turns out the date on the time will be updated to reflect that it has been evaluated. If the time repeater is weekly we determine the days associated with that task. If today is one of the selected days then the system will create that task. Lets not worry about month for now or bi-weekly.
+
+What about tasks that were created the previous day? I think we need to identify the task id a created task is associated with and determine if there exists an uncompleted instance of that task. If so we need to probably "complete" it in a way that identifies that it was done by the system and not by the user. Maybe fblnSystemComplete. This way we can only have one instance of that task active and also keep track of a person's ability to do what they're supposed to do. It also brings up an interesting fact that we'll need some sort of taskInstance table. A task is categorized by the defining features of it. A task instance is the manifestation of that task. Each task instance will have it's own task instance id but might be associated with a task Id used by other task instances. The idea of an instance makes sense because if you create a task that needs to occur on wednesday but it's monday you wouldn't expect it to appear as a task. (This could eventually become an option). 
+
+I believe the idea was that we'd evaluate the time activities associated with an item and determine if the item needed to be added to the list. A one off task doesn't have time associated with it. So if you grab all time activities (currently) you'll never find this record. Maybe we gotta convert a time detail for all one off ones too and have a boolean to indicate a one off entry. Then when we grab every time record even the one off ones will have a record that can be grabbed and used for the creation of the task instance. Another option would be to simply create a task instance for records w/o time. The problem with this though is that it's not able to be used in conjunction with normal operation. 
+
+However normal operation might not work now that I'm thinking about it. If you're currently in a session time frame and you create a task that uses that session we need to be able to create that task instance, even though the other task instances have already been created. It seems that at the time that a task is created standard practice should be to determine if the task needs to be created. So one off tasks would always evaluate to true. Tasks that have a time but no repetiton details would also always evaluate to true. Things that do have repetition details will need to run through evaluation and if true than it will have a one off task created. The process of evaluating the time details then only occurs once on creation of the object. If an item is created later for the time or session it will be evaluated and created if necessary seperate from this process.
+
+One thing I'm thinking about now is the ability to schedule a task for a later day. Say I don't want this to repeat but I want that two days from now between these two hours I'm reminded that I need to do something. I could see creating the task, setting the time, and setting the day of the week... or specific date. See now this is getting a little more complex. Because do we allow them to set up things weeks from now? I don't think that makes sense. I think we should keep this simple for now. So the option to set something up for later in the week will not exist at this time.  
+
+We did it. Now we're working on updating the original view to be a more prioritized view. What defines priority? Figured out. Now I jsut got to implement it.
+
+However I'm noticing that I might want to reevaluate how I go about storing the time. The time being stored as hours minutes and seconds is really kinda obnoxious and makes for a really teadious endeavor getting out of the database. Simply storing a date in miliseconds would probably be good enough. I could then just convert the date back to a real time and then and remove the actual date associated with it and I'd be good.
+
+TODO: Change how dates are stored in the system
+
+This is all done. Now I want to start on the idea of adding task events. In my head a task event is a list of tasks associated with a specific event that doesn't happen on any particular day of the week or in any repeatable order. However the tasks associated with the event are repeatable. I.E. Packing for a trip. I believe what I want to do is make use of the current task screen by simply adding a list to the screen associated with that specific task event. I believe the prioirty items will always remain at the top. However you can add additional sections below that. The sections you add need to be able to be removed w/o too much of a hassle so I'm thinking each section could have a remove link somewhere that the user could push to remove the whole list. 
+
+How would they add this event? This could be a setting. Setting = "Start Event". This will take you to a event list viewer with the ability to add an event group if you want or to select an existing event. 
+
+Once all tasks w/i an event is complete, we can automatically complete the event instance and show a toast or something saying that the event: X has been completed.
+
+Right now I'm annoyed that I am creating a new database object for every activity I create. Fixed.
+
+For the list of tasks I want to select I want to select:
+All tasks that are associated with an active instance
+AND (OR) All tasks that are associated with a session
+AND (OR) All tasks that are associated with a time where there's a repeting element associated with it.
+
+So where am I now with this program? I have a working model that works pretty dam well. Ultimately what I need to know now is what is the app missing?
+What features does this app provide?
+- Task Priority
+- Task Repetition
+- Events
+
+Things one might think are missing are:
+- The ability to set tasks in the future
+
+Is there a need for future based apps? Aka a task you set for yourself in the distant future. In other words outside of the current week? Right now? No, not from my perspective.
+
+What about setting a task to have more than just a day timeframe? For instance I need to do this,... na... It seems like if you're not going to get a task done w/i a day what good is setting a priority on it?
+
+Maybe I need to set a do by date? This way I can create a task and if it's not done by then move it to the priority cue automatically? Eh... I don't know if it's that important of a feature.
+
+I think the next few important improvments to this app will be:
+- Widget for the homescreen
+- Future Tasks
+- Voice support for adding tasks on the fly
+- Group Support - Signing up for a group to be a part of
+
+How will group support work?
+I thought I had already written this down somewhere but I guess I don't currently have it. So the intention is to allow for groups to download this app. I'm just going to talk out loud right now because I'm not 100% on how this will work. But for starters it could have 1 person be the manager of the group. This person basically adds the tasks.
+- The people in this role will be:
+Parents
+Managers
+Groups
+So if we start w/ parents the kind of tasks they'd want to set up on this app is probably mostly chores. What they'd want is the ability to see that a task is being done by a certain time. The parent can create repeting tasks (clean out room for instance) and say that the task is to be triggered every saturday. The parent can then say that the task should be assigned to his kid(s) when triggered. So every saturday the kids will automatically be assigned the task as if they themselves had created it. It will also show all other tasks the kid(s) have created themselves the same way. 
+* Do we allow for these tasks to have a higher priority (show up earlier in the priority list) than other tasks?
+Once the kids do the task, they complete the task like they would any other task. The father, when checking the group, will see that the tasks have been completed as well as when they were completed. One off tasks can be assigned as well using this tool.
+* One neat thing this could do is if you're assigned a task it could alert you. This way if you're in the middle of something else you can see that the task has been assigned to you. Maybe...
+This tool can be used to work together on something. Say for instance you and your spouce have many things to do in a day. You could decide what all needs to be done then assign what ever tasks each of you decides needs to be done to your own account. This way there's a single place to manage the work and you get to work the tasks the same way you are used to doing it already.
+* You might even be able to have different task groups w/i your manager account. This way you can have multiple groups of tasks being set up and you can assign items out to people from each of them.
+
+Future Tasks
+These will operate like regular tasks except they don't show up on the list of tasks until the start date. This way you can set a task in the future to remind you later. I think possibly in the future a priority until date would be useful but right off the bat I think how I want it to work is it's a priority the day the task is set for and otherwise it goes down to the normal queue. Simple for now.
+- When voice support works it could work something like "Set Future Task Confirm you recieved gift card on February 9. It will automatically create the future task with the task date of feb 9th.
+- Because the date has passed it should always choose to go to the next instance of the date
+- We could even support key phrases if we want this to be very advanced like tomrrow next week, next month, X months from now, etc.
+The biggest change that will be required for this is an alteration of how times are set. Maybe we supply a checkbox to set a future date so that instead of a time option we are presented with a date selector option.
+
+Since I'm adding a calendar to the mix I am thinking it might be worth a re-design of the viewer. Essentially I created a time keeper object to handle all the details associated with keeping track of time. However it only really keeps track of time and not really date's associated with the time. The main issue is that this tool not only uses time but it uses days of the week as a means of establishing dates. Really though the days of the week are essentially just a session repatition type of weekly/daily. Repition types would include: No Rep. These are one off tasks. The task can be a  Weekly w/ the option to select the days of the week and how often the task occurs

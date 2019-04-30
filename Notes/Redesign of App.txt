@@ -1,0 +1,73 @@
+New Re-design of task system to allow for upcoming and editing of task instances.
+
+Task
+These represents actions to do. A task itself is never completed. Instead instances of the task are completed and once no new instances will be created the task is consitered complete.
+
+A task has the following properties:
+- Task ID (Primary Key)
+- Task Type - Represents the type of task (standard, event, long term, etc.)
+- Task Type ID - (Foreign Key) 
+- Task Detail ID - Datatype representing title, description, and possibly other things.
+- Created Date
+- Removed Date - date that a task was removed
+- flngSessionID
+- fblnOneOff
+- flngTimeID
+
+A task detail has the following properties:
+- Task Detail ID (Primary Key)
+- Title
+- Description
+
+A Time element has the following properties:
+- Time ID (Primary Key)
+- Task ID (Foreign Key)
+- From Date
+- To Date
+- From Time Set
+- To Time Set
+- Repetition Type - Daily, Weekly, Monthly, Yearly
+- Occurrance - How often the repitition occurs   
+- Starting - When the occurrences start
+- Repitition ID
+- Upcoming Date - date that the task instance would generate to be added to an upcoming queue
+- Priority Date - date thet the task instance would generate to be added to a priority queue
+
+Task Generation
+- Task is requested to be created.
+- Transaction Begin
+- Task details created
+- Time details created
+- Task created 
+- Transaction End
+- Task instance generation occurs
+
+
+Task Instance
+These are the means for displaying of tasks 
+ 
+A task instance has the following properties:
+- Instance ID: Primary Key
+- Task ID: Associated Task
+- Task Detail ID
+- From Date
+- To Date
+- From Time Set
+- To Time Set
+- Created Date
+- Completed Date
+- System Completed Date - This is when the user has multiple repeats of a task instance and simply wants to complete them all. It's useful because it's not a real complete but more a get out of my face metric.
+- Deleted Date - This is for when the user specifically removes an instance. This is a form of complete but in the sense that the user did not complete the task and no longer needs / wants this displayed. 
+- Edited Date - Used to identify if the task instance was edited after generation.
+
+Task Instance Generation
+Begin Transaction
+Query runs to return tasks with upcoming or priority dates before the current date.
+A task instance will be created for each task returned.
+Evaluation dates calculation will occur for each task associated to created task instance.
+Task instance generation calls itself until no new tasks occur.
+End Transaction
+
+In the event of a task w/o time details a task instance will be generated right after task creation w/ the from and to dates being the day the task was generated. Details ID will initially be copied from the task. If edited new task details will be created and associated w/ task instance specifically. For events, task instances will also be created w/o time details and will be grouped w/ other instances tied to the event. 
+
+

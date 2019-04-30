@@ -1,0 +1,32 @@
+By allowing the provision of a from date we need to make the decision how instances of those tasks are created. Are they ONLY created when that date is reached? That would make sense. But that means any displaying of that task before that date would need to be done by displaying the task itself, not the task instance. But if this is how it's going to be then we really only need to evaluate the created date for all tasks w/ dates associated w/ them
+
+DAY FROM & TIME TO & FROM
+- if created today and between to and from time then Priority
+- if created today but not between time then Today
+- if X days before day then Standard --Harder without task instance
+- otherwise Standard
+
+DAY FROM ONLY
+- if created today then Today
+- if X days before day then Standard --Harder without task instance
+- otherwise Standard
+
+TIME TO & FROM
+- if between times then Priority
+- if not between times but created today then Today
+- if neither then Standard
+
+TIME FROM ONLY
+- if created today and on or after time then Priority
+- if created today but before from time then Today
+- otherwise Standard
+
+TIME TO ONLY
+- if created today and between to time and X time before then Priority --Questionable: Shouldn't it operate just like from? Why the difference?
+- if created today and not within time frame then Today
+- otherwise Standard
+
+
+The question of whether to show a task on the Today queue or not is based on whether the task instance was generated that day. Weekly tasks are generated per day. So are daily tasks. In theory we could keep that same logic and say monthly tasks are also evaluated and generated per day and so are yearly and and so we will retain the same logic. If the task instance was generated that day then it's marked as today. If it was not then it just gets added to the standard queue.
+
+Do we need to pass in a time? I don't think so because if we know that the task is associated with a repetitive event... No. Just because a task is associated w/ a repetitive event doesn't mean it was generated that day. In theory we evaluate the weekly tasks daily to determine if a new version of the task needs to be made but we don't cease the previous task. We don't cease the previous task because just cause it' wasn't done doesn't mean that it doesn't need to be done. That's the premise of this tool and why a calendar doesn't work. So i've added a created date to the instance table.

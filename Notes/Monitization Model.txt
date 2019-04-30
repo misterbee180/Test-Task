@@ -1,0 +1,24 @@
+How do i monitize test task?
+General advertisements
+Simply display advertisements on bottom of screen
+
+Targeted advertisements
+Using key words I can have various adds displayed when more appropriate. Birthdays for instance could offer gift suggestions
+
+Feemeium content
+I can provide only limited functionality. Enough to interest a buyer but not enough to be slightly annoying.
+Ideas:
+1) Only show 1 of many upcoming tasks
+2) Only allow for 1 session to be created
+3) Only allow for X repeating tasks to exist at once
+4) Limit long term item list to X items
+5) Limit long term items
+6) Limit to only 1 group
+7) Limit to how many items can be associated w/ a group
+
+Subscription service
+Offer the app for free for 2 months. The problem w/ this approach is the limiting of elements after becomes very tough. How would this limiting occur? Maybe something to implement after a userbase is established.
+
+Sell information
+Gather e-mail
+usernames and passwords

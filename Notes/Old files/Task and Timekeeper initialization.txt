@@ -1,0 +1,1 @@
+Currently timekeeper is used in a few different places. It's used in the session creator and it's used int the task creator. As such any time any sort of updated is done on a task or a session the timekeeper needs to understand the context

@@ -1,0 +1,35 @@
+CREATE TABLE tblTask_NEW (
+flngID INTEGER PRIMARY KEY,
+fstrTitle TEXT,
+fstrDescription TEXT,
+flngSessionID INTEGER,
+flngTimeID INTEGER);
+
+CREATE TABLE tblTaskInstance (
+flngID INTEGER PRIMARY KEY,
+flngTaskID INTEGER,
+fblnComplete INTEGER,
+fblnSystemComplete INTEGER);
+
+CREATE TABLE tblSession (
+flngID INTEGER PRIMARY KEY,
+fstrTitle TEXT,
+flngTimeID INTEGER);
+
+CREATE TABLE tblTime (
+flngID INTEGER PRIMARY KEY,
+flngFromHour INTEGER,
+flngFromMin INTEGER,
+fblnFromAM INTEGER,
+flngToHour INTEGER,
+flngToMin INTEGER,
+fblnToAM INTEGER,
+fstrRepeat TEXT,
+fblnMonday INTEGER,
+fblnTuesday INTEGER,
+fblnWednesday INTEGER,
+fblnThursday INTEGER,
+fblnFriday INTEGER,
+fblnSaturday INTEGER,
+fblnSunday INTEGER,
+fdtmEvaluated INTEGER);
