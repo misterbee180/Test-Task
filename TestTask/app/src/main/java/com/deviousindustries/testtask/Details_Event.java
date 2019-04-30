@@ -18,8 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-//Todo: fix positioning of confirm button to be at bottom of screen.
 public class Details_Event extends AppCompatActivity {
 
     ArrayListContainer mEventTasks = new ArrayListContainer();
