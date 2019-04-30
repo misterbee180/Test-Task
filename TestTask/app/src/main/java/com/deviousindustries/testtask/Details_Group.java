@@ -89,14 +89,8 @@ public class Details_Group extends AppCompatActivity {
             setGroupTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
         }
 
-        String rawString = "SELECT flngTaskID FROM tblTask t\n" +
-                "JOIN tblTime tm ON tm.flngTimeID = t.flngTimeID\n" +
-                "WHERE t.fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = -1\n" +
-                "AND (tm.flngRepetition > 0 \n" +
-                "OR EXISTS (SELECT 1 FROM tblTaskInstance ti\n" +
-                "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "and ti.fdtmCompleted = -1 and ti.fdtmSystemCompleted = -1 and ti.fdtmDeleted = -1))\n";
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawString, new String[] {mlngGroupId.toString()});
+        //Todo: fix to only show if either repeating or there's not a completed task instance
+        cursor = DatabaseAccess.getRecordsFromTable("tblTask","fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = -1", new Object[] {mlngGroupId});
         mGroupTask.Clear();
         while (cursor.moveToNext()){
             Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
