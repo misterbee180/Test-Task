@@ -1239,20 +1239,22 @@ public class DatabaseAccess {
         }
 
         private void upgradeToV21(SQLiteDatabase db) throws Exception{
-            addColumn(db,"tblTime","fstrTitle",99, true, "''");
+            boolean blnFail = false;
 
+            addColumn(db,"tblTime","fstrTitle",99, true, "''");
+            addColumn(db,"tblTaskInstance","flngSessionID",99, true, "-1");
             Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1",null);
 
             while(tblTime.moveToNext()){
                 TaskDetail td = new TaskDetail(tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")));
 
                 //Replace time session IDs w/ Titles
-                DatabaseAccess.updateRecordFromTable("tblTime","fstrTimeID",
+                DatabaseAccess.updateRecordFromTable("tblTime","flngTimeID",
                         tblTime.getLong(tblTime.getColumnIndex("flngTimeID")),
                         new String[]{"fstrTitle"}, new Object[]{td.mstrTitle});
 
                 //Replace instance session ID's w/ Time ID's
-                DatabaseAccess.updateRecordFromTable("tblTaskInstance","fstrSessionDetailID",
+                DatabaseAccess.updateRecordFromTable("tblTaskInstance","flngSessionDetailID",
                         tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")),
                         new String[]{"flngSessionID"}, new Object[]{tblTime.getLong(tblTime.getColumnIndex("flngTimeID"))});
 
@@ -1263,7 +1265,11 @@ public class DatabaseAccess {
             tblTime.close();
 
             deleteColumn(db, "tblTime", "flngSessionDetailID");
-            updateColumn(db, "tblTaskInstance", "flngSessionDetailID", "flngSessionID", true, "-1", false);
+            deleteColumn(db, "tblTaskInstance", "flngSessionDetailID");
+
+            if(blnFail){
+                throw new Exception("Exit and Rollback Debug");
+            }
         }
 
         private void addColumn(SQLiteDatabase db ,
