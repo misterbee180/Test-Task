@@ -10,15 +10,21 @@ What does your app do?
 
 What more could you add
 - Server based storage
-- Authentication Consuming REST / SOAP...
+- Consuming REST / SOAP
 - Advertisement inclusion
 - iOS development
 - full app store publishing
-- Push notifications
-- User interface design
-- Material Design
+- User Experience design / Material Design
+- Push notifications / Reoccurring polling 
 - Threading and memory management
+- Kotlin experience 
 
 The prior items are found under comming requests in android programming jobs. The goal is to incorporate them into the design of testtask so that the application is better and so that you can add it to your resume.
 
 The plan will be to generate simple stand alone versions of the concepts and then include them into the system.
+
+Consuming REST / SOAP
+- This involves using REST APIs to either get post update or delete data on a server
+
+Published APP
+- My current plan is to fix the to button and then to publish the app to the market.
