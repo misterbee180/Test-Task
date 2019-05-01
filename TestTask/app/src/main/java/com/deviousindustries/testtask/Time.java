@@ -2,6 +2,7 @@ package com.deviousindustries.testtask;
 
 import android.database.Cursor;
 
+import java.time.Duration;
 import java.util.Calendar;
 
 //Todo: remove session detail id and replace w/ title column. No reason to have task detail if record isn't copied over and over to other places
@@ -235,6 +236,11 @@ public class Time {
         Calendar tempUp = Viewer_Tasklist.getCalendar(mdtmFrom);
         tempUp.add(Calendar.DAY_OF_YEAR, -1 * upcomingRange);
         pGen.mdtmUpcoming = tempUp.getTimeInMillis();
+
+        Calendar tempFrom = Viewer_Tasklist.getCalendar(mdtmFrom);
+        Calendar tempTo = Viewer_Tasklist.getCalendar(mdtmTo);
+        int diff = (int)Duration.between(tempFrom.toInstant(), tempTo.toInstant()).toDays();
+        pGen.mintThru = diff > 0 ? diff : 0;
     }
 
     private void evaluateDayGeneration(int upcomingRange,
