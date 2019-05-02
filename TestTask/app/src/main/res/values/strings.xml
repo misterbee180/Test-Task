@@ -22,18 +22,17 @@
 
 
     <!--Activity Titles-->
-    <string name="title_activity_session_viewer">Session List</string>
-    <string name="title_activity_group_viewer">Group List</string>
-    <string name="title_activity_task_viewer">Tasks List</string>
-    <string name="title_activity_viewer__events">Event List</string>
-    <string name="title_activity_viewer__LongTerm">Long Term List</string>
-    <string name="title_activity_task__event">Event</string>
-    <string name="title_activity_task_group">Group</string>
-    <string name="title_activity_task_task">Task</string>
-    <string name="title_activity_task_session">Session</string>
-    <string name="title_activity_viewer__groups">Task Groups</string>
-    <string name="title_activity_viewer__long_term">Long Term Tasks</string>
-    <string name="title_activity_task_long_term">Long Term Task List</string>
+    <string name="title_activity_viewer_session">Session List</string>
+    <string name="title_activity_viewer_group">Group List</string>
+    <string name="title_activity_viewer_task">Tasks List</string>
+    <string name="title_activity_viewer_events">Event List</string>
+    <string name="title_activity_viewer_long_term">Long Term List</string>
+    <string name="title_activity_details_event">Event</string>
+    <string name="title_activity_details_group">Group</string>
+    <string name="title_activity_details_task">Task</string>
+    <string name="title_activity_details_session">Session</string>
+    <string name="title_activity_details_long_term">Long Term Task</string>
+    <string name="title_activity_details_instance">Task Instance</string>
 
     <string name="OneOffSession">One off Session</string>
     <string name="TextBox_Task">Enter a Task</string>

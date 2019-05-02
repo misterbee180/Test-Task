@@ -23,7 +23,8 @@ public class Details_Task extends AppCompatActivity {
     long mlngEventID;
     long mlngLongTermID;
     long mlngGroupID;
-    boolean mblnLoaded;
+    boolean mblnSessionOnLoad; //DO NOT CONFUSE THIS with an indicator of having been loaded. Simply is used to make sure only certain things
+    //happen during a load and not other things. Is set back to false after load. USE mTask.mlngTaskID <> -1
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
@@ -46,7 +47,7 @@ public class Details_Task extends AppCompatActivity {
         mlngEventID = -1;
         mlngLongTermID = -1;
         mlngGroupID = -1;
-        mblnLoaded = false;
+        mblnSessionOnLoad = false;
 
 //        Cursor c = DatabaseAccess.getRecordsFromTable("tblLongTerm");
 //        c.getLong(15);
@@ -74,7 +75,7 @@ public class Details_Task extends AppCompatActivity {
         if (extras != null){
             mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
             if(mTask.mlngTaskID != -1){
-                mblnLoaded = true;
+                mblnSessionOnLoad = true;
                 //Get all data from the task and apply it to the control
                 setSession(mTask.mlngTimeID);
                 setOneOff(mTask.mlngOneOff);
@@ -178,20 +179,20 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean wasSessionSessionReplaced(){
-        return mblnLoaded &&
+        return mTask.mlngTaskID != -1 &&
                 isSessionSet() &&
                 mTime.mblnSession &&
                 (getSession() != mTime.mlngTimeID);
     }
 
     public boolean wasSessionTimeReplaced(){
-        return mblnLoaded &&
+        return mTask.mlngTaskID != -1 &&
                 !isSessionSet() &&
                 mTime.mblnSession;
     }
 
     public boolean wasTimeSessionReplaced(){
-        return mblnLoaded &&
+        return mTask.mlngTaskID != -1 &&
                 isSessionSet() &&
                 !mTime.mblnSession;
     }
@@ -226,7 +227,7 @@ public class Details_Task extends AppCompatActivity {
             (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
             (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
             timeKeeper.setMode(4);
-        } else if (mlngGroupID != -1 && !mblnLoaded){ //Group
+        } else if (mlngGroupID != -1 && mTask.mlngTaskID == -1){ //Group
             (findViewById(R.id.spnTaskGroupSel)).setEnabled(false);
         }
         (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
@@ -358,8 +359,8 @@ public class Details_Task extends AppCompatActivity {
     AdapterView.OnItemSelectedListener sessionListener = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            if(mblnLoaded && mSessionList.getID(position) != mTime.mlngTimeID){
-                mblnLoaded = false;
+            if(mblnSessionOnLoad && mSessionList.getID(position) != mTime.mlngTimeID){
+                mblnSessionOnLoad = false;
             }
             if(mSessionList.getID(position) != -1){
                 timeKeeper.resetTimeKeeper();
@@ -368,7 +369,7 @@ public class Details_Task extends AppCompatActivity {
                 timeKeeper.setActiveTimekeeper(false);
                 //Provide one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.VISIBLE);
-                if(!mblnLoaded)setOneOff(mSessionList.getID(position));
+                if(!mblnSessionOnLoad)setOneOff(mSessionList.getID(position));
             } else {
                 timeKeeper.resetTimeKeeper();
                 timeKeeper.loadTimeKeeper(mTime);
@@ -376,7 +377,7 @@ public class Details_Task extends AppCompatActivity {
                 timeKeeper.setActiveTimekeeper(true);
                 //Remove one off opportunity
                 (findViewById(R.id.chkSessOneOff)).setVisibility(View.INVISIBLE);
-                if(!mblnLoaded)setOneOff(mSessionList.getID(position));
+                if(!mblnSessionOnLoad)setOneOff(mSessionList.getID(position));
             }
         }
 

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -22,6 +23,8 @@ public class Details_Group extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_group);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

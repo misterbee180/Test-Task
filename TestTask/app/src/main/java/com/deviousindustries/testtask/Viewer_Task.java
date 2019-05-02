@@ -132,7 +132,8 @@ public class Viewer_Task extends AppCompatActivity {
     }
 
     public void setTaskList(){
-        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, tm.fstrTitle as fstrSession\n" +
+        String rawGetTasks = "SELECT t.*,td.fstrTitle, td.fstrDescription, tm.fdtmCreated, g.fstrTitle as fstrGroup, " +
+                "CASE WHEN tm.fstrTitle = '' THEN 'No Session' ELSE tm.fstrTitle END as fstrSession\n" +
                 "FROM tblTask t\n" +
                 "JOIN tblTaskDetail td\n" +
                 "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
@@ -142,10 +143,10 @@ public class Viewer_Task extends AppCompatActivity {
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
                 "WHERE (tm.fblnComplete = 0 \n" +
-                "\tOR NOT EXISTS (SELECT 1\n" +
-                "\t\tFROM tblTaskInstance ti\n" +
-                "\t\tWHERE ti.flngTaskID = t.flngTaskID\n" +
-                "\t\tAND (ti.fdtmCompleted <> -1 OR ti.fdtmDeleted <> -1)))\n" +
+                "OR EXISTS (SELECT 1\n" +
+                "FROM tblTaskInstance ti\n" +
+                "WHERE ti.flngTaskID = t.flngTaskID\n" +
+                "AND (ti.fdtmCompleted = -1 AND ti.fdtmSystemCompleted = -1 AND ti.fdtmDeleted = -1)))\n" +
                 "AND t.fdtmDeleted = -1\n";
 
         switch(mSorting) {
@@ -159,7 +160,7 @@ public class Viewer_Task extends AppCompatActivity {
                 rawGetTasks += "ORDER BY ifNULL(g.fstrTitle,\"z\"), td.fstrTitle";
                 break;
             case Session:
-                rawGetTasks += "ORDER BY ifNULL(s.fstrTitle,\"z\"), td.fstrTitle";
+                rawGetTasks += "ORDER BY ifNULL(tm.fstrTitle,\"z\"), td.fstrTitle";
                 break;
 //            case Group:
 //                rawGetTasks += "ORDER BY g.fstrTitle, t.fstrTitle";
