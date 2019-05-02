@@ -381,8 +381,22 @@ public class Viewer_Tasklist extends AppCompatActivity {
         ArrayList<taskInstances> todayList = new ArrayList<>();
         ArrayList<taskInstances> standardList = new ArrayList<>();
         ArrayList<taskInstances> upcomingList = new ArrayList<>();
-        
-        try(Cursor displayInstance = DatabaseAccess.getTaskInstancesForDisplay()){
+
+        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
+                "FROM tblTaskInstance i \n" +
+                "JOIN tblTaskDetail td \n" +
+                "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
+                "JOIN tblTask t \n" +
+                "ON t.flngTaskID = i.flngTaskID\n" +
+                "AND t.fintTaskType <> 1\n" + //Event
+                "LEFT JOIN tblTime tm\n" +
+                "ON tm.flngTimeID = i.flngSessionID\n" +
+                "WHERE i.fdtmCompleted = -1 \n" +
+                "AND i.fdtmSystemCompleted = -1 \n" +
+                "AND i.fdtmDeleted = -1 \n" +
+                //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
+                "ORDER BY i.flngSessionID, i.flngTaskID";
+        try(Cursor displayInstance = DatabaseAccess.mDatabase.rawQuery(rawQuery,null)){
             while(displayInstance.moveToNext()){
                 char result = determineListForTask(displayInstance.getLong(displayInstance.getColumnIndex("fdtmFrom")),
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmTo")),

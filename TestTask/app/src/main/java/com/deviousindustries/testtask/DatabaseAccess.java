@@ -1746,30 +1746,6 @@ public class DatabaseAccess {
     //endregion
 
     //region SPECIFIC FUNCTIONS
-    public static void resetTaskEval(){
-        ContentValues updates = new ContentValues();
-        updates.put("fdtmEvaluated",1);
-        mDatabase.update("tblTime", updates, "", null);
-    }
-
-    public static Cursor getTaskInstancesForDisplay(){
-        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
-                "FROM tblTaskInstance i \n" +
-                "JOIN tblTaskDetail td \n" +
-                "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
-                "JOIN tblTask t \n" +
-                "ON t.flngTaskID = i.flngTaskID\n" +
-                "AND t.fintTaskType <> 1\n" + //Event
-                "LEFT JOIN tblTime tm\n" +
-                "ON tm.flngTimeID = i.flngSessionID\n" +
-                "WHERE i.fdtmCompleted = -1 \n" +
-                "AND i.fdtmSystemCompleted = -1 \n" +
-                "AND i.fdtmDeleted = -1 \n" +
-                //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
-                "ORDER BY i.flngSessionID, i.flngTaskID";
-
-        return mDatabase.rawQuery(rawQuery,null);
-    }
 
     public static Cursor retrieveMostRecentTaskInstanceFromTask(Long plngTaskId){
         //Returns the most recent task instance by created date
@@ -1792,8 +1768,7 @@ public class DatabaseAccess {
         String selection = "flngTaskID = ? " +
                 "AND fdtmCompleted = -1 " +
                 "and fdtmSystemCompleted = -1 " +
-                "and fdtmDeleted = -1 " +
-                "and fdtmEdited = -1";
+                "and fdtmDeleted = -1 ";
         String[] selectionArgs = {Long.toString(plngTaskId)};
 
         return mDatabase.query("tblTaskInstance",
@@ -1803,38 +1778,6 @@ public class DatabaseAccess {
                 null,
                 null,
                 null);
-    }
-
-    public static Cursor retrieveTasksAssociatedWithSession(Long plngSessionID){
-        String selection = "flngSessionID = ?";
-        String[] selectionArgs = {Long.toString(plngSessionID)};
-
-        return mDatabase.query("tblTask",
-                null,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null);
-    }
-
-    public static void deleteTaskInstances(Long plngTaskID){
-        String selection = "flngTaskID == ?";
-        String[] selectionArgs = {Long.toString(plngTaskID)};
-
-        Cursor curInstances= mDatabase.query("tblTaskInstance",
-                null,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null);
-
-        while (curInstances.moveToNext()){
-            deleteRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    curInstances.getLong(curInstances.getColumnIndex("flngInstanceID")));
-        }
     }
 
     public static Cursor retrieveEventTaskInstances(){
@@ -1883,21 +1826,8 @@ public class DatabaseAccess {
                 null);
     }
 
-    public static Cursor retrieveTasksAssociatedWithEvent(Long plngEventId){
-        String selection = "flngEventID = ?";
-        String[] selectionArgs = {Long.toString(plngEventId)};
-
-        return mDatabase.query("tblTask",
-                null,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null);
-    }
-
     public static Cursor retrieveTasksAssociatedWithLongTerm(Long plngLongTermId){
-        String selection = "flngTaskTypeID = ? and fintTaskType = 2";
+        String selection = "flngTaskTypeID = ? and fintTaskType = 2 AND fdtmDeleted = -1";
         String[] selectionArgs = {Long.toString(plngLongTermId)};
 
         return mDatabase.query("tblTask",
@@ -1907,57 +1837,6 @@ public class DatabaseAccess {
                 null,
                 null,
                 null);
-    }
-
-    public static long generateTaskInstance(long plngTaskID,
-                                            long plngFromMili,
-                                            long plngToMili,
-                                            boolean pblnFromTimeSet,
-                                            boolean pblnToTimeSet,
-                                            boolean pblnComplete,
-                                            boolean pblnSystemComplete,
-                                            Context pContext){
-        //complete any currently active task instance associated with Task ID
-        Cursor taskInstance = DatabaseAccess.retrieveActiveTaskInstanceFromTask(plngTaskID);
-        while (taskInstance.moveToNext()){
-            DatabaseAccess.updateRecordFromTable("tblTaskInstance",
-                    "flngInstanceID",
-                    taskInstance.getInt(taskInstance.getColumnIndex("flngInstanceID")),
-                    new String[]{"fblnSystemComplete"},
-                    new Object[]{true});
-        }
-
-        //Create time instance
-        String[] arrColumns;
-        Object[] arrValues;
-        arrColumns = new String[]{"fdtmFrom","fdtmTo","fblnFromTimeSet","fblnToTimeSet","flngDayID","flngWeekID","flngMonthID","flngYearID","flngRepetition","fdtmEvaluated","fdtmCreated"};
-        arrValues = new Object[]{plngFromMili,
-                plngToMili,
-                pblnFromTimeSet,
-                pblnToTimeSet,
-                (long)-1,
-                (long)-1,
-                (long)-1,
-                (long)-1,
-                (long)0,
-                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
-                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()};
-        long lngTimeID = DatabaseAccess.addRecordToTable("tblTime",
-                arrColumns,
-                arrValues);
-
-        //Create task instance
-        return DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[]{"flngTaskID",
-                        "fblnComplete",
-                        "fblnSystemComplete",
-                        "fdtmCreated",
-                        "flngTimeID"},
-                new Object[]{plngTaskID,
-                        pblnComplete,
-                        pblnSystemComplete,
-                        Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
-                        lngTimeID});
     }
     //endregion
 }

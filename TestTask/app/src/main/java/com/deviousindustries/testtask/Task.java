@@ -98,10 +98,13 @@ public class Task {
 
             finishActiveInstances(3);
 
-            Time tempTime = new Time(mlngTimeID);
-            if(tempTime.mlngRepetition == 0){
-                tempTime.completeTime();
+            if(mlngTimeID != -1){ //For events and scenarios where there's no time associated to task
+                Time tempTime = new Time(mlngTimeID);
+                if(tempTime.mblnSession == false){
+                    tempTime.deleteTime();
+                }
             }
+
             DatabaseAccess.mDatabase.setTransactionSuccessful();
         } catch (Exception e){
             e.printStackTrace();

@@ -260,7 +260,7 @@ public class Details_Event extends AppCompatActivity {
             builder.setMessage("Delete Event? This will also delete all tasks associated with event.")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            deleteEvent(tmpEventId);
+                            ((Details_Event)getActivity()).deleteEvent(tmpEventId);
                             getActivity().setResult(RESULT_OK);
                             getActivity().finish();
                         }
@@ -284,7 +284,7 @@ public class Details_Event extends AppCompatActivity {
             builder.setMessage("Clear Event")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            clearEvent(tmpEventId);
+                            ((Details_Event)getActivity()).clearEvent(tmpEventId);
                             ((Details_Event)getActivity()).retrieveEventTasks();
                         }
                     })
@@ -298,27 +298,19 @@ public class Details_Event extends AppCompatActivity {
         }
     }
 
-    public static void deleteEvent(Long plngEventId){
+    public void deleteEvent(Long plngEventId){
         DatabaseAccess.deleteRecordFromTable("tblEvent",
                 "flngEventID",
                 plngEventId);
 
-        Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithEvent(plngEventId);
-        while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-        }
+        clearEvent(plngEventId);
     }
 
-    public static void clearEvent(Long plngEventId){
-        Cursor cursor = DatabaseAccess.retrieveTasksAssociatedWithEvent(plngEventId);
+    public void clearEvent(Long plngEventId){
+        Cursor cursor = DatabaseAccess.retrieveEventTasksFromEvent(plngEventId);
         while(cursor.moveToNext()){
-            DatabaseAccess.deleteRecordFromTable("tblTask",
-                    "flngTaskID",
-                    cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            DatabaseAccess.deleteTaskInstances(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
+            tempTask.deleteTask();
         }
     }
 }
