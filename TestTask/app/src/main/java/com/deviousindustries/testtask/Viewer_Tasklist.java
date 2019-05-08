@@ -1,11 +1,14 @@
 package com.deviousindustries.testtask;
 
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -41,6 +44,8 @@ public class Viewer_Tasklist extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        createNotificationChannel();
+
 //        Bundle extras = getIntent().getExtras();
 //        if (extras != null){
 //            Bundle bundle = new Bundle();
@@ -62,17 +67,13 @@ public class Viewer_Tasklist extends AppCompatActivity {
         });
 
         //This sets up static classes and other details for the entire program.
-        initializeApplication();
+        DatabaseAccess.setContext(this);
 
         //This sets up member variable and other details specific to this activity.
         mDisplayListView = findViewById(R.id.lsvDisplayList);
     }
 
-    private void initializeApplication() {
-        DatabaseAccess.setContext(this);
-    }
-
-
+    //region Listers
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long arg3) {
@@ -109,7 +110,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
             return true;
         }
     };
-//
+    //endregion
+
+    //region Fragments
     public static class CompleteInstanceConfirmationFragment extends DialogFragment {
         @NonNull
         @Override
@@ -185,13 +188,23 @@ public class Viewer_Tasklist extends AppCompatActivity {
             return builder.create();
         }
     }
+    //endregion
 
     @Override
     protected void onResume(){
         try{
             super.onResume();
-            generateTaskInstances();
+            if(mPrefs.getLong("general_last_sync",-1) == -1){
+                //THIS WILL RUN LITERALLY ONCE (the first time the applciation runs after this update). It should populate today's date and then never run again.
+                //This is intended to set up the first alarm necessary to fire off background tasks to later create notifications.
+                Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+                intent.setAction(Intent.ACTION_BOOT_COMPLETED);
+                AlarmReceiver.generateAlert(getApplicationContext(), intent, Calendar.getInstance().getTimeInMillis());
+            } else {
+                generateTaskInstances();
+            }
             loadTasksFromDatabase();
+
         }catch(Exception e){
             e.printStackTrace();
             setResult(RESULT_CANCELED);
@@ -275,7 +288,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
     //endregion
 
-    private void generateTaskInstances() {
+    public static void generateTaskInstances() {
         DatabaseAccess.mDatabase.beginTransaction();
         
         try{
@@ -309,7 +322,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         DatabaseAccess.mDatabase.endTransaction();
     }
 
-    public Cursor getValidGenerationPoints(){
+    public static Cursor getValidGenerationPoints(){
 
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
         String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();
@@ -322,6 +335,20 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 null,
                 null,
                 null);
+    }
+
+    public void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+
+        //Should probably be moved to the Alarm Receiver class so that it always has the channel generated. For purposes
+        //of demo this is fine.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("STANDARD", "GENERAL", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("General alerts");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     /** Called when the user taps the Send button */

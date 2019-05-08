@@ -67,5 +67,5 @@
             android:label="@string/title_activity_details_group"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 </manifest>

@@ -27,7 +27,6 @@ public class DatabaseAccess {
             super(context, "TaskDatabase.db", null, 21);
         }
 
-        //region TABLE CREATE SCRIPTS
         private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , flngTaskDetailID INTEGER NOT NULL DEFAULT -1, " +
                 "flngTimeID INTEGER NOT NULL DEFAULT -1, fintTaskType INTEGER NOT NULL DEFAULT 0, flngTaskTypeID INTEGER NOT NULL DEFAULT -1," +
                 "fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), fdtmDeleted INTEGER NOT NULL DEFAULT -1, flngOneOff INTEGER NOT NULL DEFAULT -1)";

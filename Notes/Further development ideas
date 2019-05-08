@@ -13,7 +13,7 @@ What more could you add
 - Consuming REST / SOAP
 - Advertisement inclusion
 - iOS development
-- full app store publishing
+- full app store publishing (done)
 - User Experience design / Material Design
 - Push notifications / Reoccurring polling 
 - Threading and memory management
@@ -28,3 +28,7 @@ Consuming REST / SOAP
 
 Published APP
 - My current plan is to fix the to button and then to publish the app to the market.
+
+Push notifications
+- Lets make a test application that sends push notifications when you click a button
+- Incorporate it into your app when a session occurs that has a priority time associated w/ it. 
