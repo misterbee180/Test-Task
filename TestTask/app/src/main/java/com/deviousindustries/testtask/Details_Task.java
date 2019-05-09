@@ -181,8 +181,8 @@ public class Details_Task extends AppCompatActivity {
     public boolean wasSessionSessionReplaced(){
         return mTask.mlngTaskID != -1 &&
                 isSessionSet() &&
-                mTime.mblnSession &&
-                (getSession() != mTime.mlngTimeID);
+                mTime.mblnSession; //&&
+                //(getSession() != mTime.mlngTimeID);
     }
 
     public boolean wasSessionTimeReplaced(){
@@ -304,9 +304,12 @@ public class Details_Task extends AppCompatActivity {
                         } else if (wasTimeSessionReplaced()) {
                             //complete time and replace id
                             mTime.completeTime();
-                            mTask.updateOneOff(getOneOff());
-                            mTask.replaceTimeId(getSession());
                             mTime = new Time(getSession());
+                            if (getOneOff() != -1){
+                                mTask.updateOneOff(getOneOff());
+                                mTime = mTime.createOneOff(-1);
+                            }
+                            mTask.replaceTimeId(mTime.mlngTimeID);
                         } else {
                             mTime.clearGenerationPoints();
                             mTime = timeKeeper.createTimeDetails(mTime.mlngTimeID,
