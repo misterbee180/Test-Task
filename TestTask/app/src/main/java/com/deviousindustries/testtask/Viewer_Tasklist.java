@@ -405,6 +405,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmTo")),
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnFromTime")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnToTime")) == 1,
+                        displayInstance.getLong(displayInstance.getColumnIndex("fblnToDate")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmCreated")));
                 if (result == 'P') {
                     priorityList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
@@ -499,6 +500,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                                              Long pdtmTo,
                                              Boolean pblnFromTimeSet,
                                              Boolean pblnToTimeSet,
+                                             Boolean pblnToDateSet,
                                              Long pdtmCreated) {
 
         //Todo: redesign to not use as many booleans. Make considerations for thru tasks.
@@ -519,11 +521,8 @@ public class Viewer_Tasklist extends AppCompatActivity {
         }
 
         //Start: Set General To Details
-        if(pdtmTo != -1){
-            calTo = getCalendar(pdtmTo);
-        } else{
-            calTo = (Calendar)calFrom.clone();
-        }
+        if(pdtmTo != -1 && pblnToDateSet) calTo = getCalendar(pdtmTo);
+        else calTo = (Calendar)calFrom.clone();
 
         //if time details exists we need to make sure from and to w/ time details are populated
         if(pblnFromTimeSet || pblnToTimeSet){
