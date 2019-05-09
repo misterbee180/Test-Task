@@ -83,6 +83,7 @@ public class Details_Session extends AppCompatActivity{
                     getSessionTitle());
             mTime.refreshInstances();
 
+            //Because session changed (possibly) we need to update any oneoffs that haven't yet been completed.
             try(Cursor oneOffs = mTime.findOneOffs()) {
                 while (oneOffs.moveToNext()) {
                     Task tempTask = new Task(oneOffs.getLong(oneOffs.getColumnIndex("flngTaskID")));

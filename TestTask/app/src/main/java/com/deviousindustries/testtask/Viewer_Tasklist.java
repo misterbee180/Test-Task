@@ -382,7 +382,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         ArrayList<taskInstances> standardList = new ArrayList<>();
         ArrayList<taskInstances> upcomingList = new ArrayList<>();
 
-        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.*, ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
                 "FROM tblTaskInstance i \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
@@ -391,6 +391,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 "AND t.fintTaskType <> 1\n" + //Event
                 "LEFT JOIN tblTime tm\n" +
                 "ON tm.flngTimeID = i.flngSessionID\n" +
+                "LEFT JOIN tblLongTerm lt \n" +
+                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 2 \n" +
                 "WHERE i.fdtmCompleted = -1 \n" +
                 "AND i.fdtmSystemCompleted = -1 \n" +
                 "AND i.fdtmDeleted = -1 \n" +
