@@ -415,7 +415,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         ArrayList<taskInstances> standardList = new ArrayList<>();
         ArrayList<taskInstances> upcomingList = new ArrayList<>();
 
-        String rawQuery = "SELECT i.*, td.fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.*, ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
                 "FROM tblTaskInstance i \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
@@ -424,6 +424,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 "AND t.fintTaskType <> 1\n" + //Event
                 "LEFT JOIN tblTime tm\n" +
                 "ON tm.flngTimeID = i.flngSessionID\n" +
+                "LEFT JOIN tblLongTerm lt \n" +
+                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 2 \n" +
                 "WHERE i.fdtmCompleted = -1 \n" +
                 "AND i.fdtmSystemCompleted = -1 \n" +
                 "AND i.fdtmDeleted = -1 \n" +
@@ -435,6 +438,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmTo")),
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnFromTime")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnToTime")) == 1,
+                        displayInstance.getLong(displayInstance.getColumnIndex("fblnToDate")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmCreated")));
                 if (result == 'P') {
                     priorityList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
@@ -529,6 +533,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                                              Long pdtmTo,
                                              Boolean pblnFromTimeSet,
                                              Boolean pblnToTimeSet,
+                                             Boolean pblnToDateSet,
                                              Long pdtmCreated) {
 
         //Todo: redesign to not use as many booleans. Make considerations for thru tasks.
@@ -549,11 +554,8 @@ public class Viewer_Tasklist extends AppCompatActivity {
         }
 
         //Start: Set General To Details
-        if(pdtmTo != -1){
-            calTo = getCalendar(pdtmTo);
-        } else{
-            calTo = (Calendar)calFrom.clone();
-        }
+        if(pdtmTo != -1 && pblnToDateSet) calTo = getCalendar(pdtmTo);
+        else calTo = (Calendar)calFrom.clone();
 
         //if time details exists we need to make sure from and to w/ time details are populated
         if(pblnFromTimeSet || pblnToTimeSet){
