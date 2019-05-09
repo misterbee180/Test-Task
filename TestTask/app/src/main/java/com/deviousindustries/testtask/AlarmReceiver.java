@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -23,22 +24,25 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+        if (intent.getAction().equals("com.deviousindustries.testtask.SYNC") ||
+                intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             //        - Need to establish task list for today
             Viewer_Tasklist.generateTaskInstances();
 
             Boolean blnToday = false;
             try(Cursor tblInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "fdtmCompleted = -1 and fdtmSystemCompleted = -1 and fdtmDeleted = -1",null)){
                 while(tblInstance.moveToNext()){
-                    TaskInstance ti = new TaskInstance(tblInstance.getLong(tblInstance.getColumnIndex("flngTaskInstance")));
+                    TaskInstance ti = new TaskInstance(tblInstance.getLong(tblInstance.getColumnIndex("flngInstanceID")));
                     Calendar from = Viewer_Tasklist.getCalendar(ti.mdtmFrom);
                     if(from.after(Viewer_Tasklist.getBeginningCurentDay()) && from.before(Viewer_Tasklist.getEndCurrentDay())){
                         //        - Need to generate push for today
                         if(blnToday == false){
                             //Check that the last time this was ran was NOT TODAY
-                            if(Viewer_Tasklist.getCalendar(Viewer_Tasklist.mPrefs.getLong("general_last_sync",-1)).before(Viewer_Tasklist.getBeginningCurentDay())){
+                            Boolean blnRedo = false;
+                            if(Viewer_Tasklist.getCalendar(Viewer_Tasklist.mPrefs.getLong("general_last_sync",-1)).before(Viewer_Tasklist.getBeginningCurentDay()) ||
+                            blnRedo){
                                 //Generate notification for today
-                                generatePush(context, "Tasks Available Today", "");
+                                generatePush(context, "Tasks Available", "Click to see what tasks have to do today");
                             }
                             blnToday = true;
                         }
@@ -46,11 +50,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                         //TODO: figure out alert where only to is set
                         if(ti.mblnFromTime){
                             //Generate alert for priority
-                            intent = new Intent(context, AlarmReceiver.class);
-                            intent.putExtra("EXTRA_PUSH_TITLE", "Active Priority");
-                            intent.putExtra("EXTRA_PUSH_DESC",ti.mstrTitle);
+                            Intent i = new Intent(context, AlarmReceiver.class);
+                            i.setAction("com.deviousindustries.testtask.Notification");
+                            i.putExtra("EXTRA_PUSH_TITLE", "Active Priority");
+                            i.putExtra("EXTRA_PUSH_DESC", ti.mstrTitle);
                             //Fire a broadcast which is picked up by the alarmReceiver class which catches the broadcast and triggers the notification.
-                            generateAlert(context, intent, ti.mdtmFrom);
+                            generateAlert(context, i, ti.mdtmFrom);
 //                            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 //                            AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
 //                            alarmMgr.set(
@@ -64,7 +69,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 //                - Need to set up tomorrow 3am alert (not today)
             //Generate alert for 3am update
             intent = new Intent(context, AlarmReceiver.class);
-            intent.setAction(Intent.ACTION_BOOT_COMPLETED);
+            intent.setAction("com.deviousindustries.testtask.SYNC");
+            //intent.setAction(Intent.ACTION_BOOT_COMPLETED);
 
             //Set to fire next day at 3:00am
             Calendar temp = Viewer_Tasklist.getCurrentCalendar();
@@ -114,5 +120,11 @@ public class AlarmReceiver extends BroadcastReceiver {
                 AlarmManager.RTC_WAKEUP,
                 pdtmWhen,
                 pendingIntent);
+    }
+
+    public static void cancelAlert(Context context, Intent intent){
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+        alarmMgr.cancel(pendingIntent);
     }
 }

@@ -194,12 +194,18 @@ public class Viewer_Tasklist extends AppCompatActivity {
     protected void onResume(){
         try{
             super.onResume();
-            if(mPrefs.getLong("general_last_sync",-1) == -1){
+            boolean blnRedoSync = false;
+            if(blnRedoSync){
+                Intent intent = new Intent(this, AlarmReceiver.class);
+                AlarmReceiver.cancelAlert(getApplicationContext(), intent);
+            }
+            if(mPrefs.getLong("general_last_sync",-1) == -1 || blnRedoSync){
                 //THIS WILL RUN LITERALLY ONCE (the first time the applciation runs after this update). It should populate today's date and then never run again.
                 //This is intended to set up the first alarm necessary to fire off background tasks to later create notifications.
-                Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
-                intent.setAction(Intent.ACTION_BOOT_COMPLETED);
-                AlarmReceiver.generateAlert(getApplicationContext(), intent, Calendar.getInstance().getTimeInMillis());
+                Intent intent = new Intent(this, AlarmReceiver.class);
+                intent.setAction("com.deviousindustries.testtask.SYNC");
+                //intent.setAction(Intent.ACTION_BOOT_COMPLETED);
+                AlarmReceiver.generateAlert(getApplicationContext(), intent,  Calendar.getInstance().getTimeInMillis());
             } else {
                 generateTaskInstances();
             }
