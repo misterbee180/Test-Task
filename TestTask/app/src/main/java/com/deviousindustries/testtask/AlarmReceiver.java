@@ -31,7 +31,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             Boolean blnToday = false;
             try(Cursor tblInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "fdtmCompleted = -1 and fdtmSystemCompleted = -1 and fdtmDeleted = -1",null)){
+                int i = 0;
                 while(tblInstance.moveToNext()){
+                    i++;
                     TaskInstance ti = new TaskInstance(tblInstance.getLong(tblInstance.getColumnIndex("flngInstanceID")));
                     Calendar from = Viewer_Tasklist.getCalendar(ti.mdtmFrom);
                     if(from.after(Viewer_Tasklist.getBeginningCurentDay()) && from.before(Viewer_Tasklist.getEndCurrentDay())){
@@ -50,18 +52,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                         //TODO: figure out alert where only to is set
                         if(ti.mblnFromTime){
                             //Generate alert for priority
-                            Intent i = new Intent(context, AlarmReceiver.class);
-                            i.setAction("com.deviousindustries.testtask.Notification");
-                            i.putExtra("EXTRA_PUSH_TITLE", "Active Priority");
-                            i.putExtra("EXTRA_PUSH_DESC", ti.mstrTitle);
+                            Intent intent2 = new Intent(context, AlarmReceiver.class);
+                            intent2.setAction("com.deviousindustries.testtask.Notification");
+                            intent2.putExtra("EXTRA_PUSH_TITLE", "Active Priority");
+                            intent2.putExtra("EXTRA_PUSH_DESC", ti.mstrTitle);
                             //Fire a broadcast which is picked up by the alarmReceiver class which catches the broadcast and triggers the notification.
-                            generateAlert(context, i, ti.mdtmFrom);
-//                            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-//                            AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
-//                            alarmMgr.set(
-//                                    AlarmManager.RTC_WAKEUP,
-//                                    ti.mdtmFrom,
-//                                    pendingIntent);
+                            generateAlert(context, intent2, ti.mdtmFrom, i, AlarmManager.RTC_WAKEUP);
                         }
                     }
                 }
@@ -70,22 +66,15 @@ public class AlarmReceiver extends BroadcastReceiver {
             //Generate alert for 3am update
             intent = new Intent(context, AlarmReceiver.class);
             intent.setAction("com.deviousindustries.testtask.SYNC");
-            //intent.setAction(Intent.ACTION_BOOT_COMPLETED);
-
             //Set to fire next day at 3:00am
             Calendar temp = Viewer_Tasklist.getCurrentCalendar();
-            temp.add(Calendar.DAY_OF_YEAR,1);
-            temp.set(Calendar.HOUR_OF_DAY, 3);
-            temp.set(Calendar.MINUTE,0);
-            temp.set(Calendar.SECOND,0);
-            temp.set(Calendar.MILLISECOND,0);
-
-            generateAlert(context, intent, temp.getTimeInMillis());
-//            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-//            ((AlarmManager)context.getSystemService(ALARM_SERVICE)).set(
-//                    AlarmManager.RTC_WAKEUP,
-//                    temp.getTimeInMillis(),
-//                    pendingIntent);
+            temp.add(Calendar.MINUTE, 1);
+//            temp.add(Calendar.DAY_OF_YEAR,1);
+//            temp.set(Calendar.HOUR_OF_DAY, 3);
+//            temp.set(Calendar.MINUTE,0);
+//            temp.set(Calendar.SECOND,0);
+//            temp.set(Calendar.MI  LLISECOND,0);
+            generateAlert(context, intent, SystemClock.elapsedRealtime() + 15000,0, AlarmManager.ELAPSED_REALTIME);
 
 //                - Need to set database sync date
             SharedPreferences.Editor editor = Viewer_Tasklist.mPrefs.edit();
@@ -113,11 +102,11 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationManagerCompat.from(pContext).notify(0, builder.build());
     }
 
-    public static void generateAlert(Context context, Intent intent, long pdtmWhen){
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+    public static void generateAlert(Context context, Intent intent, long pdtmWhen, int pintReqCode, int pintAlarmType){
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, pintReqCode, intent, 0);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         alarmMgr.set(
-                AlarmManager.RTC_WAKEUP,
+                pintAlarmType,
                 pdtmWhen,
                 pendingIntent);
     }

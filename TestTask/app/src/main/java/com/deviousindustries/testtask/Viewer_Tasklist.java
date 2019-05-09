@@ -1,5 +1,6 @@
 package com.deviousindustries.testtask;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -195,17 +196,17 @@ public class Viewer_Tasklist extends AppCompatActivity {
         try{
             super.onResume();
             boolean blnRedoSync = false;
-            if(blnRedoSync){
-                Intent intent = new Intent(this, AlarmReceiver.class);
-                AlarmReceiver.cancelAlert(getApplicationContext(), intent);
-            }
-            if(mPrefs.getLong("general_last_sync",-1) == -1 || blnRedoSync){
-                //THIS WILL RUN LITERALLY ONCE (the first time the applciation runs after this update). It should populate today's date and then never run again.
-                //This is intended to set up the first alarm necessary to fire off background tasks to later create notifications.
+            //THE ONLY TIME that this should run is if the alarm is somehow not ran at the designated time
+            // or the application is accessed between the beginning of the next day and the alarm kicking off.
+            if(mPrefs.getLong("general_last_sync",-1) < getBeginningCurentDay().getTimeInMillis() || blnRedoSync){
+                //Cancel any alarms which may already be set up to run
                 Intent intent = new Intent(this, AlarmReceiver.class);
                 intent.setAction("com.deviousindustries.testtask.SYNC");
-                //intent.setAction(Intent.ACTION_BOOT_COMPLETED);
-                AlarmReceiver.generateAlert(getApplicationContext(), intent,  Calendar.getInstance().getTimeInMillis());
+                AlarmReceiver.cancelAlert(getApplicationContext(), intent);
+
+                //re set up the alarm and anything else needing to be done.
+                AlarmReceiver.generateAlert(getApplicationContext(), intent,
+                        Calendar.getInstance().getTimeInMillis(), 0, AlarmManager.RTC_WAKEUP);
             } else {
                 generateTaskInstances();
             }
