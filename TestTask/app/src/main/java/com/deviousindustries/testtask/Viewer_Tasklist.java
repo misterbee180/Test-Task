@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -45,8 +47,6 @@ public class Viewer_Tasklist extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        createNotificationChannel();
-
 //        Bundle extras = getIntent().getExtras();
 //        if (extras != null){
 //            Bundle bundle = new Bundle();
@@ -68,7 +68,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         });
 
         //This sets up static classes and other details for the entire program.
-        DatabaseAccess.setContext(this);
+        DatabaseAccess.setContext(getApplicationContext());
 
         //This sets up member variable and other details specific to this activity.
         mDisplayListView = findViewById(R.id.lsvDisplayList);
@@ -202,10 +202,10 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 //Cancel any alarms which may already be set up to run
                 Intent intent = new Intent(this, AlarmReceiver.class);
                 intent.setAction("com.deviousindustries.testtask.SYNC");
-                AlarmReceiver.cancelAlert(getApplicationContext(), intent);
+                new AlarmReceiver().cancelAlert(getApplicationContext(), intent);
 
                 //re set up the alarm and anything else needing to be done.
-                AlarmReceiver.generateAlert(getApplicationContext(), intent,
+                new AlarmReceiver().generateAlert(getApplicationContext(), intent,
                         Calendar.getInstance().getTimeInMillis(), 0, AlarmManager.RTC_WAKEUP);
             } else {
                 generateTaskInstances();
@@ -297,7 +297,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
     public static void generateTaskInstances() {
         DatabaseAccess.mDatabase.beginTransaction();
-        
+
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){
                 while (tblTime.moveToNext()) {
@@ -325,7 +325,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         DatabaseAccess.mDatabase.endTransaction();
     }
 
@@ -342,20 +342,6 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 null,
                 null,
                 null);
-    }
-
-    public void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-
-        //Should probably be moved to the Alarm Receiver class so that it always has the channel generated. For purposes
-        //of demo this is fine.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("STANDARD", "GENERAL", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("General alerts");
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
     }
 
     /** Called when the user taps the Send button */

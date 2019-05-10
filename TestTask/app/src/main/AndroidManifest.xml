@@ -72,6 +72,8 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+                <action android:name="com.deviousindustries.testtask.Notification"></action>
+                <action android:name="com.deviousindustries.testtask.SYNC"></action>
             </intent-filter>
         </receiver>
     </application>

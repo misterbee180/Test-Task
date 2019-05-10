@@ -21,13 +21,18 @@ import static android.content.Context.ALARM_SERVICE;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (intent.getAction().equals("com.deviousindustries.testtask.SYNC") ||
+        if(intent.getAction() == null){
+            generatePush(context, "Alarm not working", "Alarm not working");
+        } else if (intent.getAction().equals("com.deviousindustries.testtask.SYNC") ||
                 intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             //        - Need to establish task list for today
-            Viewer_Tasklist.generateTaskInstances();
+
+            BusinessLogic b = new BusinessLogic(context);
+            b.generateTaskInstances();
 
             Boolean blnToday = false;
             try(Cursor tblInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "fdtmCompleted = -1 and fdtmSystemCompleted = -1 and fdtmDeleted = -1",null)){
@@ -35,13 +40,13 @@ public class AlarmReceiver extends BroadcastReceiver {
                 while(tblInstance.moveToNext()){
                     i++;
                     TaskInstance ti = new TaskInstance(tblInstance.getLong(tblInstance.getColumnIndex("flngInstanceID")));
-                    Calendar from = Viewer_Tasklist.getCalendar(ti.mdtmFrom);
-                    if(from.after(Viewer_Tasklist.getBeginningCurentDay()) && from.before(Viewer_Tasklist.getEndCurrentDay())){
+                    Calendar from = b.getCalendar(ti.mdtmFrom);
+                    if(from.after(b.getBeginningCurentDay()) && from.before(b.getEndCurrentDay())){
                         //        - Need to generate push for today
                         if(blnToday == false){
                             //Check that the last time this was ran was NOT TODAY
                             Boolean blnRedo = false;
-                            if(Viewer_Tasklist.getCalendar(Viewer_Tasklist.mPrefs.getLong("general_last_sync",-1)).before(Viewer_Tasklist.getBeginningCurentDay()) ||
+                            if(b.getCalendar(b.mPrefs.getLong("general_last_sync",-1)).before(b.getBeginningCurentDay()) ||
                             blnRedo){
                                 //Generate notification for today
                                 generatePush(context, "Tasks Available", "Click to see what tasks have to do today");
@@ -67,18 +72,17 @@ public class AlarmReceiver extends BroadcastReceiver {
             intent = new Intent(context, AlarmReceiver.class);
             intent.setAction("com.deviousindustries.testtask.SYNC");
             //Set to fire next day at 3:00am
-            Calendar temp = Viewer_Tasklist.getCurrentCalendar();
-            temp.add(Calendar.MINUTE, 1);
-//            temp.add(Calendar.DAY_OF_YEAR,1);
-//            temp.set(Calendar.HOUR_OF_DAY, 3);
-//            temp.set(Calendar.MINUTE,0);
-//            temp.set(Calendar.SECOND,0);
-//            temp.set(Calendar.MI  LLISECOND,0);
-            generateAlert(context, intent, SystemClock.elapsedRealtime() + 15000,0, AlarmManager.ELAPSED_REALTIME);
+            Calendar temp = b.getCurrentCalendar();
+            temp.add(Calendar.DAY_OF_YEAR,1);
+            temp.set(Calendar.HOUR_OF_DAY, 3);
+            temp.set(Calendar.MINUTE,0);
+            temp.set(Calendar.SECOND,0);
+            temp.set(Calendar.MILLISECOND,0);
+            generateAlert(context, intent, temp.getTimeInMillis(), 0, AlarmManager.RTC_WAKEUP);
 
 //                - Need to set database sync date
-            SharedPreferences.Editor editor = Viewer_Tasklist.mPrefs.edit();
-            editor.putLong("general_last_sync",Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
+            SharedPreferences.Editor editor = b.mPrefs.edit();
+            editor.putLong("general_last_sync",b.getCurrentCalendar().getTimeInMillis());
             editor.commit();
 
         } else {
@@ -89,7 +93,23 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
     }
 
-    private void generatePush(Context pContext, String pTitle, String pDesc){
+    public static void createNotificationChannel(Context context) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+
+        //Should probably be moved to the Alarm Receiver class so that it always has the channel generated. For purposes
+        //of demo this is fine.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("STANDARD", "GENERAL", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("General alerts");
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    public static void generatePush(Context pContext, String pTitle, String pDesc){
+        createNotificationChannel(pContext);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(pContext, 0, new Intent(pContext, Viewer_Tasklist.class), 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(pContext, "STANDARD")
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
