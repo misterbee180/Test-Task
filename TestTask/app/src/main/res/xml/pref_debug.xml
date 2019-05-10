@@ -24,5 +24,4 @@
         android:title="Time Preference"
         android:summary="TimeSummary"
          />
-
 </PreferenceScreen>

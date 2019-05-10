@@ -1,12 +1,18 @@
 package com.deviousindustries.testtask;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -62,17 +68,13 @@ public class Viewer_Tasklist extends AppCompatActivity {
         });
 
         //This sets up static classes and other details for the entire program.
-        initializeApplication();
+        DatabaseAccess.setContext(getApplicationContext());
 
         //This sets up member variable and other details specific to this activity.
         mDisplayListView = findViewById(R.id.lsvDisplayList);
     }
 
-    private void initializeApplication() {
-        DatabaseAccess.setContext(this);
-    }
-
-
+    //region Listers
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int position, long arg3) {
@@ -109,7 +111,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
             return true;
         }
     };
-//
+    //endregion
+
+    //region Fragments
     public static class CompleteInstanceConfirmationFragment extends DialogFragment {
         @NonNull
         @Override
@@ -185,13 +189,29 @@ public class Viewer_Tasklist extends AppCompatActivity {
             return builder.create();
         }
     }
+    //endregion
 
     @Override
     protected void onResume(){
         try{
             super.onResume();
-            generateTaskInstances();
+            boolean blnRedoSync = false;
+            //THE ONLY TIME that this should run is if the alarm is somehow not ran at the designated time
+            // or the application is accessed between the beginning of the next day and the alarm kicking off.
+            if(mPrefs.getLong("general_last_sync",-1) < getBeginningCurentDay().getTimeInMillis() || blnRedoSync){
+                //Cancel any alarms which may already be set up to run
+                Intent intent = new Intent(this, AlarmReceiver.class);
+                intent.setAction("com.deviousindustries.testtask.SYNC");
+                new AlarmReceiver().cancelAlert(getApplicationContext(), intent);
+
+                //re set up the alarm and anything else needing to be done.
+                new AlarmReceiver().generateAlert(getApplicationContext(), intent,
+                        Calendar.getInstance().getTimeInMillis(), 0, AlarmManager.RTC_WAKEUP);
+            } else {
+                generateTaskInstances();
+            }
             loadTasksFromDatabase();
+
         }catch(Exception e){
             e.printStackTrace();
             setResult(RESULT_CANCELED);
@@ -275,9 +295,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
     //endregion
 
-    private void generateTaskInstances() {
+    public static void generateTaskInstances() {
         DatabaseAccess.mDatabase.beginTransaction();
-        
+
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){
                 while (tblTime.moveToNext()) {
@@ -305,11 +325,11 @@ public class Viewer_Tasklist extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         DatabaseAccess.mDatabase.endTransaction();
     }
 
-    public Cursor getValidGenerationPoints(){
+    public static Cursor getValidGenerationPoints(){
 
         //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
         String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();

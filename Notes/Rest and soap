@@ -1,0 +1,10 @@
+rest / soap
+rest = representational state transfer (of an object). Sent using JSON or XML
+rest - process of getting data from some web service (accessing web service)
+api - how you access / connect to a server
+
+java 
+1. client requests data
+2. servlet provides data back
+3. data returned in XML / JSON (this is because data should have a standard logical structure)
+
