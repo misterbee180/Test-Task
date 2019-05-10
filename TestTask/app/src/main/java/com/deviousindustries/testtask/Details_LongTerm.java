@@ -50,6 +50,7 @@ public class Details_LongTerm extends AppCompatActivity {
         mLongTermTasksUnc.mListView.setOnItemLongClickListener(itemLongClickListener);
         ListView LongTermTaskViewCmp = findViewById(R.id.lsvLongTermTaskListCmp);
         mLongTermTasksCmp.LinkArrayToListView(LongTermTaskViewCmp, this);
+        mLongTermTasksCmp.mListView.setOnItemClickListener(uncompleteTask);
 
         retrieveExtras();
     }
@@ -77,6 +78,17 @@ public class Details_LongTerm extends AppCompatActivity {
             DialogFragment newFragment = new TaskCompleteConfirmationFragment();
             newFragment.setArguments(bundle);
             newFragment.show(getSupportFragmentManager(), "Complete Task");
+        }
+    };
+
+    AdapterView.OnItemClickListener uncompleteTask = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Bundle bundle = new Bundle();
+            bundle.putLong("TaskID", mLongTermTasksCmp.getID(position));
+            DialogFragment newFragment = new TaskUnCompleteConfirmationFragment();
+            newFragment.setArguments(bundle);
+            newFragment.show(getSupportFragmentManager(), "Un-Complete Task");
         }
     };
 
@@ -113,6 +125,37 @@ public class Details_LongTerm extends AppCompatActivity {
                                 TaskInstance ti = tempTask.generateInstance(-1, -1, false, false, false, -1);
                                 ti.finishInstance(2);
 
+                                DatabaseAccess.mDatabase.setTransactionSuccessful();
+                            } catch(Exception e){
+                                e.printStackTrace();
+                            }
+                            DatabaseAccess.mDatabase.endTransaction();
+                            ((Details_LongTerm)getActivity()).retrieveLongTermTasks();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    public static class TaskUnCompleteConfirmationFragment extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final Long lngTaskId = getArguments().getLong("TaskID");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("Un-Complete Task")
+                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            try{
+                                DatabaseAccess.mDatabase.beginTransaction();
+                                Task tempTask = new Task(lngTaskId);
+                                tempTask.clearInstances();
                                 DatabaseAccess.mDatabase.setTransactionSuccessful();
                             } catch(Exception e){
                                 e.printStackTrace();
