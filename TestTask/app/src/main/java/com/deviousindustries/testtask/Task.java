@@ -130,6 +130,10 @@ public class Task {
                 mlngOneOff == -1 ? plngSessionID : mlngOneOff); //replace -1 w/ proper session detail id if one off
     }
 
+    void clearInstances(){
+        DatabaseAccess.deleteRecordFromTable("tblTaskInstance", "flngTaskID", mlngTaskID);
+    }
+
     void updateTaskDetails(String pstrTitle,
                                   String pstrDescription){
         DatabaseAccess.updateRecordFromTable("tblTaskDetail",
