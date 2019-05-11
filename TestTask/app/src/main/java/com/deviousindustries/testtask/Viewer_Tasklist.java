@@ -542,7 +542,16 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
         //Start: Set General To Details
         if(pdtmTo != -1 && pblnToDateSet) calTo = getCalendar(pdtmTo);
-        else calTo = (Calendar)calFrom.clone();
+        else {
+            calTo = (Calendar)calFrom.clone();
+            if(pblnToTimeSet){
+                Calendar temp = getCalendar(pdtmTo);
+                calTo.set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY));
+                calTo.set(Calendar.MINUTE, temp.get(Calendar.MINUTE));
+                calTo.set(Calendar.SECOND, temp.get(Calendar.SECOND));
+                calTo.set(Calendar.MILLISECOND, temp.get(Calendar.MILLISECOND));
+            }
+        }
 
         //if time details exists we need to make sure from and to w/ time details are populated
         if(pblnFromTimeSet || pblnToTimeSet){

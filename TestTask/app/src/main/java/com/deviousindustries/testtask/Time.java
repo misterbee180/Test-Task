@@ -157,7 +157,7 @@ public class Time {
                     calPri.add(Calendar.DAY_OF_YEAR,tblGeneration.getInt(tblGeneration.getColumnIndex("fintThru")));
                     if(mblnToTime){
                         Calendar time = Viewer_Tasklist.getCalendar(mdtmTo);
-                        calPri.set(Calendar.HOUR,time.get(Calendar.HOUR));
+                        calPri.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
                         calPri.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
                         calPri.set(Calendar.SECOND, time.get(Calendar.SECOND));
                         calPri.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
@@ -785,7 +785,7 @@ public class Time {
         Calendar tempTo = Viewer_Tasklist.getCalendar(pdtmTo);
         if(mblnToTime){
             Calendar time = Viewer_Tasklist.getCalendar(mdtmTo);
-            tempTo.set(Calendar.HOUR,time.get(Calendar.HOUR));
+            tempTo.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
             tempTo.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
             tempTo.set(Calendar.SECOND, time.get(Calendar.SECOND));
             tempTo.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
@@ -817,7 +817,7 @@ public class Time {
                         tempTo.add(Calendar.DAY_OF_YEAR,tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
                         if(mblnToTime){
                             Calendar time = Viewer_Tasklist.getCalendar(mdtmTo);
-                            tempTo.set(Calendar.HOUR,time.get(Calendar.HOUR));
+                            tempTo.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
                             tempTo.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
                             tempTo.set(Calendar.SECOND, time.get(Calendar.SECOND));
                             tempTo.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
@@ -844,7 +844,7 @@ public class Time {
                                             tempTo.getTimeInMillis(),
                                             mblnFromTime,
                                             mblnToTime,
-                                            mblnToDate,
+                                            mblnToDate || tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")) > 0,
                                             mblnSession ? mlngTimeID : -1);
                                 }
                             }
