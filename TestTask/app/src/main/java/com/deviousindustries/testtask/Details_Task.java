@@ -125,7 +125,7 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean isSessionSet(){
-        return (mSessionList.mSpinner.getSelectedItemPosition() != 0);
+        return (mSessionList.mSpinner.getSelectedItemPosition() > 0);
     }
 
     public void setSession(long plngTimeId){
