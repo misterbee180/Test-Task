@@ -99,3 +99,26 @@ So what I want to do is update the system to include fblnThru and the to date fo
 To do this properly I need to worry about what the dates are even more than before. So I've added buttons to remove the times and dates put in. But does that even make sense? I've never had an issue before ... 
 
 Shifting gears. I'm working on fixing the to button w/o the thru button. What I need to do is make it so that the to button is used properly. I will assume bln thru for from and calculate the distance between the from date and the to date to establish the thru value. This is a short term fix that should work for the time being.
+
+Push Notifications - Now that I've made a push notification work I want to incorporate it into my program. My plan is that I want to have 2 push notifications. The first will be an indication that some tasks are waiting to be done today. This will fire in the morning if there are tasks that populate into the today queue. The second (set) of push notifications is for tasks w/ times that fall into the priority queue. The notification will inform the user that new priority tasks are waiting to be completed.
+
+So for this, in general, I want to create an alarm that fires at... 3 am... this alarm will fire a broadcast intent to be picked up by code in my app that will generate any new task instances necessary. I will then evaluate the list of active task instances. If any are due today I will create a notification for day tasks. Then for each task of today w/ a time I will schedule an alarm to go off at each of those times. The alarm will broadcast an intent to be picked up another class that will generate a notification specific to that tasks now being a priority. I believe I can make a single class for the receival of alarms w/ extras to indicate what set of code the class should run. In that class I will also generate the notification function. This is good for a start :)
+
+The first question though is how we can schedule the initial alarm but not schedule multiple alarm calls every time the program is opened. So i think i have a solution. We can configure the program to do an initial alarm during the boot action. This can do the job of scheduling the initial 3:00am generation. However, any instances which had alarms created for them orignally will be lost during a restart. This means that if a phone is restarted during the day that any instances which haven't yet ooccurred will not generate a notification. I would need to do something during this boot process so that I can re-schedule all of the alerts that haven't fired yet. In theory I can set a variable somewhere... When the boot runs it will always do the necessary work of setting up the next 3am alarm. It will also use the time of the day to determine whether it needs to re-generate alerts for priority notifications. If the time is between 12am and before 3am, it doesn't need to ... one more thing to think about... Basically if the phone is on every day than beteen those hours the only task of this boot up intent will be to set up the 3am alarm for the next instance of 3am (might be today, might be tomorrow). However, if the phone has been off for for more than a day (and time is not between those two times) then the intent needs to do everything. To me this screams adding a date to the database to indicate when the last full run of this occurred. So during boot, it will check when the last time a full "sync" occurred if it was today then we don't need to sync again. However if it was yesterday then the boot will be responsible for syncing everything up. If that happens to occur between 12 and 3 then the alarm should be set for the next day, not today. 
+
+Phone restart at 4am (any time after 3 am)
+- NO NEED to establish task list for today - But we can do it anyway w/o harm
+- NO NEED to generate push for today <--- This winds up being the only difference. 
+- Need to set up tomorrow 3am alert
+- Need to re generate alerts for priority
+- Need to set database sync date
+
+Phone restarts at 2am (any time before 3 am)
+- Need to establish task list for today
+- Need to generate push for today
+- Need to set up tomorrow 3am alert (not today)
+- Need to re generate alerts for priority
+- Need to set database sync date
+
+Long term completion help
+What is this? The idea is that long term goals are hard and so if the task helped you push forward towards completion you'd be better off. So what I was thnking was when you complete a long term task, it should take you to the long term goal list and suggest you add or set up your next task for completion. The issue is this is not that important of a feature... It'd be nice but honestly it'd be annoying to implement and possibly annoying to work with. I'm going to put this on hold.
