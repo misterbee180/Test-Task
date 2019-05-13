@@ -199,6 +199,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
             //THE ONLY TIME that this should run is if the alarm is somehow not ran at the designated time
             // or the application is accessed between the beginning of the next day and the alarm kicking off.
             if(mPrefs.getLong("general_last_sync",-1) < getBeginningCurentDay().getTimeInMillis() || blnRedoSync){
+                //This is so that it displays the right things the first time the app opens
+                generateTaskInstances();
+
                 //Cancel any alarms which may already be set up to run
                 Intent intent = new Intent(this, AlarmReceiver.class);
                 intent.setAction("com.deviousindustries.testtask.SYNC");
