@@ -9,7 +9,7 @@ import com.deviousindustries.testtask.DatabaseAccess;
 @Entity(tableName = "tblTimeInstance")
 public class TimeInstance {
     @PrimaryKey(autoGenerate = true)
-    long flngGenerationID;
+    public long flngGenerationID;
 
     @ColumnInfo
     public long flngTimeID;

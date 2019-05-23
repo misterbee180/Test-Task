@@ -15,7 +15,7 @@ import com.deviousindustries.testtask.Classes.*
         version = 22,
         exportSchema = false)
 abstract class TaskDatabase: RoomDatabase() {
-    //abstract val DatabaseDao: DatabaseDao
+    abstract val taskDatabaseDao: TaskDatabaseDao
 
     companion object {
         private var INSTANCE: TaskDatabase? = null
@@ -38,6 +38,7 @@ abstract class TaskDatabase: RoomDatabase() {
             }
         }
 
+        //region Migrations
         val MIGRATION_21_22 = object : Migration(21,22){
             override fun migrate(database: SupportSQLiteDatabase){
                 updateColumn(database, "tblTask", "flngTaskID", "flngTaskID", true, "-1", true)
@@ -81,6 +82,7 @@ abstract class TaskDatabase: RoomDatabase() {
                 updateColumn(database, "tblYear", "flngYearID", "flngYearID", true, "-1", true)
             }
         }
+        //endregion
 
         //region Helper_Functions
         @Throws(Exception::class)
@@ -409,6 +411,4 @@ abstract class TaskDatabase: RoomDatabase() {
         }
         //endregion
     }
-
-
 }

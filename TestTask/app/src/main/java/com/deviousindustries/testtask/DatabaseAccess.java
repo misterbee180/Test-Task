@@ -14,6 +14,7 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder;
 
 import com.deviousindustries.testtask.Classes.TaskDetail;
 import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.Data.TaskDatabaseDao;
 
 import java.util.Calendar;
 
@@ -23,6 +24,7 @@ import java.util.Calendar;
 
 public class DatabaseAccess {
     public static SupportSQLiteDatabase mDatabase = null;
+    public static TaskDatabaseDao taskDatabaseDao;
 
     public static SupportSQLiteDatabase getInstance(@NonNull SupportSQLiteOpenHelper helper){
         if(mDatabase == null) mDatabase = helper.getWritableDatabase();
