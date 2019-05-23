@@ -33,7 +33,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Spinner
@@ -54,9 +54,9 @@
             android:text="@string/Button_NewSession"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBox
@@ -75,7 +75,7 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/chkSessOneOff"
             app:layout_constraintLeft_toRightOf="@+id/chkSessOneOff"
             app:layout_constraintRight_toRightOf="parent"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.deviousindustries.testtask.TimeKeeper
         android:id="@+id/timeKeeper"

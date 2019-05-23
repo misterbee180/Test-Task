@@ -2,10 +2,12 @@ package com.deviousindustries.testtask;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -92,19 +94,12 @@ public class Details_Group extends AppCompatActivity {
             setGroupTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
         }
 
-        String rawString = "SELECT flngTaskID FROM tblTask t\n" +
-                "JOIN tblTime tm ON tm.flngTimeID = t.flngTimeID\n" +
-                "WHERE t.fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = -1\n" +
-                "AND (tm.flngRepetition > 0 \n" +
-                "OR EXISTS (SELECT 1 FROM tblTaskInstance ti\n" +
-                "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "and ti.fdtmCompleted = -1 and ti.fdtmSystemCompleted = -1 and ti.fdtmDeleted = -1))\n";
-        cursor = DatabaseAccess.mDatabase.rawQuery(rawString, new String[] {mlngGroupId.toString()});
+        cursor = DatabaseAccess.getTasksFromGroup(mlngGroupId);
         mGroupTask.Clear();
         while (cursor.moveToNext()){
             Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
-            mGroupTask.Add(tempTask.mstrTitle,
-                    tempTask.mlngTaskID);
+            mGroupTask.Add(tempTask.fstrTitle,
+                    tempTask.flngTaskID);
         }
         mGroupTask.mAdapter.notifyDataSetChanged();
     }

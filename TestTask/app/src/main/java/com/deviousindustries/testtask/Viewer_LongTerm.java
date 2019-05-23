@@ -5,12 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -123,27 +123,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
 
     public void setLongTermList(){
         //Populating complete then populating uncomplete by grabbing all and not adding complete ones
-        String rawGetCompleteLongTerms = "SELECT lt.flngLongTermID, lt.fstrTitle \n" +
-                "FROM tblLongTerm lt \n" +
-                //Where there's at least one task associated to long term
-                "WHERE EXISTS (SELECT 1 \n" +
-                "FROM tblTask t \n" +
-                "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
-                "AND t.fintTaskType = 2 \n" +
-                "AND t.fdtmDeleted = -1) \n " +
-                //And none of the tasks do not have a completed task instance associated with them
-                "AND NOT EXISTS (SELECT 1 \n" +
-                "FROM tblTask t \n" +
-                "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
-                "AND t.fintTaskType = 2 \n" +
-                "AND t.fdtmDeleted = -1 \n" +
-                "AND NOT EXISTS (SELECT 1 \n" +
-                "FROM tblTaskInstance ti \n" +
-                "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(ti.fdtmCompleted == -1 AND ti.fdtmSystemCompleted = -1))) \n" +
-                "ORDER BY lt.flngLongTermID";
-
-        try(Cursor uncompleteLongTerm = DatabaseAccess.mDatabase.rawQuery(rawGetCompleteLongTerms,null)){
+        try(Cursor uncompleteLongTerm = DatabaseAccess.getCompletedLongTerms()){
             mLongTermListCmp.Clear();
             while (uncompleteLongTerm.moveToNext()){
                 mLongTermListCmp.Add(uncompleteLongTerm.getString(uncompleteLongTerm.getColumnIndex("fstrTitle")),uncompleteLongTerm.getLong(uncompleteLongTerm.getColumnIndex("flngLongTermID")));

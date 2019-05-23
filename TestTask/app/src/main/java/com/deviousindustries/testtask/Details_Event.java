@@ -5,12 +5,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -118,8 +120,8 @@ public class Details_Event extends AppCompatActivity {
         mEventTasks.Clear();
         while (TaskCursor.moveToNext()){
             Task tempTask = new Task(TaskCursor.getLong(TaskCursor.getColumnIndex("flngTaskID")));
-            mEventTasks.Add(tempTask.mstrTitle,
-                    tempTask.mlngTaskID);
+            mEventTasks.Add(tempTask.fstrTitle,
+                    tempTask.flngTaskID);
         }
         mEventTasks.mAdapter.notifyDataSetChanged();
     }

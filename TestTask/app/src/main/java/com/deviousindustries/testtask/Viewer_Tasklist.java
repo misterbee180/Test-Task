@@ -2,25 +2,28 @@ package com.deviousindustries.testtask;
 
 import android.app.AlarmManager;
 import android.app.Dialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.Data.TaskDatabase;
+import com.deviousindustries.testtask.Data.TaskDatabase_Impl;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,12 +38,13 @@ public class Viewer_Tasklist extends AppCompatActivity {
     ListView mDisplayListView;
     CustomAdapter mAdapter;
     static Context mContext;
-    static SharedPreferences mPrefs;
+    public static SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         mContext = this;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(getApplicationContext()).getOpenHelper());
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);
@@ -68,7 +72,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         });
 
         //This sets up static classes and other details for the entire program.
-        DatabaseAccess.setContext(getApplicationContext());
+        //DatabaseAccess.setContext(getApplicationContext());
 
         //This sets up member variable and other details specific to this activity.
         mDisplayListView = findViewById(R.id.lsvDisplayList);
@@ -298,7 +302,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
     //endregion
 
-    public static void generateTaskInstances() {
+    public void generateTaskInstances() {
         DatabaseAccess.mDatabase.beginTransaction();
 
         try{
@@ -308,13 +312,13 @@ public class Viewer_Tasklist extends AppCompatActivity {
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
-                try(Cursor tblTimeInstance = getValidGenerationPoints()){
+                try(Cursor tblTimeInstance = DatabaseAccess.getValidGenerationPoints(getEndCurrentDay().getTimeInMillis(), getBeginningCurentDay().getTimeInMillis())){
                     while (tblTimeInstance.moveToNext()) {
                         Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
                         long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
-                        if (tiGenerationID > tempTime.mlngGenerationID) {
+                        if (tiGenerationID > tempTime.flngGenerationID) {
                             Calendar tempTo = getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
-                            if (tempTime.mblnThru) {
+                            if (tempTime.fblnThru) {
                                 tempTo.add(Calendar.DAY_OF_YEAR, tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
                             }
                             tempTime.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
@@ -330,21 +334,6 @@ public class Viewer_Tasklist extends AppCompatActivity {
         }
 
         DatabaseAccess.mDatabase.endTransaction();
-    }
-
-    public static Cursor getValidGenerationPoints(){
-
-        //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
-        String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();
-        strSelection += " and fdtmPriority + 86400000 * fintThru >= " + getBeginningCurentDay().getTimeInMillis();
-
-        return DatabaseAccess.mDatabase.query("tblTimeInstance",
-                null,
-                strSelection,
-                null,
-                null,
-                null,
-                null);
     }
 
     /** Called when the user taps the Send button */
@@ -405,24 +394,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         ArrayList<taskInstances> standardList = new ArrayList<>();
         ArrayList<taskInstances> upcomingList = new ArrayList<>();
 
-        String rawQuery = "SELECT i.*, ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
-                "FROM tblTaskInstance i \n" +
-                "JOIN tblTaskDetail td \n" +
-                "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
-                "JOIN tblTask t \n" +
-                "ON t.flngTaskID = i.flngTaskID\n" +
-                "AND t.fintTaskType <> 1\n" + //Event
-                "LEFT JOIN tblTime tm\n" +
-                "ON tm.flngTimeID = i.flngSessionID\n" +
-                "LEFT JOIN tblLongTerm lt \n" +
-                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
-                "AND t.fintTaskType = 2 \n" +
-                "WHERE i.fdtmCompleted = -1 \n" +
-                "AND i.fdtmSystemCompleted = -1 \n" +
-                "AND i.fdtmDeleted = -1 \n" +
-                //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
-                "ORDER BY i.flngSessionID, i.flngTaskID";
-        try(Cursor displayInstance = DatabaseAccess.mDatabase.rawQuery(rawQuery,null)){
+        try(Cursor displayInstance = DatabaseAccess.getInstancesForTasklist()){
             while(displayInstance.moveToNext()){
                 char result = determineListForTask(displayInstance.getLong(displayInstance.getColumnIndex("fdtmFrom")),
                         displayInstance.getLong(displayInstance.getColumnIndex("fdtmTo")),

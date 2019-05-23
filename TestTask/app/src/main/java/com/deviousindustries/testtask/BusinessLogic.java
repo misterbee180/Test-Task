@@ -5,6 +5,10 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
 
+import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.Data.TaskDatabase;
+import com.deviousindustries.testtask.Data.TaskDatabase_Impl;
+
 import java.util.Calendar;
 
 public class BusinessLogic {
@@ -18,7 +22,7 @@ public class BusinessLogic {
     }
 
     public void generateTaskInstances() {
-        DatabaseAccess.setContext(mContext);
+        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(mContext).getOpenHelper());
         DatabaseAccess.mDatabase.beginTransaction();
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){
@@ -27,13 +31,13 @@ public class BusinessLogic {
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
-                try(Cursor tblTimeInstance = getValidGenerationPoints()){
+                try(Cursor tblTimeInstance = DatabaseAccess.getValidGenerationPoints(getEndCurrentDay().getTimeInMillis(), getBeginningCurentDay().getTimeInMillis())){
                     while (tblTimeInstance.moveToNext()) {
                         Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
                         long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
-                        if (tiGenerationID > tempTime.mlngGenerationID) {
+                        if (tiGenerationID > tempTime.flngGenerationID) {
                             Calendar tempTo = getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
-                            if (tempTime.mblnThru) {
+                            if (tempTime.fblnThru) {
                                 tempTo.add(Calendar.DAY_OF_YEAR, tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
                             }
                             tempTime.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
@@ -49,21 +53,6 @@ public class BusinessLogic {
         }
 
         DatabaseAccess.mDatabase.endTransaction();
-    }
-
-    public Cursor getValidGenerationPoints(){
-
-        //NOTE: I was forced to "inline" all of the arguments because when doing match in android queries sometimes bugs are produced.
-        String strSelection = "fdtmUpcoming <= " + getEndCurrentDay().getTimeInMillis();
-        strSelection += " and fdtmPriority + 86400000 * fintThru >= " + getBeginningCurentDay().getTimeInMillis();
-
-        return DatabaseAccess.mDatabase.query("tblTimeInstance",
-                null,
-                strSelection,
-                null,
-                null,
-                null,
-                null);
     }
 
     public Calendar getBeginningCurentDay(){

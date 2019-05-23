@@ -5,12 +5,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.Classes.Time;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -97,13 +100,13 @@ public class Viewer_Session extends AppCompatActivity {
             DatabaseAccess.mDatabase.beginTransaction();
             Time tempTime = new Time(plngTimeId);
 
-            try(Cursor cursor = tempTime.getTasks()){
+            try(Cursor cursor = DatabaseAccess.getTasksFromTime(tempTime.flngTimeID)){
                 while(cursor.moveToNext()){
                     Task tempTask = new Task(cursor.getLong(cursor.getColumnIndex("flngTaskID")));
                     //delete current task instances associated w/ session time
                     tempTask.finishActiveInstances(3);
                     //create new time that mimics deleted session and replace on task.
-                    tempTask.replaceTimeId(tempTime.getCopy().mlngTimeID);
+                    tempTask.replaceTimeId(tempTime.getCopy().flngTimeID);
                     //re-generation of instances will occur during task display logic.
                 }
             }
@@ -127,8 +130,8 @@ public class Viewer_Session extends AppCompatActivity {
             mSessionList.Clear();
             while (cursor.moveToNext()){
                 Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
-                mSessionList.Add(tempTime.mstrTitle,
-                        tempTime.mlngTimeID);
+                mSessionList.Add(tempTime.fstrTitle,
+                        tempTime.flngTimeID);
             }
             mSessionList.mAdapter.notifyDataSetChanged();
         }

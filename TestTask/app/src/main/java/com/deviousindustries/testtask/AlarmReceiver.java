@@ -11,9 +11,11 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import com.deviousindustries.testtask.Classes.TaskInstance;
 
 import java.util.Calendar;
 
@@ -40,7 +42,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 while(tblInstance.moveToNext()){
                     i++;
                     TaskInstance ti = new TaskInstance(tblInstance.getLong(tblInstance.getColumnIndex("flngInstanceID")));
-                    Calendar from = b.getCalendar(ti.mdtmFrom);
+                    Calendar from = b.getCalendar(ti.fdtmFrom);
                     if(from.after(b.getBeginningCurentDay()) && from.before(b.getEndCurrentDay())){
                         //        - Need to generate push for today
                         if(blnToday == false){
@@ -55,14 +57,14 @@ public class AlarmReceiver extends BroadcastReceiver {
                         }
                         //        - Need to re generate alerts for priority
                         //TODO: figure out alert where only to is set
-                        if(ti.mblnFromTime){
+                        if(ti.fblnFromTime){
                             //Generate alert for priority
                             Intent intent2 = new Intent(context, AlarmReceiver.class);
                             intent2.setAction("com.deviousindustries.testtask.Notification");
                             intent2.putExtra("EXTRA_PUSH_TITLE", "Active Priority");
-                            intent2.putExtra("EXTRA_PUSH_DESC", ti.mstrTitle);
+                            intent2.putExtra("EXTRA_PUSH_DESC", ti.fstrTitle);
                             //Fire a broadcast which is picked up by the alarmReceiver class which catches the broadcast and triggers the notification.
-                            generateAlert(context, intent2, ti.mdtmFrom, i, AlarmManager.RTC_WAKEUP);
+                            generateAlert(context, intent2, ti.fdtmFrom, i, AlarmManager.RTC_WAKEUP);
                         }
                     }
                 }

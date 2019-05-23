@@ -5,12 +5,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -175,39 +178,8 @@ public class Details_LongTerm extends AppCompatActivity {
     }
 
     private void retrieveLongTermTasks() {
-        String rawGetUnCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
-                "FROM tblTask t \n" +
-                "JOIN tblTaskDetail td \n" +
-                "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
-                "JOIN tblLongTerm lt \n" +
-                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
-                "AND t.fintTaskType = 2\n" +
-                "AND t.fdtmDeleted = -1 \n" +
-                "WHERE lt.flngLongTermID = ? \n" +
-                "AND NOT EXISTS (SELECT 1 \n" +
-                "FROM tblTaskInstance i \n" +
-                "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(i.fdtmCompleted == -1 AND i.fdtmSystemCompleted = -1)) \n" +
-                "ORDER BY t.flngTaskID";
 
-        String rawGetCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
-                "FROM tblTask t \n" +
-                "JOIN tblTaskDetail td \n" +
-                "ON td.flngTaskDetailID = t.flngTaskDetailID\n" +
-                "JOIN tblLongTerm lt \n" +
-                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
-                "AND t.fintTaskType = 2\n" +
-                "AND t.fdtmDeleted = -1 \n" +
-                "WHERE lt.flngLongTermID = ? \n" +
-                "AND EXISTS (SELECT 1 \n" +
-                "FROM tblTaskInstance i \n" +
-                "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(i.fdtmCompleted == -1 AND i.fdtmSystemCompleted = -1)) \n" +
-                "ORDER BY t.flngTaskID";
-
-        String[] parameters = {Long.toString(mlngLongTermID)};
-
-        try(Cursor curRawUncomplete = DatabaseAccess.mDatabase.rawQuery(rawGetUnCompleteLongTermTasks,parameters)){
+        try(Cursor curRawUncomplete = DatabaseAccess.getTasksFromLongTerm(false,mlngLongTermID)){
             mLongTermTasksUnc.Clear();
             while (curRawUncomplete.moveToNext()){
                 mlngTaskCount++;
@@ -217,7 +189,7 @@ public class Details_LongTerm extends AppCompatActivity {
 
         }
 
-        try(Cursor curRawComplete = DatabaseAccess.mDatabase.rawQuery(rawGetCompleteLongTermTasks,parameters)){
+        try(Cursor curRawComplete = DatabaseAccess.getTasksFromLongTerm(true,mlngLongTermID)){
             mLongTermTasksCmp.Clear();
             while (curRawComplete.moveToNext()){
                 mlngTaskCount++;

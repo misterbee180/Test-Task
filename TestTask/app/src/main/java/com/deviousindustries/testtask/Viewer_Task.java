@@ -6,14 +6,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -176,7 +178,7 @@ public class Viewer_Task extends AppCompatActivity {
         String fstrSession = "";
         String fstrGroup = "";
 
-        try(Cursor curTaskList = mDatabase.rawQuery(rawGetTasks,null)){
+        try(Cursor curTaskList = DatabaseAccess.getTasks(mSorting.ordinal())){
             while(curTaskList.moveToNext())
             {
                 switch(mSorting) {

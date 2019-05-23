@@ -3,15 +3,19 @@ package com.deviousindustries.testtask;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.deviousindustries.testtask.Classes.Time;
 
 public class Details_Instance extends AppCompatActivity {
 
@@ -51,13 +55,13 @@ public class Details_Instance extends AppCompatActivity {
     private void retrieveExtras() {
         long instance_id = getIntent().getLongExtra("EXTRA_INSTANCE_ID",-1);
         mInstance = new TaskInstance(instance_id);
-        setTaskTitle(mInstance.mstrTitle);
-        setTaskDesc(mInstance.mstrDescription);
-        timeKeeper.loadTimeDetails(mInstance.mdtmFrom,
-                mInstance.mdtmTo,
-                mInstance.mblnFromTime,
-                mInstance.mblnToTime,
-                mInstance.mblnToDate,
+        setTaskTitle(mInstance.fstrTitle);
+        setTaskDesc(mInstance.fstrDescription);
+        timeKeeper.loadTimeDetails(mInstance.fdtmFrom,
+                mInstance.fdtmTo,
+                mInstance.fblnFromTime,
+                mInstance.fblnToTime,
+                mInstance.fblnToDate,
                 false);
     }
 
@@ -70,14 +74,14 @@ public class Details_Instance extends AppCompatActivity {
 
             //As the instance is being updated we are assuming new title / desc and new time.
             //This is logic that in the future might want to be made more robust.
-            mInstance = new TaskInstance(mInstance.mlngInstanceID,
-                    mInstance.mlngTaskID,
+            mInstance = new TaskInstance(mInstance.flngInstanceID,
+                    mInstance.flngTaskID,
                     lngTaskDetailID,
                     timeKeeper.getFromDate(),
                     timeKeeper.getToDate(),
-                    timeKeeper.mblnFromTime,
-                    timeKeeper.mblnToTime,
-                    timeKeeper.mblnToDate,
+                    timeKeeper.fblnFromTime,
+                    timeKeeper.fblnToTime,
+                    timeKeeper.fblnToDate,
                     -1);
 
             setResult(RESULT_OK);
@@ -107,15 +111,15 @@ public class Details_Instance extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.action_delete_instance:
                 Bundle args = new Bundle();
-                args.putLong("instance",mInstance.mlngInstanceID);
-                args.putLong("task",mInstance.mlngTaskID);
+                args.putLong("instance",mInstance.flngInstanceID);
+                args.putLong("task",mInstance.flngTaskID);
                 DialogFragment newFragment = new InstanceDeleteConfirmationFragment();
                 newFragment.setArguments(args);
                 newFragment.show(getSupportFragmentManager(), "Delete Instance");
                 break;
             case R.id.action_view_task:
                 Intent intent = new Intent(this, Details_Task.class);
-                intent.putExtra("EXTRA_TASK_ID", mInstance.mlngTaskID);
+                intent.putExtra("EXTRA_TASK_ID", mInstance.flngTaskID);
                 startActivityForResult(intent, 1);
             /*case R.id.action_delete_task:
                 B*/
@@ -155,8 +159,8 @@ public class Details_Instance extends AppCompatActivity {
                             try{
                                 DatabaseAccess.mDatabase.beginTransaction();
                                 Task tt = new Task(lngTaskID);
-                                Time tm = new Time(tt.mlngTimeID);
-                                if(tm.mlngRepetition <= 0){
+                                Time tm = new Time(tt.flngTimeID);
+                                if(tm.flngRepetition <= 0){
                                     tt.deleteTask();
                                 } else {
                                     TaskInstance ti = new TaskInstance(lngInstanceID);

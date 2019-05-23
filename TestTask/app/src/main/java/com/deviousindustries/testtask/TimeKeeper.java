@@ -7,11 +7,11 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.DialogFragment;
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.DialogFragment;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.View;
@@ -27,6 +27,10 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.app.AlertDialog.Builder;
 
+import com.deviousindustries.testtask.Classes.Month;
+import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.Classes.Week;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -38,13 +42,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     int mSetIndicator = -1; //Used to determine which time button was selected
     int[] arrSpecificDays;
     int intArrayCounter;
-    long mdtmFrom = -1;
-    long mdtmTo = -1;
-    boolean mblnFromTime;
-    boolean mblnToTime;
-    boolean mblnToDate;
-    boolean mblnLoaded = false;
-    int mintMode = 1; //Used for visability 1: Normal 2: Session 3: Task Instance
+    long fdtmFrom = -1;
+    long fdtmTo = -1;
+    boolean fblnFromTime;
+    boolean fblnToTime;
+    boolean fblnToDate;
+    boolean fblnLoaded = false;
+    int fintMode = 1; //Used for visability 1: Normal 2: Session 3: Task Instance
     Month mMonth;
     Week mWeek;
 
@@ -121,23 +125,23 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     };*/
 
     //region CLASSES
-    public class Month{
-        boolean mblnFirst;
-        boolean mblnMiddle;
-        boolean mblnLast;
-        boolean mblnAfter;
-        String mstrSpecific;
-    }
-
-    public class Week{
-        boolean mblnMonday;
-        boolean mblnTuesday;
-        boolean mblnWednesday;
-        boolean mblnThursday;
-        boolean mblnFriday;
-        boolean mblnSaturday;
-        boolean mblnSunday;
-    }
+//    public class Month{
+//        boolean fblnFirst;
+//        boolean fblnMiddle;
+//        boolean fblnLast;
+//        boolean fblnAfterWkn;
+//        String fstrSpecific;
+//    }
+//
+//    public class Week{
+//        boolean fblnMonday;
+//        boolean fblnTuesday;
+//        boolean fblnWednesday;
+//        boolean fblnThursday;
+//        boolean fblnFriday;
+//        boolean fblnSaturday;
+//        boolean fblnSunday;
+//    }
     //endregion
 
     //region Getters And Setters
@@ -158,44 +162,44 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public boolean isTimeSet(){
-        return (mdtmFrom != -1);
+        return (fdtmFrom != -1);
     }
 
     public Week getWeekDetails(){
         Week tempWeek = new Week();
-        tempWeek.mblnSunday = getDayOfWeek("Sunday");
-        tempWeek.mblnMonday = getDayOfWeek("Monday");
-        tempWeek.mblnTuesday = getDayOfWeek("Tuesday");
-        tempWeek.mblnWednesday = getDayOfWeek("Wednesday");
-        tempWeek.mblnThursday = getDayOfWeek("Thursday");
-        tempWeek.mblnFriday = getDayOfWeek("Friday");
-        tempWeek.mblnSaturday = getDayOfWeek("Saturday");
+        tempWeek.setFblnSunday(getDayOfWeek("Sunday"));
+        tempWeek.setFblnMonday(getDayOfWeek("Monday"));
+        tempWeek.setFblnTuesday(getDayOfWeek("Tuesday"));
+        tempWeek.setFblnWednesday(getDayOfWeek("Wednesday"));
+        tempWeek.setFblnThursday(getDayOfWeek("Thursday"));
+        tempWeek.setFblnFriday(getDayOfWeek("Friday"));
+        tempWeek.setFblnSaturday(getDayOfWeek("Saturday"));
 
         return tempWeek;
     }
 
     public Month getMonthDetails(){
         Month tempMonth = new Month();
-        tempMonth.mblnFirst = ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).isChecked();
-        tempMonth.mblnMiddle =  ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).isChecked();
-        tempMonth.mblnLast = ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked();
-        tempMonth.mblnAfter = ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked();
-        tempMonth.mstrSpecific = ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().toString();
+        tempMonth.setFblnFirst(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).isChecked());
+        tempMonth.setFblnMiddle(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).isChecked());
+        tempMonth.setFblnLast(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked());
+        tempMonth.setFblnAfterWkn(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked());
+        tempMonth.setFstrSpecific(((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().toString());
 
         return tempMonth;
     }
 
     public long getFromDate(){
-        return (mdtmFrom == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmFrom;
+        return (fdtmFrom == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmFrom;
     }
 
     public long getToDate(){
-        return (mdtmTo == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():mdtmTo;
+        return (fdtmTo == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmTo;
     }
 
 
     public void setFromDate(long pdtmFrom) {
-        mdtmFrom = pdtmFrom;
+        fdtmFrom = pdtmFrom;
         if(pdtmFrom != -1) {
             Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
@@ -206,9 +210,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void setToDate(long pdtmTo) {
-        mdtmTo = pdtmTo;
+        fdtmTo = pdtmTo;
         if(pdtmTo != -1){
-            mblnToDate = true;
+            fblnToDate = true;
             Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             String strToDate = "To Date: " + dateFormat.format(pcalTo.getTime()); 
@@ -217,9 +221,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void setFromTime(long pdtmFrom) {
-        mdtmFrom = pdtmFrom;
+        fdtmFrom = pdtmFrom;
         if(pdtmFrom != -1){
-            mblnFromTime = true;
+            fblnFromTime = true;
             Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
             String strFromTime = "From Time: " + dateFormat.format(pcalFrom.getTime()); 
@@ -228,9 +232,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void setToTime(long pdtmTo) {
-        mdtmTo = pdtmTo;
+        fdtmTo = pdtmTo;
         if(pdtmTo != -1){
-            mblnToTime = true;
+            fblnToTime = true;
             Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
             String strToTime = "To Time: " + dateFormat.format(pcalTo.getTime());
@@ -426,17 +430,17 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void loadTimeKeeper(Time pTime){
-        mblnLoaded = true;
-        loadTimeDetails(pTime.mdtmFrom,
-                pTime.mdtmTo,
-                pTime.mblnFromTime,
-                pTime.mblnToTime,
-                pTime.mblnToDate,
-                pTime.mblnThru);
-        loadRepetitionDetails(pTime.mlngRepetition,
-                pTime.mintTimeframe,
-                pTime.mlngTimeframeID,
-                pTime.mintStarting);
+        fblnLoaded = true;
+        loadTimeDetails(pTime.fdtmFrom,
+                pTime.fdtmTo,
+                pTime.fblnFromTime,
+                pTime.fblnToTime,
+                pTime.fblnToDate,
+                pTime.fblnThru);
+        loadRepetitionDetails(pTime.flngRepetition,
+                pTime.fintTimeframe,
+                pTime.flngTimeframeID,
+                pTime.fintStarting);
     }
 
     public void loadTimeDetails(long pdtmFrom,
@@ -560,10 +564,10 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void resetTimeKeeper(){
-        mblnFromTime = false;
-        mblnToTime = false;
-        mdtmFrom = (long)-1;
-        mdtmTo = (long)-1;
+        fblnFromTime = false;
+        fblnToTime = false;
+        fdtmFrom = (long)-1;
+        fdtmTo = (long)-1;
 
         loadWeekDetails(0,0,0,0,0,0,0);
         loadMonthDetails(false, false,false, false, "");
@@ -578,16 +582,16 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         //2 - session
         //3 - instance
         //4 - long term
-        mintMode = pintMode;
-        if (mintMode == 1){
+        fintMode = pintMode;
+        if (fintMode == 1){
             setUpRepetitionForRegular();
-        } else if(mintMode == 2){
+        } else if(fintMode == 2){
             setUpRepititionForSession();
-        } else if(mintMode == 3){
+        } else if(fintMode == 3){
             findViewById(R.id.spnRepitition).setVisibility(View.GONE);
             findViewById(R.id.spnTimeframe).setVisibility(View.GONE);
             evaluateRepetitionView(0);
-        } else if(mintMode == 4){
+        } else if(fintMode == 4){
             findViewById(R.id.spnRepitition).setVisibility(View.GONE);
         }
     }
@@ -637,7 +641,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         long lngTimeframeId = (long)-1;
 
         //Determine and create appropriate data element for repetition type
-        if(mblnLoaded){ //Time was loaded
+        if(fblnLoaded){ //Time was loaded
             if(pintOrigTimeframe == getTimeframe()){ //Timeframe type matches (should work even if -1)
                 lngTimeframeId = plngOrigTimeframeID;
             } else //noinspection StatementWithEmptyBody
@@ -651,9 +655,9 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 getFromDate(),
                 getToDate(),
                 Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
-                mblnFromTime,
-                mblnToTime,
-                mblnToDate,
+                fblnFromTime,
+                fblnToTime,
+                fblnToDate,
                 getTimeframe(),
                 createTimeframe(lngTimeframeId),
                 getRepetition(),
@@ -684,13 +688,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             case 1: //Week
                 mWeek = getWeekDetails();
                 arrColumns = new String[]{"fblnMonday","fblnTuesday","fblnWednesday","fblnThursday","fblnFriday","fblnSaturday","fblnSunday"};
-                arrValues = new Object[]{mWeek.mblnMonday,
-                        mWeek.mblnTuesday,
-                        mWeek.mblnWednesday,
-                        mWeek.mblnThursday,
-                        mWeek.mblnFriday,
-                        mWeek.mblnSaturday,
-                        mWeek.mblnSunday};
+                arrValues = new Object[]{mWeek.getFblnMonday(),
+                        mWeek.getFblnTuesday(),
+                        mWeek.getFblnWednesday(),
+                        mWeek.getFblnThursday(),
+                        mWeek.getFblnFriday(),
+                        mWeek.getFblnSaturday(),
+                        mWeek.getFblnSunday()};
                 plntTimeframeID = (int)DatabaseAccess.addRecordToTable("tblWeek",
                         arrColumns,
                         arrValues,
@@ -700,11 +704,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             case 2: //Month
                 mMonth = getMonthDetails();
                 arrColumns = new String[]{"fblnFirst","fblnMiddle","fblnLast","fblnAfterWkn","fstrSpecific"};
-                arrValues = new Object[]{mMonth.mblnFirst,
-                        mMonth.mblnMiddle,
-                        mMonth.mblnLast,
-                        mMonth.mblnAfter,
-                        mMonth.mstrSpecific};
+                arrValues = new Object[]{mMonth.getFblnFirst(),
+                        mMonth.getFblnMiddle(),
+                        mMonth.getFblnLast(),
+                        mMonth.getFblnAfterWkn(),
+                        mMonth.getFstrSpecific()};
                 plntTimeframeID = (int)DatabaseAccess.addRecordToTable("tblMonth",
                         arrColumns,
                         arrValues,
@@ -776,19 +780,19 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
             int hour = Viewer_Tasklist.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
             int minute = Viewer_Tasklist.getCurrentCalendar().get(Calendar.MINUTE);
-            if(tempTime.mSetIndicator == 1 && tempTime.mblnFromTime){
-                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
+            if(tempTime.mSetIndicator == 1 && tempTime.fblnFromTime){
+                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                 hour = fromCal.get(Calendar.HOUR_OF_DAY);
                 minute = fromCal.get(Calendar.MINUTE);
             }
             else if (tempTime.mSetIndicator == 2){
-                if(tempTime.mblnToTime){
-                    Calendar ToCal = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
+                if(tempTime.fblnToTime){
+                    Calendar ToCal = Viewer_Tasklist.getCalendar(tempTime.fdtmTo);
                     hour = ToCal.get(Calendar.HOUR_OF_DAY);
                     minute = ToCal.get(Calendar.MINUTE);
                 }
-                else if(tempTime.mblnFromTime){
-                    Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
+                else if(tempTime.fblnFromTime){
+                    Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                     hour = fromCal.get(Calendar.HOUR_OF_DAY);
                     minute = fromCal.get(Calendar.MINUTE);
                 }
@@ -803,23 +807,23 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             // Do something with the time chosen by the user
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
             if (tempTime.mSetIndicator == 1) {
-                tempTime.mblnFromTime = true;
-                if(tempTime.mdtmFrom == -1){
+                tempTime.fblnFromTime = true;
+                if(tempTime.fdtmFrom == -1){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
-                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
+                Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                 fromCal.set(Calendar.HOUR_OF_DAY,hourOfDay);
                 fromCal.set(Calendar.MINUTE,minute);
                 tempTime.setFromTime(fromCal.getTimeInMillis());
             } else if (tempTime.mSetIndicator == 2) {
-                tempTime.mblnToTime = true;
+                tempTime.fblnToTime = true;
                 //Curent logic is that if a to time is set a from and to date must also be set.
-                if(tempTime.mdtmFrom == -1){
+                if(tempTime.fdtmFrom == -1){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
                 Calendar toCal;
-                if(tempTime.mdtmTo != -1){
-                    toCal = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
+                if(tempTime.fdtmTo != -1){
+                    toCal = Viewer_Tasklist.getCalendar(tempTime.fdtmTo);
                 } else {
                     toCal = Viewer_Tasklist.getCurrentCalendar();
                 }
@@ -844,8 +848,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             int month = temp.get(Calendar.MONTH);
             int day = temp.get(Calendar.DAY_OF_MONTH);
 
-            if(tempTime.mdtmFrom != -1){
-                Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
+            if(tempTime.fdtmFrom != -1){
+                Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                 year = tempFrom.get(Calendar.YEAR);
                 month = tempFrom.get(Calendar.MONTH);
                 day = tempFrom.get(Calendar.DAY_OF_MONTH);
@@ -859,15 +863,15 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
             switch (tempTime.mSetIndicator) {
                 case 3:
-                    Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.mdtmFrom);
+                    Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                     tempFrom.set(Calendar.YEAR, year);
                     tempFrom.set(Calendar.MONTH, month);
                     tempFrom.set(Calendar.DAY_OF_MONTH, day);
                     tempTime.setFromDate(tempFrom.getTimeInMillis());
                     break;
                 case 4:
-                    Calendar tempTo = Viewer_Tasklist.getCalendar(tempTime.mdtmTo);
-                    if(tempTime.mdtmFrom == -1){
+                    Calendar tempTo = Viewer_Tasklist.getCalendar(tempTime.fdtmTo);
+                    if(tempTime.fdtmFrom == -1){
                         tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                     }
                     tempTo.set(Calendar.YEAR, year);

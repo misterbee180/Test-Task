@@ -5,12 +5,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+
+import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -166,19 +168,10 @@ public class Viewer_Events extends AppCompatActivity {
     }
 
     public void setEventsList(){
-
-        String rawGetEvents = "SELECT *, \n" +
-                "CASE WHEN EXISTS(SELECT 1 FROM tblTask t \n" +
-                "JOIN tblTaskInstance ti \n" +
-                "ON t.flngTaskID = ti.flngTaskID \n" +
-                "AND ti.fdtmSystemCompleted = -1 AND ti.fdtmCompleted = -1 \n" +
-                "WHERE t.fintTaskType = 1 \n" +
-                "AND t.flngTaskTypeID = e.flngEventID) THEN 1 ELSE 0 END as fblnActive \n" +
-                "FROM tblEvent e \n";
         mEventList.Clear();
         mActiveList.Clear();
 
-        try(Cursor curActiveEvents = DatabaseAccess.mDatabase.rawQuery(rawGetEvents,null)){
+        try(Cursor curActiveEvents = DatabaseAccess.getEvents()){
             while (curActiveEvents.moveToNext()){
                 if (curActiveEvents.getLong(curActiveEvents.getColumnIndex("fblnActive"))==1){
                     mActiveList.Add(curActiveEvents.getString(curActiveEvents.getColumnIndex("fstrTitle")),curActiveEvents.getLong(curActiveEvents.getColumnIndex("flngEventID")));
