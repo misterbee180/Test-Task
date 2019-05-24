@@ -1,6 +1,8 @@
 package com.deviousindustries.testtask.SessionViewer
 
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -12,21 +14,14 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.deviousindustries.testtask.Classes.Session
 
 import com.deviousindustries.testtask.R
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- *
- */
 class SessionViewerFragment : Fragment() {
 
     lateinit var sessionList: ListView
@@ -43,10 +38,25 @@ class SessionViewerFragment : Fragment() {
 
         Log.i("SessionViewer", "View Model Provider Called")
         viewModel = ViewModelProviders.of(this).get(SessionViewerViewModel::class.java)
+        setupFab()
+        setupSessionList()
+    }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadSessionList()
+    }
+
+    private fun setupFab() {
+        val fab = activity!!.findViewById(R.id.AddSession_FAB) as FloatingActionButton
+        fab.setOnClickListener { viewModel.createSession(context!!) }
+    }
+
+    private fun setupSessionList(){
+        val application = requireNotNull(this.activity).application
         sessionList = activity!!.findViewById(R.id.lsvSessionList)
         viewModel.sessionList.observe(this, Observer<List<Session>> { sessions ->
-            val sessionAdapter = object : ArrayAdapter<Session>(activity,
+            val sessionAdapter = object : ArrayAdapter<Session>(application,
                     R.layout.task_item1,
                     sessions) {
                 override fun getItemId(position: Int): Long {
@@ -56,7 +66,7 @@ class SessionViewerFragment : Fragment() {
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                     var convertView = convertView
                     if (convertView == null) {
-                        convertView = (activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(R.layout.task_item1, null)
+                        convertView = (application.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(R.layout.task_item1, null)
                     }
 
                     (convertView!!.findViewById(R.id.title_text) as TextView).text = getItem(position).title
@@ -68,17 +78,40 @@ class SessionViewerFragment : Fragment() {
         })
 
         sessionList.setOnItemClickListener(AdapterView.OnItemClickListener { parent, view, position, id ->
-            viewModel.viewSessionDetails(context!!, sessionList!!.getItemIdAtPosition(position))
+            viewModel.viewSessionDetails(application, sessionList.getItemIdAtPosition(position))
         })
 
         sessionList.setOnItemLongClickListener(AdapterView.OnItemLongClickListener { parent, view, position, id ->
             val bundle = Bundle()
             bundle.putLong("SessionID", sessionList.getItemIdAtPosition(position))
-            val newFragment = Viewer_Session.DeleteSessionFragment()
+            val newFragment = DeleteSessionFragment()
             newFragment.setArguments(bundle)
-            newFragment.show(getSupportFragmentManager(), "Delete Session")
-
+            newFragment.show(activity!!.getSupportFragmentManager(), "Delete Session")
             true
         })
     }
+
+    inner class DeleteSessionFragment : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val tmpSessionID = arguments!!.getLong("SessionID")
+            val builder = AlertDialog.Builder(activity)
+            builder.setMessage("Delete Session?")
+                    .setPositiveButton("Confirm") { dialog, id ->
+                        viewModel.deleteSession(tmpSessionID)
+                        viewModel.loadSessionList()
+                    }
+                    .setNegativeButton("Cancel") { dialog, id ->
+                        // User cancelled the dialog
+                    }
+            // Create the AlertDialog object and return it
+            return builder.create()
+        }
+    }
+
+    companion object {
+        fun newInstance(): SessionViewerFragment {
+            return SessionViewerFragment()
+        }
+    }
+
 }

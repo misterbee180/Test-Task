@@ -25,8 +25,6 @@ import android.widget.ListView;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import static com.deviousindustries.testtask.DatabaseAccess.mDatabase;
-
 public class Viewer_Task extends AppCompatActivity {
 
     ListView mTaskView;
@@ -48,7 +46,7 @@ public class Viewer_Task extends AppCompatActivity {
             Toolbar toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
 
-            FloatingActionButton fab = findViewById(R.id.fab);
+            FloatingActionButton fab = findViewById(R.id.AddSession_FAB);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

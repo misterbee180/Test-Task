@@ -5,7 +5,7 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -14,8 +14,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Details_Instance"
-            android:label="@string/title_activity_details_instance"/>
+        <activity android:name=".Session.Session"></activity>
+        <activity
+            android:name=".Details_Instance"
+            android:label="@string/title_activity_details_instance" />
         <activity
             android:name=".Details_LongTerm"
             android:label="@string/title_activity_details_long_term"
@@ -37,11 +39,12 @@
         <activity
             android:name=".Details_Task"
             android:label="@string/title_activity_details_task" />
-        <activity android:name=".Details_Session"
+        <activity
+            android:name=".Details_Session"
             android:label="@string/title_activity_details_session" />
         <activity android:name=".TimeKeeper" />
         <activity
-            android:name=".SessionViewer.Viewer_Session"
+            android:name=".SessionViewer.SessionViewer"
             android:label="@string/title_activity_viewer_session"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -67,14 +70,17 @@
             android:name=".Details_Group"
             android:label="@string/title_activity_details_group"
             android:theme="@style/AppTheme.NoActionBar" />
-        <receiver android:name="com.deviousindustries.testtask.AlarmReceiver"
+
+        <receiver
+            android:name=".AlarmReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
-                <action android:name="com.deviousindustries.testtask.Notification"></action>
-                <action android:name="com.deviousindustries.testtask.SYNC"></action>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.deviousindustries.testtask.Notification" />
+                <action android:name="com.deviousindustries.testtask.SYNC" />
             </intent-filter>
         </receiver>
     </application>
+
 </manifest>

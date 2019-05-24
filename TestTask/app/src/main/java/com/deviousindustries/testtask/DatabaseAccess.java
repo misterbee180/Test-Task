@@ -188,24 +188,26 @@ public class DatabaseAccess {
                 whereClause,
                 whereArgs);
     }
-    //endregion
 
-    //region SPECIFIC FUNCTIONS
-    public static  Cursor retrieveMostRecentTaskInstance(String pstrColumnName,
-                                                         Long plngColumnID){
+    public static  Cursor retrieveMostRecent(String pstrTableName,
+                                             String pstrColumnName,
+                                             Long plngColumnID,
+                                             String pstrOrderBy){
         //Returns the most recent task instance by created date
         String selection = pstrColumnName + " = ?";
         String[] selectionArgs = {Long.toString(plngColumnID)};
-        String orderBy = "fdtmCreated desc";
+        String orderBy = pstrOrderBy + " desc";
 
         return mDatabase.query(
-                SupportSQLiteQueryBuilder.builder("tblTaskInstance")
+                SupportSQLiteQueryBuilder.builder(pstrTableName)
                         .selection(selection, selectionArgs)
                         .orderBy(orderBy)
                         .limit("1")
                         .create());
     }
+    //endregion
 
+    //region SPECIFIC FUNCTIONS
     public static Cursor retrieveMaxUpcoming(long plngTimeID){
         return mDatabase.query(
                 SupportSQLiteQueryBuilder.builder("tblTimeInstance")

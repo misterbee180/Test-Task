@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import com.deviousindustries.testtask.Classes.TaskInstance;
 import com.deviousindustries.testtask.Classes.Time;
 import com.deviousindustries.testtask.Data.TaskDatabase;
-import com.deviousindustries.testtask.SessionViewer.Viewer_Session;
+import com.deviousindustries.testtask.SessionViewer.SessionViewer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
@@ -62,7 +62,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
 //            newFragment.show(this.getSupportFragmentManager(), "Error Handled");
 //        }
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -347,7 +347,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
     }
 
     public void viewSessions() {
-        Intent intent = new Intent(this, Viewer_Session.class);
+        Intent intent = new Intent(this, SessionViewer.class);
         startActivity(intent);
     }
 

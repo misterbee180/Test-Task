@@ -164,8 +164,8 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblTask WHERE flngTimeID = :ID and fdtmDeleted = -1")
     fun loadActiveTasksFromTime(ID: Long): List<Task>
 
-    @Query("SELECT * FROM tblTaskInstance where flngTaskID IN (:tasks)")
-    fun loadActiveTaskInstanceFromTask(tasks:List<Task>): List<TaskInstance>
+//    @Query("SELECT * FROM tblTaskInstance where flngTaskID IN (:tasks)")
+//    fun loadActiveTaskInstanceFromTask(tasks:List<Task>): List<TaskInstance>
 
 
 

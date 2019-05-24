@@ -174,8 +174,7 @@ public class Time {
     private long getLatestPriorityAndThru(){
         //Returns the latest time instance associated w/ a time w/ the inclusing on the thru value.
         //This is important as you don't want to be evaluating dates already handled by a thru value.
-        try(Cursor latestTimeInstance = DatabaseAccess.retrieveMostRecentTaskInstance("flngTimeID", flngTimeID)) {
-
+        try(Cursor latestTimeInstance = DatabaseAccess.retrieveMostRecent("tblTimeInstance","flngTimeID", flngTimeID, "flngGenerationID")) {
             if (latestTimeInstance.moveToFirst()) {
                 Calendar temp = Viewer_Tasklist.getCalendar(latestTimeInstance.getLong(latestTimeInstance.getColumnIndex("fdtmPriority")));
                 temp.add(Calendar.DAY_OF_YEAR, latestTimeInstance.getInt(latestTimeInstance.getColumnIndex("fintThru")));
