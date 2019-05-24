@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import androidx.sqlite.db.SupportSQLiteQueryBuilder;
 
+import com.deviousindustries.testtask.Classes.Task;
 import com.deviousindustries.testtask.Classes.TaskDetail;
 import com.deviousindustries.testtask.Classes.Time;
 import com.deviousindustries.testtask.Data.TaskDatabaseDao;
@@ -24,12 +25,34 @@ import java.util.Calendar;
 
 public class DatabaseAccess {
     public static SupportSQLiteDatabase mDatabase = null;
-    public static TaskDatabaseDao taskDatabaseDao;
+    public static TaskDatabaseDao taskDatabaseDao = null;
 
-    public static SupportSQLiteDatabase getInstance(@NonNull SupportSQLiteOpenHelper helper){
-        if(mDatabase == null) mDatabase = helper.getWritableDatabase();
+    public static SupportSQLiteDatabase getInstance(@NonNull SupportSQLiteOpenHelper helper, TaskDatabaseDao dao){
+        if(mDatabase == null) {
+            mDatabase = helper.getWritableDatabase();
+            taskDatabaseDao = dao;
+        }
+
         return mDatabase;
     }
+
+    //region NewFunctions
+    public static void deleteSession(Long sessionID){
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            Time tempTime = taskDatabaseDao.loadTime(sessionID);
+            for(Task task : taskDatabaseDao.loadActiveTasksFromTime(sessionID)){
+                task.finishActiveInstances(3);
+                task.replaceTimeId(tempTime.getCopy().flngTimeID);
+            }
+            DatabaseAccess.taskDatabaseDao.deleteTime(tempTime);
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        DatabaseAccess.mDatabase.endTransaction();
+    }
+    //endregion
 
     //region GENERIC FUNCTIONS
     public static Cursor getRecordsFromTable(String pstrTableName,

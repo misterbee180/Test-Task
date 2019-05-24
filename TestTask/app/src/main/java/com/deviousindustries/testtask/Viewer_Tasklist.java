@@ -14,15 +14,13 @@ import androidx.annotation.NonNull;
 import com.deviousindustries.testtask.Classes.TaskInstance;
 import com.deviousindustries.testtask.Classes.Time;
 import com.deviousindustries.testtask.Data.TaskDatabase;
-import com.deviousindustries.testtask.Data.TaskDatabase_Impl;
+import com.deviousindustries.testtask.SessionViewer.Viewer_Session;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import android.view.View;
 import android.view.Menu;
@@ -44,7 +42,8 @@ public class Viewer_Tasklist extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mContext = this;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(getApplicationContext()).getOpenHelper());
+        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(getApplicationContext()).getOpenHelper(),
+                TaskDatabase.Companion.getInstance(getApplicationContext()).getTaskDatabaseDao());
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);

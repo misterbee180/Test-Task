@@ -22,7 +22,8 @@ public class BusinessLogic {
     }
 
     public void generateTaskInstances() {
-        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(mContext).getOpenHelper());
+        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(mContext).getOpenHelper(),
+                TaskDatabase.Companion.getInstance(mContext).getTaskDatabaseDao());
         DatabaseAccess.mDatabase.beginTransaction();
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){

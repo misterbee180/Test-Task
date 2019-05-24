@@ -7,8 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.deviousindustries.testtask.R;
-
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -115,8 +113,8 @@ public class CustomAdapter extends BaseAdapter {
             switch (type) {
                 case TYPE_ITEM:
                     convertView = mInflater.inflate(R.layout.task_item1, null);
-                    holder.textView = convertView.findViewById(android.R.id.text1);
-                    holder.id = convertView.findViewById(R.id.taskId);
+                    holder.textView = convertView.findViewById(R.id.title_text);
+                    holder.id = convertView.findViewById(R.id.id_text);
                     break;
                 case TYPE_SEPARATOR:
                     convertView = mInflater.inflate(R.layout.seperator_item1, null);

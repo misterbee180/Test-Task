@@ -41,7 +41,7 @@
             android:label="@string/title_activity_details_session" />
         <activity android:name=".TimeKeeper" />
         <activity
-            android:name=".Viewer_Session"
+            android:name=".SessionViewer.Viewer_Session"
             android:label="@string/title_activity_viewer_session"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

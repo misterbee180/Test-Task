@@ -1,10 +1,7 @@
 package com.deviousindustries.testtask.Data
 
 import android.database.Cursor
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.deviousindustries.testtask.Classes.*
 
 @Dao
@@ -46,6 +43,44 @@ interface TaskDatabaseDao {
 
     @Insert
     fun insertYear(year: Year)
+    //endregion
+    
+    //region Updates
+    @Update
+    fun updateTask(task: Task)
+
+    @Update
+    fun updateTaskInstance(taskInstance: TaskInstance)
+
+    @Update
+    fun updateTaskDetail(taskDetail: TaskDetail)
+
+    @Update
+    fun updateTime(time: Time)
+
+    @Update
+    fun updateTimeInstance(timeInstance: TimeInstance)
+
+    @Update
+    fun updateLongTerm(longTerm: LongTerm)
+
+    @Update
+    fun updateGroup(group: Group)
+
+    @Update
+    fun updateEvent(event: Event)
+
+    @Update
+    fun updateDay(day: Day)
+
+    @Update
+    fun updateWeek(week: Week)
+
+    @Update
+    fun updateMonth(month: Month)
+
+    @Update
+    fun updateYear(year: Year)
     //endregion
 
     //region Class Deletes
@@ -96,7 +131,8 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblTaskInstance WHERE flngInstanceID = :ID")
     fun loadTaskInstance(ID: Long): Cursor
 
-    @Query("SELECT * FROM tblTime WHERE flngTimeID = :ID") fun loadTime(ID: Long): Cursor
+    @Query("SELECT * FROM tblTime WHERE flngTimeID = :ID")
+    fun loadTime(ID: Long): Time
 
     @Query("SELECT * FROM tblTimeInstance WHERE flngGenerationID = :ID")
     fun loadTimeInstance(ID: Long): Cursor
@@ -121,6 +157,17 @@ interface TaskDatabaseDao {
 
     @Query("SELECT * FROM tblYear WHERE flngYearID = :ID")
     fun loadYear(ID: Long): Cursor
+
+    @Query("SELECT fstrTitle, flngTimeID FROM tblTime WHERE fblnSession = 1 and fblnComplete = 0")
+    fun loadActiveSessions(): List<Session>
+
+    @Query("SELECT * FROM tblTask WHERE flngTimeID = :ID and fdtmDeleted = -1")
+    fun loadActiveTasksFromTime(ID: Long): List<Task>
+
+    @Query("SELECT * FROM tblTaskInstance where flngTaskID IN (:tasks)")
+    fun loadActiveTaskInstanceFromTask(tasks:List<Task>): List<TaskInstance>
+
+
 
     //endregion
 }
