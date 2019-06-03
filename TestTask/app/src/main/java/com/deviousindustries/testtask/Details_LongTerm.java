@@ -38,6 +38,7 @@ public class Details_LongTerm extends AppCompatActivity {
         setContentView(R.layout.activity_task_long_term);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {

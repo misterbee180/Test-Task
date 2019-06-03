@@ -25,35 +25,18 @@ class TimekeeperViewModel : ViewModel() {
     var settingDate = ""
     var settingTime = ""
 
-//    var fromDateMilli = NULL_DATE
-//    var toDateMilli = NULL_DATE
-//    var fromTimeMilli = NULL_DATE
-//    var toTimeMilli = NULL_DATE
-
     var fromDate = MutableLiveData<String>()
     var toDate = MutableLiveData<String>()
-    fun setDate(source: String, dateMilli: Long){
-        if(source.equals("from")){
-            //set mTime object
-            mTime.value!!.fdtmFrom = dateMilli
-            fromDate.value = generateDateString(dateMilli)
-        } else {
-            mTime.value!!.fblnToDate = true
-            mTime.value!!.fdtmTo = dateMilli
-            toDate.value = generateDateString(dateMilli)
-        }
-    }
-
-    fun generateDateString(dateMilli: Long):String{
-        var rtn = ""
-        if(dateMilli != NULL_DATE){
-            with(Utilities.getCalendar(dateMilli)){
-                @SuppressLint("SimpleDateFormat") val dateFormat = SimpleDateFormat("MM-dd")
-                //java.text.DateFormat dateFormat = SimpleDateFormat.getDateInstance();
-                rtn = dateFormat.format(getTime())
+    fun setDate(month: Int, dayOfMonth: Int){
+        with(Utilities.getCurrentCalendar().apply {
+            set(Calendar.MONTH, month)
+            set(Calendar.DAY_OF_MONTH, dayOfMonth)}) {
+            when(settingDate) {
+                FROM_SOURCE -> fromDate.value = getDateString(timeInMillis)
+                TO_SOURCE -> toDate.value = getDateString(timeInMillis)
             }
+            addDateToModel(timeInMillis)
         }
-        return rtn
     }
 
     var fromTime = MutableLiveData<String>()
@@ -118,6 +101,18 @@ class TimekeeperViewModel : ViewModel() {
                 }.timeInMillis
             }
         }
+    }
+
+    private fun getDateString(dateMilli: Long):String{
+        var rtn = ""
+        if(dateMilli != NULL_DATE){
+            with(Utilities.getCalendar(dateMilli)){
+                @SuppressLint("SimpleDateFormat") val dateFormat = SimpleDateFormat("MM-dd")
+                //java.text.DateFormat dateFormat = SimpleDateFormat.getDateInstance();
+                rtn = dateFormat.format(getTime())
+            }
+        }
+        return rtn
     }
 
     private fun getTimeString(timeMilli: Long):String{
@@ -262,14 +257,15 @@ class TimekeeperViewModel : ViewModel() {
     }
 
     fun updateSpecific(){
-        var counter = 1
+        var counter = 0
         var found = false
         val stringBuilder = StringBuilder()
         for(day in monthSpecificArray){
             counter ++
             if(day) {
-                stringBuilder.append(counter)
                 if(found) stringBuilder.append(", ")
+                stringBuilder.append(counter)
+                found = true
             }
         }
         monthSpecificString.value = stringBuilder.toString()

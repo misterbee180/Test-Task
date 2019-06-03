@@ -10,17 +10,7 @@ import java.util.*
 
 const val BASE_TIME = "BASE_TIME"
 
-class TimePickerFragment : DialogFragment(), TimePickerDialog.OnTimeSetListener {
-
-    lateinit internal var callback: OnTimePickerListener
-
-    fun setOnTimePickerListener(callback: OnTimePickerListener){
-        this.callback = callback
-    }
-
-    interface OnTimePickerListener{
-        fun onTimePicked(hourOfDay: Int, minute: Int)
-    }
+class TimePickerFragment : DialogFragment(){
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val timeInMilli = arguments?.getLong(BASE_TIME)
@@ -34,12 +24,8 @@ class TimePickerFragment : DialogFragment(), TimePickerDialog.OnTimeSetListener 
             minute = get(Calendar.MINUTE)
         }
 
-        return TimePickerDialog(activity, this, hour, minute,
+        return TimePickerDialog(activity, parentFragment as TimePickerDialog.OnTimeSetListener, hour, minute,
                 DateFormat.is24HourFormat(activity))
-    }
-
-    override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
-        callback.onTimePicked(hourOfDay, minute)
     }
 }
 

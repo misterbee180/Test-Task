@@ -30,6 +30,7 @@ public class Viewer_Events extends AppCompatActivity {
         setContentView(R.layout.activity_viewer_events);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         FloatingActionButton fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,6 +57,22 @@ public class Viewer_Events extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         setEventsList();
+    }
+
+    public void setEventsList(){
+        mEventList.Clear();
+        mActiveList.Clear();
+
+        try(Cursor curActiveEvents = DatabaseAccess.getEvents()){
+            while (curActiveEvents.moveToNext()){
+                if (curActiveEvents.getLong(curActiveEvents.getColumnIndex("fblnActive"))==1){
+                    mActiveList.Add(curActiveEvents.getString(curActiveEvents.getColumnIndex("fstrTitle")),curActiveEvents.getLong(curActiveEvents.getColumnIndex("flngEventID")));
+                } else mEventList.Add(curActiveEvents.getString(curActiveEvents.getColumnIndex("fstrTitle")),curActiveEvents.getLong(curActiveEvents.getColumnIndex("flngEventID")));
+            }
+        }
+
+        mEventList.mAdapter.notifyDataSetChanged();
+        mActiveList.mAdapter.notifyDataSetChanged();
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
@@ -166,22 +183,6 @@ public class Viewer_Events extends AppCompatActivity {
     public  void createNewEvent() {
         Intent intent = new Intent(this, Details_Event.class);
         startActivity(intent);
-    }
-
-    public void setEventsList(){
-        mEventList.Clear();
-        mActiveList.Clear();
-
-        try(Cursor curActiveEvents = DatabaseAccess.getEvents()){
-            while (curActiveEvents.moveToNext()){
-                if (curActiveEvents.getLong(curActiveEvents.getColumnIndex("fblnActive"))==1){
-                    mActiveList.Add(curActiveEvents.getString(curActiveEvents.getColumnIndex("fstrTitle")),curActiveEvents.getLong(curActiveEvents.getColumnIndex("flngEventID")));
-                } else mEventList.Add(curActiveEvents.getString(curActiveEvents.getColumnIndex("fstrTitle")),curActiveEvents.getLong(curActiveEvents.getColumnIndex("flngEventID")));
-            }
-        }
-
-        mEventList.mAdapter.notifyDataSetChanged();
-        mActiveList.mAdapter.notifyDataSetChanged();
     }
 
 }

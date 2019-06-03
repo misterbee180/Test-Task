@@ -35,6 +35,7 @@ public class Details_Event extends AppCompatActivity {
         setContentView(R.layout.activity_task_event);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {

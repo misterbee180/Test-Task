@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.deviousindustries.testtask.DatabaseAccess;
 import com.deviousindustries.testtask.R;
+import com.deviousindustries.testtask.Utilities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,6 +17,7 @@ public class SessionViewer extends AppCompatActivity{
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_viewer_session);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
         setSupportActionBar(toolbar);
         setupViewFragment();
         //DatabaseAccess.forceWALCheckpoint();

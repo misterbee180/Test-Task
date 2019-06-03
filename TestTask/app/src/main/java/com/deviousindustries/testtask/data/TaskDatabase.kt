@@ -92,7 +92,6 @@ abstract class TaskDatabase: RoomDatabase() {
                 //No changes - Changed column name in class... Hopefully this doesn't suck
             }
         }
-
         val MIGRATION_25 = object : Migration(24,25){
             override fun migrate(database: SupportSQLiteDatabase) {
                 val queries = listOf("UPDATE tblTask SET flngTaskDetailID = 0 WHERE flngTaskDetailID = -1",

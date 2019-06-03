@@ -42,6 +42,7 @@ public class Details_Task extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_details);
+        Utilities.Companion.instantiate(getApplicationContext());
         mTitle = findViewById(R.id.txbTaskTitle);
         mDescription = findViewById(R.id.txbTaskDescription);
         timeKeeper = findViewById(R.id.timeKeeper);

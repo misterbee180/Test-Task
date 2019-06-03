@@ -42,7 +42,7 @@
         app:layout_constraintTop_toBottomOf="@+id/Starting_Spinner">
 
         <Button
-            android:id="@+id/FromDate_Add_Rmv_Button"
+            android:id="@+id/FromDate_Add_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_FromDate"
@@ -50,11 +50,11 @@
             app:layout_constraintLeft_toLeftOf="parent"/>
 
         <Button
-            android:id="@+id/ToDate_Add_Rmv_Button"
+            android:id="@+id/ToDate_Add_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_ToDate"
-            app:layout_constraintTop_toBottomOf="@+id/FromDate_Add_Rmv_Button"
+            app:layout_constraintTop_toBottomOf="@+id/FromDate_Add_Button"
             app:layout_constraintLeft_toLeftOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -207,25 +207,25 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/FromTime_Add_Rmv_Button"
+        android:id="@+id/FromTime_Add_Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_From_Time"
         app:layout_constraintTop_toBottomOf="@+id/CLayMonthly" />
 
     <Button
-        android:id="@+id/ToTime_Add_Rmv_Button"
+        android:id="@+id/ToTime_Add_Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_To_Time"
-        app:layout_constraintTop_toBottomOf="@+id/FromTime_Add_Rmv_Button" />
+        app:layout_constraintTop_toBottomOf="@+id/FromTime_Add_Button" />
 
     <CheckBox
         android:id="@+id/Thru_CheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Days Thru"
-        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Rmv_Button"
+        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Button"
         android:visibility="gone"/>
 
 

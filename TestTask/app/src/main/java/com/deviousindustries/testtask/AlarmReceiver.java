@@ -28,6 +28,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        Utilities.Companion.instantiate(context);
+
         if(intent.getAction() == null){
             generatePush(context, "Alarm not working", "Alarm not working");
         } else if (intent.getAction().equals("com.deviousindustries.testtask.SYNC") ||

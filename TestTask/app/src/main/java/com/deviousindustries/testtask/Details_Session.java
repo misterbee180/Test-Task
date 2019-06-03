@@ -25,6 +25,7 @@ public class Details_Session extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_session);
+        Utilities.Companion.instantiate(getApplicationContext());
         timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(2);
         mTime = new Time();

@@ -3,6 +3,8 @@ package com.deviousindustries.testtask.timekeeper
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.app.TimePickerDialog
+import android.content.DialogInterface
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -21,8 +23,7 @@ import java.util.*
 const val FROM_SOURCE = "FROM"
 const val TO_SOURCE = "TO"
 
-class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
-
+class TimekeeperFragment : Fragment(), DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, DialogInterface.OnClickListener {
     companion object {
         fun newInstance() = TimekeeperFragment()
     }
@@ -50,19 +51,17 @@ class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
         setMonthEvents()
     }
 
-    override fun onAttachFragment(fragment: Fragment) {
-        super.onAttachFragment(fragment)
-        if (fragment is TimePickerFragment) {
-            fragment.setOnTimePickerListener(this)
-        }
+    override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
+        viewModel.setTime(hourOfDay, minute)
     }
 
-    override fun onTimePicked(hourOfDay: Int, minute: Int){
-        when(viewModel.settingTime){
-            FROM_SOURCE -> activity!!.findViewById<Button>(R.id.FromTime_Add_Rmv_Button).text = getResources().getString(R.string.Add)
-            TO_SOURCE -> activity!!.findViewById<Button>(R.id.ToTime_Add_Rmv_Button).text = getResources().getString(R.string.Add)
-        }
-        viewModel.setTime(hourOfDay, minute)
+    override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {
+        viewModel.setDate(month, day)
+    }
+
+    override fun onClick(dialog: DialogInterface?, which: Int) {
+        viewModel.monthSpecificArray[(dialog as AlertDialog).findViewById<NumberPicker>(1).value - 1] = true
+        viewModel.updateSpecific()
     }
 
     private fun setObservers(){
@@ -116,24 +115,25 @@ class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
         })
 
         viewModel.fromDate.observe(this, Observer{
-            activity.findViewById<TextView>(R.id.FromDate_Text).setText(it)
-            if(it.equals("")) {}//Hide - value
+            setTimeDateDetails(R.id.FromDate_Text, R.id.FromDate_Remove_Button, it)
         })
 
         viewModel.toDate.observe(this, Observer{
-            activity.findViewById<TextView>(R.id.ToDate_Text).setText(it)
-            if(it.equals("")) {}//Hide - value
+            setTimeDateDetails(R.id.ToDate_Text, R.id.ToDate_Remove_Button, it)
         })
 
         viewModel.fromTime.observe(this, Observer{
-            activity.findViewById<TextView>(R.id.FromTime_Text).setText(it)
-            if(it.equals("")) {}//Hide - value
+            setTimeDateDetails(R.id.FromTime_Text, R.id.FromTime_Remove_Button, it)
         })
 
         viewModel.toTime.observe(this, Observer{
-            activity.findViewById<TextView>(R.id.ToTime_Text).setText(it)
-            if(it.equals("")) {}//Hide - value
+            setTimeDateDetails(R.id.ToTime_Text, R.id.ToTime_Remove_Button, it)
         })
+    }
+
+    private fun setTimeDateDetails(setText: Int, removeBtn: Int, text: String){
+        activity!!.findViewById<TextView>(setText).setText(text)
+        activity!!.findViewById<Button>(removeBtn).visibility = if(text.equals("")) View.GONE else View.VISIBLE
     }
 
     private fun setEvents(){
@@ -167,49 +167,41 @@ class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
             viewModel.mTime.value?.fblnThru = isChecked
         }
 
-        activity.findViewById<Button>(R.id.FromDate_Add_Rmv_Button).setOnClickListener{
-            if(confirmAdd(it as Button)) {
-                viewModel.prepDateAdd(FROM_SOURCE)
-                instantiateDateFragment()
-            }else {
-                viewModel.removeDate(FROM_SOURCE)
-                it.text = getResources().getString(R.string.Add)
-            }
+        activity.findViewById<Button>(R.id.FromDate_Add_Button).setOnClickListener{
+            viewModel.prepDateAdd(FROM_SOURCE)
+            instantiateDateFragment()
         }
 
-        activity.findViewById<Button>(R.id.ToDate_Add_Rmv_Button).setOnClickListener{
-            if(confirmAdd(it as Button)){
-                viewModel.prepDateAdd(TO_SOURCE)
-                instantiateDateFragment()
-            } else {
-                viewModel.removeDate(TO_SOURCE)
-                it.text = getResources().getString(R.string.Add)
-            }
+        activity.findViewById<Button>(R.id.ToDate_Add_Button).setOnClickListener{
+            viewModel.prepDateAdd(TO_SOURCE)
+            instantiateDateFragment()
         }
 
-        activity.findViewById<Button>(R.id.FromTime_Add_Rmv_Button).setOnClickListener{
-            if(confirmAdd(it as Button)){
-                viewModel.prepTimeAdd(FROM_SOURCE)
-                instantiateTimeFragment()
-            } else {
-                viewModel.removeTime(FROM_SOURCE)
-                it.text = getResources().getString(R.string.Add)
-            }
+        activity.findViewById<Button>(R.id.FromTime_Add_Button).setOnClickListener{
+            viewModel.prepTimeAdd(FROM_SOURCE)
+            instantiateTimeFragment()
         }
 
-        activity.findViewById<Button>(R.id.ToTime_Add_Rmv_Button).setOnClickListener{
-            if(confirmAdd(it as Button)){
-                viewModel.prepTimeAdd(TO_SOURCE)
-                instantiateTimeFragment()
-            } else {
-                viewModel.removeTime(TO_SOURCE)
-                it.text = getResources().getString(R.string.Add)
-            }
+        activity.findViewById<Button>(R.id.ToTime_Add_Button).setOnClickListener{
+            viewModel.prepTimeAdd(TO_SOURCE)
+            instantiateTimeFragment()
         }
-    }
 
-    private fun confirmAdd(button:Button): Boolean{
-        return button.text == getResources().getString(R.string.Add)
+        activity.findViewById<Button>(R.id.FromDate_Remove_Button).setOnClickListener{
+            viewModel.removeDate(FROM_SOURCE)
+        }
+
+        activity.findViewById<Button>(R.id.ToDate_Remove_Button).setOnClickListener{
+            viewModel.removeDate(TO_SOURCE)
+        }
+
+        activity.findViewById<Button>(R.id.FromTime_Remove_Button).setOnClickListener{
+            viewModel.removeTime(FROM_SOURCE)
+        }
+
+        activity.findViewById<Button>(R.id.ToTime_Remove_Button).setOnClickListener{
+            viewModel.removeTime(TO_SOURCE)
+        }
     }
 
     private fun setWeekEvents(){
@@ -272,7 +264,7 @@ class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
                 }
         activity.findViewById<Button>(R.id.Specific_Add_Button)
                 .setOnClickListener{
-                    //Implment date picker
+                    NumberPickerFragment().show(childFragmentManager, "numberPicker")
                 }
     }
 
@@ -461,86 +453,6 @@ class TimekeeperFragment : Fragment(), TimePickerFragment.OnTimePickerListener {
             hideWeekDetails()
             hideMonthDetails()
             displayGeneralDetails()
-        }
-    }
-
-    class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener {
-
-        lateinit var source: String
-        lateinit var viewModel: TimekeeperViewModel
-
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            source = arguments!!.getString("SOURCE")
-            viewModel = ViewModelProviders.of(activity!!).get(TimekeeperViewModel::class.java)
-
-            // Use the current mTime as the default values for the picker
-            Utilities.getCurrentCalendar().let{
-                var year = it.get(Calendar.YEAR)
-                var month = it.get(Calendar.MONTH)
-                var day = it.get(Calendar.DAY_OF_MONTH)
-
-                when(source){
-                    "from" -> viewModel.mTime.value!!.fdtmFrom
-                    else -> viewModel.mTime.value!!.fdtmTo}.let{
-                    if(it != NULL_DATE){
-                        with(Utilities.getCalendar(it)){
-                            year = get(Calendar.YEAR)
-                            month = get(Calendar.MONTH)
-                            day = get(Calendar.DAY_OF_MONTH)
-                        }
-                    }
-                }
-                return DatePickerDialog(activity!!, this, year, month, day)
-            }
-        }
-
-        override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {
-            when (source) {
-                "from" -> {
-                    with(Utilities.getCalendar(viewModel.mTime.value!!.fdtmFrom)) {
-                        set(Calendar.YEAR, year)
-                        set(Calendar.MONTH, month)
-                        set(Calendar.DAY_OF_MONTH, day)
-                        viewModel.mTime.value!!.fdtmFrom = getTimeInMillis()
-                    }
-                }
-                "to" -> {
-                    with(Utilities.getCalendar(viewModel.mTime.value!!.fdtmTo)) {
-                        if (viewModel.mTime.value!!.fdtmFrom == NULL_DATE) {
-                            viewModel.mTime.value!!.fdtmFrom = Utilities.getCurrentCalendar().getTimeInMillis()
-                        }
-                        set(Calendar.YEAR, year)
-                        set(Calendar.MONTH, month)
-                        set(Calendar.DAY_OF_MONTH, day)
-                        viewModel.mTime.value!!.fdtmTo = getTimeInMillis()
-                    }
-                }
-            }
-        }
-    }
-
-    class NumberPickerDialog : DialogFragment() {
-        lateinit var viewModel: TimekeeperViewModel
-
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            viewModel = ViewModelProviders.of(activity!!).get(TimekeeperViewModel::class.java)
-            val numberPicker = NumberPicker(activity).apply{
-                minValue = 1
-                maxValue = 31
-            }
-
-            val builder = AlertDialog.Builder(activity)
-                .setTitle("Choose Value")
-                .setMessage("Choose a number :")
-                .setPositiveButton("OK") { dialog, which ->
-                    viewModel.monthSpecificArray[numberPicker.value-1] = true
-                    viewModel.updateSpecific()
-            }
-
-            builder.setNegativeButton("CANCEL") { dialog, which -> }
-
-            builder.setView(numberPicker)
-            return builder.create()
         }
     }
 

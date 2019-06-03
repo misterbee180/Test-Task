@@ -91,13 +91,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         //Target Generic Fields
         mRepetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.Repetition_Spinner), getContext());
         mRepetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
-        btnFromTime = findViewById(R.id.FromTime_Add_Rmv_Button);
-        btnToTime = findViewById(R.id.ToTime_Add_Rmv_Button);
+        btnFromTime = findViewById(R.id.FromTime_Add_Button);
+        btnToTime = findViewById(R.id.ToTime_Add_Button);
         chkThru = findViewById(R.id.Thru_CheckBox);
 
         //Target No Frequency and Year Fields
-        btnFromDate = findViewById(R.id.FromDate_Add_Rmv_Button);
-        btnToDate = findViewById(R.id.ToDate_Add_Rmv_Button);
+        btnFromDate = findViewById(R.id.FromDate_Add_Button);
+        btnToDate = findViewById(R.id.ToDate_Add_Button);
 
         //Target Month Fields
         txtMonthlyDays = findViewById(R.id.Specific_Text);
@@ -333,19 +333,19 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.FromTime_Add_Rmv_Button:
+            case R.id.FromTime_Add_Button:
                 mSetIndicator = 1;
                 instantiateTimeFragment();
                 break;
-            case R.id.ToTime_Add_Rmv_Button:
+            case R.id.ToTime_Add_Button:
                 mSetIndicator = 2;
                 instantiateTimeFragment();
                 break;
-            case R.id.FromDate_Add_Rmv_Button:
+            case R.id.FromDate_Add_Button:
                 mSetIndicator = 3;
                 instantiateDateFragment();
                 break;
-            case R.id.ToDate_Add_Rmv_Button:
+            case R.id.ToDate_Add_Button:
                 mSetIndicator = 4;
                 instantiateDateFragment();
                 break;
@@ -381,7 +381,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             mTimeframeSpinner.setVisibility(View.GONE);
             mStartingSpinner.setVisibility(View.GONE);
             findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
-            findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.VISIBLE);
+            findViewById(R.id.ToDate_Add_Button).setVisibility(View.VISIBLE);
         } else {
             mTimeframeSpinner.setVisibility(View.VISIBLE);
             mStartingSpinner.setVisibility(View.VISIBLE);
@@ -394,14 +394,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.ToDate_Add_Button).setVisibility(View.GONE);
                 findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
                 break;
             case 1: //Week
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.VISIBLE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.ToDate_Add_Button).setVisibility(View.GONE);
                 findViewById(R.id.Thru_CheckBox).setVisibility(View.VISIBLE);
                 break;
             case 2: //Month
@@ -415,7 +415,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayNoRep.setVisibility(View.VISIBLE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.ToDate_Add_Button).setVisibility(View.GONE);
                 findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
                 //Todo: Fix design to allow yearly (and non repeating specific) to date population
                 break;
@@ -646,7 +646,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
             if(pintOrigTimeframe == getTimeframe()){ //Timeframe type matches (should work even if -1)
                 lngTimeframeId = plngOrigTimeframeID;
             } else //noinspection StatementWithEmptyBody
-                if(pintOrigTimeframe == NULL_OBJECT){} //Repeating mTime newly added
+                if(pintOrigTimeframe == NULL_POSITION){} //Repeating mTime newly added
             else{ //Different timeframe was present during mTime load
                 deleteTimeframe(pintOrigTimeframe, plngOrigTimeframeID);
             }

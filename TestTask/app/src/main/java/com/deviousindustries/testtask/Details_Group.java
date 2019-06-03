@@ -29,6 +29,7 @@ public class Details_Group extends AppCompatActivity {
         setContentView(R.layout.activity_task_group);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {

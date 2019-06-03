@@ -49,7 +49,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         setContentView(R.layout.activity_task_display);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        Utilities.Companion.instantiate(getApplicationContext());
 //        Bundle extras = getIntent().getExtras();
 //        if (extras != null){
 //            Bundle bundle = new Bundle();

@@ -25,6 +25,7 @@ public class Viewer_Groups extends AppCompatActivity {
         setContentView(R.layout.activity_viewer_groups);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         FloatingActionButton fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -28,6 +28,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
         setContentView(R.layout.activity_viewer_longterm);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Utilities.Companion.instantiate(getApplicationContext());
 
         FloatingActionButton fab = findViewById(R.id.AddSession_FAB);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -53,6 +54,27 @@ public class Viewer_LongTerm extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         setLongTermList();
+    }
+
+    public void setLongTermList(){
+        //Populating complete then populating uncomplete by grabbing all and not adding complete ones
+        try(Cursor uncompleteLongTerm = DatabaseAccess.getCompletedLongTerms()){
+            mLongTermListCmp.Clear();
+            while (uncompleteLongTerm.moveToNext()){
+                mLongTermListCmp.Add(uncompleteLongTerm.getString(uncompleteLongTerm.getColumnIndex("fstrTitle")),uncompleteLongTerm.getLong(uncompleteLongTerm.getColumnIndex("flngLongTermID")));
+            }
+            mLongTermListCmp.mAdapter.notifyDataSetChanged();
+        }
+
+        try(Cursor tblLongTerm = DatabaseAccess.getRecordsFromTable("tblLongTerm")){
+            mLongTermListUnc.Clear();
+            while (tblLongTerm.moveToNext()){
+                if(mLongTermListCmp.FindID(tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID"))) == NULL_POSITION){
+                    mLongTermListUnc.Add(tblLongTerm.getString(tblLongTerm.getColumnIndex("fstrTitle")),tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID")));
+                }
+            }
+            mLongTermListUnc.mAdapter.notifyDataSetChanged();
+        }
     }
 
     public  void createNewLongTermTask() {
@@ -123,24 +145,5 @@ public class Viewer_LongTerm extends AppCompatActivity {
         }
     }
 
-    public void setLongTermList(){
-        //Populating complete then populating uncomplete by grabbing all and not adding complete ones
-        try(Cursor uncompleteLongTerm = DatabaseAccess.getCompletedLongTerms()){
-            mLongTermListCmp.Clear();
-            while (uncompleteLongTerm.moveToNext()){
-                mLongTermListCmp.Add(uncompleteLongTerm.getString(uncompleteLongTerm.getColumnIndex("fstrTitle")),uncompleteLongTerm.getLong(uncompleteLongTerm.getColumnIndex("flngLongTermID")));
-            }
-            mLongTermListCmp.mAdapter.notifyDataSetChanged();    
-        }
 
-        try(Cursor tblLongTerm = DatabaseAccess.getRecordsFromTable("tblLongTerm")){
-            mLongTermListUnc.Clear();
-            while (tblLongTerm.moveToNext()){
-                if(mLongTermListCmp.FindID(tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID"))) == NULL_OBJECT){
-                    mLongTermListUnc.Add(tblLongTerm.getString(tblLongTerm.getColumnIndex("fstrTitle")),tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID")));
-                }
-            }
-            mLongTermListUnc.mAdapter.notifyDataSetChanged();
-        }
-    }
 }
