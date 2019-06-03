@@ -27,23 +27,24 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.app.AlertDialog.Builder;
 
-import com.deviousindustries.testtask.Classes.Month;
-import com.deviousindustries.testtask.Classes.Time;
-import com.deviousindustries.testtask.Classes.Week;
+import com.deviousindustries.testtask.classes.Month;
+import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.classes.Week;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
-//TODO: Design view for visiblity of currently active and future time instances associated w/ time
+//TODO: Design view for visiblity of currently active and future mTime instances associated w/ mTime
 //TODO: Pull session selection into timekeeper (remove from task_detail)
 
 public class TimeKeeper extends ConstraintLayout implements View.OnClickListener {
 
-    int mSetIndicator = -1; //Used to determine which time button was selected
+    int mSetIndicator = NULL_POSITION; //Used to determine which mTime button was selected
     int[] arrSpecificDays;
     int intArrayCounter;
-    long fdtmFrom = -1;
-    long fdtmTo = -1;
+    long fdtmFrom = NULL_DATE;
+    long fdtmTo = NULL_DATE;
     boolean fblnFromTime;
     boolean fblnToTime;
     boolean fblnToDate;
@@ -78,8 +79,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         arrSpecificDays = new int[31];
         intArrayCounter = 0;
         mRepetitionSpinner = new ArrayListContainer();
-        mStartingSpinner = findViewById(R.id.spnStarting);
-        mTimeframeSpinner = findViewById(R.id.spnTimeframe);
+        mStartingSpinner = findViewById(R.id.Starting_Spinner);
+        mTimeframeSpinner = findViewById(R.id.Timeframe_Spinner);
         mTimeframeSpinner.setOnItemSelectedListener(timeframeListener);
 
         //Target View Groups
@@ -88,27 +89,27 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         cLayMonthly = findViewById(R.id.CLayMonthly);
 
         //Target Generic Fields
-        mRepetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.spnRepitition), getContext());
+        mRepetitionSpinner.LinkArrayToSpinner((Spinner) findViewById(R.id.Repetition_Spinner), getContext());
         mRepetitionSpinner.mSpinner.setOnItemSelectedListener(repetitionListener);
-        btnFromTime = findViewById(R.id.Timekeeper_BtnFromTime);
-        btnToTime = findViewById(R.id.Timekeeper_BtnToTime);
-        chkThru = findViewById(R.id.Timekeeper_ChkThru);
+        btnFromTime = findViewById(R.id.FromTime_Add_Rmv_Button);
+        btnToTime = findViewById(R.id.ToTime_Add_Rmv_Button);
+        chkThru = findViewById(R.id.Thru_CheckBox);
 
         //Target No Frequency and Year Fields
-        btnFromDate = findViewById(R.id.Timekeeper_NoFreq_BtnFromDate);
-        btnToDate = findViewById(R.id.Timekeeper_NoFreq_BtnToDate);
+        btnFromDate = findViewById(R.id.FromDate_Add_Rmv_Button);
+        btnToDate = findViewById(R.id.ToDate_Add_Rmv_Button);
 
         //Target Month Fields
-        txtMonthlyDays = findViewById(R.id.TimeKeeper_Monthly_Txt_Display);
+        txtMonthlyDays = findViewById(R.id.Specific_Text);
 
         //Set Listeners
         btnFromTime.setOnClickListener(this);
         btnToTime.setOnClickListener(this);
         btnFromDate.setOnClickListener(this);
         btnToDate.setOnClickListener(this);
-        findViewById(R.id.TimeKeeper_Monthly_Gen).setOnClickListener(this);
-        findViewById(R.id.TimeKeeper_Monthly_Spec).setOnClickListener(this);
-        findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setOnClickListener(this);
+        findViewById(R.id.General_Monthly_Radio).setOnClickListener(this);
+        findViewById(R.id.Specific_Montly_Radio).setOnClickListener(this);
+        findViewById(R.id.Specific_Add_Button).setOnClickListener(this);
 
         resetTimeKeeper(); //This may not be necessary as right now the id's and such are not static, however they might become necessary in the future...
     }
@@ -153,8 +154,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         chkThru.setChecked(pblnThru);
     }
 
-    public long getRepetition(){
-        return mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition());
+    public int getRepetition(){
+        return Integer.parseInt(mRepetitionSpinner.getID(mRepetitionSpinner.mSpinner.getSelectedItemPosition()).toString());
     }
 
     public int getStarting(){
@@ -162,7 +163,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public boolean isTimeSet(){
-        return (fdtmFrom != -1);
+        return (fdtmFrom != NULL_DATE);
     }
 
     public Week getWeekDetails(){
@@ -180,27 +181,27 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     public Month getMonthDetails(){
         Month tempMonth = new Month();
-        tempMonth.setFblnFirst(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).isChecked());
-        tempMonth.setFblnMiddle(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).isChecked());
-        tempMonth.setFblnLast(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).isChecked());
-        tempMonth.setFblnAfterWkn(((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).isChecked());
-        tempMonth.setFstrSpecific(((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).getText().toString());
+        tempMonth.setFblnFirst(((CheckBox)findViewById(R.id.First_Month_Checkbox)).isChecked());
+        tempMonth.setFblnMiddle(((CheckBox)findViewById(R.id.Middle_Month_Checkbox)).isChecked());
+        tempMonth.setFblnLast(((CheckBox)findViewById(R.id.Last_Month_Checkbox)).isChecked());
+        tempMonth.setFblnAfterWkn(((CheckBox)findViewById(R.id.After_Week_Checkbox)).isChecked());
+        tempMonth.setFstrSpecific(((EditText)findViewById(R.id.Specific_Text)).getText().toString());
 
         return tempMonth;
     }
 
     public long getFromDate(){
-        return (fdtmFrom == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmFrom;
+        return (fdtmFrom == NULL_DATE) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmFrom;
     }
 
     public long getToDate(){
-        return (fdtmTo == -1) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmTo;
+        return (fdtmTo == NULL_DATE) ? Viewer_Tasklist.getCurrentCalendar().getTimeInMillis():fdtmTo;
     }
 
 
     public void setFromDate(long pdtmFrom) {
         fdtmFrom = pdtmFrom;
-        if(pdtmFrom != -1) {
+        if(pdtmFrom != NULL_DATE) {
             Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
             //java.text.DateFormat dateFormat = SimpleDateFormat.getDateInstance();
@@ -211,7 +212,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     public void setToDate(long pdtmTo) {
         fdtmTo = pdtmTo;
-        if(pdtmTo != -1){
+        if(pdtmTo != NULL_DATE){
             fblnToDate = true;
             Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd");
@@ -222,7 +223,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     public void setFromTime(long pdtmFrom) {
         fdtmFrom = pdtmFrom;
-        if(pdtmFrom != -1){
+        if(pdtmFrom != NULL_DATE){
             fblnFromTime = true;
             Calendar pcalFrom = Viewer_Tasklist.getCalendar(pdtmFrom);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
@@ -233,7 +234,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     public void setToTime(long pdtmTo) {
         fdtmTo = pdtmTo;
-        if(pdtmTo != -1){
+        if(pdtmTo != NULL_DATE){
             fblnToTime = true;
             Calendar pcalTo = Viewer_Tasklist.getCalendar(pdtmTo);
             @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a");
@@ -246,25 +247,25 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         CheckBox chbDow;
         switch (pstrDow){
             case "Monday":
-                chbDow = findViewById(R.id.chkMonday);
+                chbDow = findViewById(R.id.Monday_Checkbox);
                 break;
             case "Tuesday":
-                chbDow = findViewById(R.id.chkTuesday);
+                chbDow = findViewById(R.id.Tuesday_Checkbox);
                 break;
             case "Wednesday":
-                chbDow = findViewById(R.id.chkWednesday);
+                chbDow = findViewById(R.id.Wednesday_Checkbox);
                 break;
             case "Thursday":
-                chbDow = findViewById(R.id.chkThursday);
+                chbDow = findViewById(R.id.Thursday_Checkbox);
                 break;
             case "Friday":
-                chbDow = findViewById(R.id.chkFriday);
+                chbDow = findViewById(R.id.Friday_Checkbox);
                 break;
             case "Saturday":
-                chbDow = findViewById(R.id.chkSaturday);
+                chbDow = findViewById(R.id.Saturday_Checkbox);
                 break;
             default:
-                chbDow = findViewById(R.id.chkSunday);
+                chbDow = findViewById(R.id.Sunday_Checkbox);
                 break;
         }
         return chbDow.isChecked();
@@ -274,25 +275,25 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         CheckBox chbDow;
         switch (pstrDow){
             case "Monday":
-                chbDow = findViewById(R.id.chkMonday);
+                chbDow = findViewById(R.id.Monday_Checkbox);
                 break;
             case "Tuesday":
-                chbDow = findViewById(R.id.chkTuesday);
+                chbDow = findViewById(R.id.Tuesday_Checkbox);
                 break;
             case "Wednesday":
-                chbDow = findViewById(R.id.chkWednesday);
+                chbDow = findViewById(R.id.Wednesday_Checkbox);
                 break;
             case "Thursday":
-                chbDow = findViewById(R.id.chkThursday);
+                chbDow = findViewById(R.id.Thursday_Checkbox);
                 break;
             case "Friday":
-                chbDow = findViewById(R.id.chkFriday);
+                chbDow = findViewById(R.id.Friday_Checkbox);
                 break;
             case "Saturday":
-                chbDow = findViewById(R.id.chkSaturday);
+                chbDow = findViewById(R.id.Saturday_Checkbox);
                 break;
             default:
-                chbDow = findViewById(R.id.chkSunday);
+                chbDow = findViewById(R.id.Sunday_Checkbox);
                 break;
         }
         chbDow.setChecked(pblnOn == 1);
@@ -302,7 +303,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         if (!mRepetitionSpinner.mSpinner.getSelectedItem().equals("No Repetition")){
             return mTimeframeSpinner.getSelectedItemPosition();
         }
-        return -1;
+        return NULL_POSITION;
     }
     //endregion
 
@@ -332,39 +333,39 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.Timekeeper_BtnFromTime:
+            case R.id.FromTime_Add_Rmv_Button:
                 mSetIndicator = 1;
                 instantiateTimeFragment();
                 break;
-            case R.id.Timekeeper_BtnToTime:
+            case R.id.ToTime_Add_Rmv_Button:
                 mSetIndicator = 2;
                 instantiateTimeFragment();
                 break;
-            case R.id.Timekeeper_NoFreq_BtnFromDate:
+            case R.id.FromDate_Add_Rmv_Button:
                 mSetIndicator = 3;
                 instantiateDateFragment();
                 break;
-            case R.id.Timekeeper_NoFreq_BtnToDate:
+            case R.id.ToDate_Add_Rmv_Button:
                 mSetIndicator = 4;
                 instantiateDateFragment();
                 break;
-            case R.id.TimeKeeper_Monthly_Gen:
-                findViewById(R.id.TimeKeeper_Monthly_First).setVisibility(VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_Middle).setVisibility(VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_Last).setVisibility(VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(GONE);
+            case R.id.General_Monthly_Radio:
+                findViewById(R.id.First_Month_Checkbox).setVisibility(VISIBLE);
+                findViewById(R.id.Middle_Month_Checkbox).setVisibility(VISIBLE);
+                findViewById(R.id.Last_Month_Checkbox).setVisibility(VISIBLE);
+                findViewById(R.id.After_Week_Checkbox).setVisibility(VISIBLE);
+                findViewById(R.id.Specific_Add_Button).setVisibility(GONE);
+                findViewById(R.id.Specific_Text).setVisibility(GONE);
                 break;
-            case R.id.TimeKeeper_Monthly_Spec:
-                findViewById(R.id.TimeKeeper_Monthly_First).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Middle).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Last).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_AfterWkn).setVisibility(GONE);
-                findViewById(R.id.TimeKeeper_Monthly_Btn_Add).setVisibility(VISIBLE);
-                findViewById(R.id.TimeKeeper_Monthly_Txt_Display).setVisibility(VISIBLE);
+            case R.id.Specific_Montly_Radio:
+                findViewById(R.id.First_Month_Checkbox).setVisibility(GONE);
+                findViewById(R.id.Middle_Month_Checkbox).setVisibility(GONE);
+                findViewById(R.id.Last_Month_Checkbox).setVisibility(GONE);
+                findViewById(R.id.After_Week_Checkbox).setVisibility(GONE);
+                findViewById(R.id.Specific_Add_Button).setVisibility(VISIBLE);
+                findViewById(R.id.Specific_Text).setVisibility(VISIBLE);
                 break;
-            case R.id.TimeKeeper_Monthly_Btn_Add:
+            case R.id.Specific_Add_Button:
                 AppCompatActivity context = (AppCompatActivity)getContext();
                 DialogFragment newFragment = new TimeKeeper.NumberPickerDialog();
                 newFragment.show(context.getSupportFragmentManager(), "numberPicker");
@@ -373,14 +374,14 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     }
 
     public void evaluateRepetitionView(long plngSelection) {
-        if (plngSelection == 0){
+        if (plngSelection == BASE_POSITION){
             cLayNoRep.setVisibility(View.VISIBLE);
             cLayWeekly.setVisibility(View.GONE);
             cLayMonthly.setVisibility(View.GONE);
             mTimeframeSpinner.setVisibility(View.GONE);
             mStartingSpinner.setVisibility(View.GONE);
-            findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
-            findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.VISIBLE);
+            findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
+            findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.VISIBLE);
         } else {
             mTimeframeSpinner.setVisibility(View.VISIBLE);
             mStartingSpinner.setVisibility(View.VISIBLE);
@@ -393,29 +394,29 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
+                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
                 break;
             case 1: //Week
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.VISIBLE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.VISIBLE);
+                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.Thru_CheckBox).setVisibility(View.VISIBLE);
                 break;
             case 2: //Month
                 cLayNoRep.setVisibility(View.GONE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.VISIBLE);
-                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.VISIBLE);
+                findViewById(R.id.Thru_CheckBox).setVisibility(View.VISIBLE);
                 break;
             case 3: //Year
                 //Using No Rep View for now until Year View becomes important
                 cLayNoRep.setVisibility(View.VISIBLE);
                 cLayWeekly.setVisibility(View.GONE);
                 cLayMonthly.setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_NoFreq_BtnToDate).setVisibility(View.GONE);
-                findViewById(R.id.Timekeeper_ChkThru).setVisibility(View.GONE);
+                findViewById(R.id.ToDate_Add_Rmv_Button).setVisibility(View.GONE);
+                findViewById(R.id.Thru_CheckBox).setVisibility(View.GONE);
                 //Todo: Fix design to allow yearly (and non repeating specific) to date population
                 break;
         }
@@ -437,7 +438,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 pTime.fblnToTime,
                 pTime.fblnToDate,
                 pTime.fblnThru);
-        loadRepetitionDetails(pTime.flngRepetition,
+        loadRepetitionDetails(pTime.fintRepetition,
                 pTime.fintTimeframe,
                 pTime.flngTimeframeID,
                 pTime.fintStarting);
@@ -467,7 +468,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                       long plngTimeframeID,
                                       int pintStarting) {
         //Set repetition spinner
-        if (plngRepetition != 0) {
+        if (plngRepetition != BASE_POSITION) {
             mRepetitionSpinner.setIDSpinner(plngRepetition);
             mTimeframeSpinner.setSelection(pintTimeframe);
             mStartingSpinner.setSelection(pintStarting);
@@ -521,12 +522,12 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                  boolean pblnAfter,
                                  String pstrSpecific){
         if(pstrSpecific.equals("")){
-            ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_First)).setChecked(pblnFirst);
-            ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Middle)).setChecked(pblnMiddle);
-            ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_Last)).setChecked(pblnLast);
-            ((CheckBox)findViewById(R.id.TimeKeeper_Monthly_AfterWkn)).setChecked(pblnAfter);
-            ((RadioButton)findViewById(R.id.TimeKeeper_Monthly_Gen)).setChecked(true);
-            (findViewById(R.id.TimeKeeper_Monthly_Gen)).callOnClick();
+            ((CheckBox)findViewById(R.id.First_Month_Checkbox)).setChecked(pblnFirst);
+            ((CheckBox)findViewById(R.id.Middle_Month_Checkbox)).setChecked(pblnMiddle);
+            ((CheckBox)findViewById(R.id.Last_Month_Checkbox)).setChecked(pblnLast);
+            ((CheckBox)findViewById(R.id.After_Week_Checkbox)).setChecked(pblnAfter);
+            ((RadioButton)findViewById(R.id.General_Monthly_Radio)).setChecked(true);
+            (findViewById(R.id.General_Monthly_Radio)).callOnClick();
             intArrayCounter = 0;
         } else {
             String[] tmpArray = pstrSpecific.split(",");
@@ -539,10 +540,10 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 value.append(tmpArray[i].trim());
                 arrSpecificDays[i] = Integer.parseInt(tmpArray[i].trim());
             }
-            ((EditText)findViewById(R.id.TimeKeeper_Monthly_Txt_Display)).setText(value);
+            ((EditText)findViewById(R.id.Specific_Text)).setText(value);
 
-            ((RadioButton)findViewById(R.id.TimeKeeper_Monthly_Spec)).setChecked(true);
-            (findViewById(R.id.TimeKeeper_Monthly_Spec)).callOnClick();
+            ((RadioButton)findViewById(R.id.Specific_Montly_Radio)).setChecked(true);
+            (findViewById(R.id.Specific_Montly_Radio)).callOnClick();
         }
     }
     //endregion
@@ -566,8 +567,8 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
     public void resetTimeKeeper(){
         fblnFromTime = false;
         fblnToTime = false;
-        fdtmFrom = (long)-1;
-        fdtmTo = (long)-1;
+        fdtmFrom = (long)NULL_DATE;
+        fdtmTo = (long)NULL_DATE;
 
         loadWeekDetails(0,0,0,0,0,0,0);
         loadMonthDetails(false, false,false, false, "");
@@ -588,11 +589,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         } else if(fintMode == 2){
             setUpRepititionForSession();
         } else if(fintMode == 3){
-            findViewById(R.id.spnRepitition).setVisibility(View.GONE);
-            findViewById(R.id.spnTimeframe).setVisibility(View.GONE);
+            findViewById(R.id.Repetition_Spinner).setVisibility(View.GONE);
+            findViewById(R.id.Timeframe_Spinner).setVisibility(View.GONE);
             evaluateRepetitionView(0);
         } else if(fintMode == 4){
-            findViewById(R.id.spnRepitition).setVisibility(View.GONE);
+            findViewById(R.id.Repetition_Spinner).setVisibility(View.GONE);
         }
     }
 
@@ -638,15 +639,15 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                                   long plngOrigTimeframeID,
                                   boolean pblnSession,
                                   String pstrTitle){
-        long lngTimeframeId = (long)-1;
+        long lngTimeframeId = NULL_DATE;
 
         //Determine and create appropriate data element for repetition type
-        if(fblnLoaded){ //Time was loaded
+        if(plngTimeID != NULL_OBJECT){ //Time was loaded
             if(pintOrigTimeframe == getTimeframe()){ //Timeframe type matches (should work even if -1)
                 lngTimeframeId = plngOrigTimeframeID;
             } else //noinspection StatementWithEmptyBody
-                if(pintOrigTimeframe == -1){} //Repeating time newly added
-            else{ //Different timeframe was present during time load
+                if(pintOrigTimeframe == NULL_OBJECT){} //Repeating mTime newly added
+            else{ //Different timeframe was present during mTime load
                 deleteTimeframe(pintOrigTimeframe, plngOrigTimeframeID);
             }
         }
@@ -663,7 +664,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 getRepetition(),
                 getStarting(),
                 false,
-                -1,
+                NULL_OBJECT,
                 getThru());
 
         if(pblnSession) returnTime.setAsSession(pstrTitle);
@@ -775,7 +776,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current time as the default values for the picker
+            // Use the current mTime as the default values for the picker
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
 
             int hour = Viewer_Tasklist.getCurrentCalendar().get(Calendar.HOUR_OF_DAY);
@@ -804,11 +805,11 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         }
 
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            // Do something with the time chosen by the user
+            // Do something with the mTime chosen by the user
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
             if (tempTime.mSetIndicator == 1) {
                 tempTime.fblnFromTime = true;
-                if(tempTime.fdtmFrom == -1){
+                if(tempTime.fdtmFrom == NULL_DATE){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
                 Calendar fromCal = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
@@ -817,12 +818,12 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                 tempTime.setFromTime(fromCal.getTimeInMillis());
             } else if (tempTime.mSetIndicator == 2) {
                 tempTime.fblnToTime = true;
-                //Curent logic is that if a to time is set a from and to date must also be set.
-                if(tempTime.fdtmFrom == -1){
+                //Curent logic is that if a to mTime is set a from and to date must also be set.
+                if(tempTime.fdtmFrom == NULL_DATE){
                     tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                 }
                 Calendar toCal;
-                if(tempTime.fdtmTo != -1){
+                if(tempTime.fdtmTo != NULL_DATE){
                     toCal = Viewer_Tasklist.getCalendar(tempTime.fdtmTo);
                 } else {
                     toCal = Viewer_Tasklist.getCurrentCalendar();
@@ -842,13 +843,13 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             TimeKeeper tempTime = getActivity().findViewById(R.id.timeKeeper);
 
-            // Use the current time as the default values for the picker
+            // Use the current mTime as the default values for the picker
             Calendar temp = Viewer_Tasklist.getCurrentCalendar();
             int year = temp.get(Calendar.YEAR);
             int month = temp.get(Calendar.MONTH);
             int day = temp.get(Calendar.DAY_OF_MONTH);
 
-            if(tempTime.fdtmFrom != -1){
+            if(tempTime.fdtmFrom != NULL_DATE){
                 Calendar tempFrom = Viewer_Tasklist.getCalendar(tempTime.fdtmFrom);
                 year = tempFrom.get(Calendar.YEAR);
                 month = tempFrom.get(Calendar.MONTH);
@@ -871,7 +872,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
                     break;
                 case 4:
                     Calendar tempTo = Viewer_Tasklist.getCalendar(tempTime.fdtmTo);
-                    if(tempTime.fdtmFrom == -1){
+                    if(tempTime.fdtmFrom == NULL_DATE){
                         tempTime.setFromDate(Viewer_Tasklist.getCurrentCalendar().getTimeInMillis());
                     }
                     tempTo.set(Calendar.YEAR, year);

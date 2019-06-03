@@ -12,8 +12,9 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.deviousindustries.testtask.Classes.Task;
-import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.classes.Task;
+import com.deviousindustries.testtask.classes.Time;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 
 public class Details_Task extends AppCompatActivity {
@@ -27,7 +28,7 @@ public class Details_Task extends AppCompatActivity {
     long mlngLongTermID;
     long mlngGroupID;
     boolean fblnSessionOnLoad; //DO NOT CONFUSE THIS with an indicator of having been loaded. Simply is used to make sure only certain things
-    //happen during a load and not other things. Is set back to false after load. USE mTask.flngTaskID <> -1
+    //happen during a load and not other things. Is set back to false after load. USE mTask.flngTaskID <> NULL_OBJECT
 
     ArrayListContainer mSessionList;
     ArrayListContainer mGroupList;
@@ -47,9 +48,9 @@ public class Details_Task extends AppCompatActivity {
         timeKeeper.setMode(1);
         mTask = new Task();
         mTime = new Time();
-        mlngEventID = -1;
-        mlngLongTermID = -1;
-        mlngGroupID = -1;
+        mlngEventID = NULL_OBJECT;
+        mlngLongTermID = NULL_OBJECT;
+        mlngGroupID = NULL_OBJECT;
         fblnSessionOnLoad = false;
 
 //        Cursor c = DatabaseAccess.getRecordsFromTable("tblLongTerm");
@@ -76,8 +77,8 @@ public class Details_Task extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
-            mTask = new Task(extras.getLong("EXTRA_TASK_ID",-1));
-            if(mTask.flngTaskID != -1){
+            mTask = new Task(extras.getLong("EXTRA_TASK_ID",NULL_OBJECT));
+            if(mTask.flngTaskID != NULL_OBJECT){
                 fblnSessionOnLoad = true;
                 //Get all data from the task and apply it to the control
                 setSession(mTask.flngTimeID);
@@ -93,9 +94,9 @@ public class Details_Task extends AppCompatActivity {
                 mTime = new Time(mTask.flngTimeID);
                 timeKeeper.loadTimeKeeper(mTime);
             } else {
-                mlngEventID = extras.getLong("EXTRA_EVENT_ID", -1);
-                mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", -1);
-                mlngGroupID = extras.getLong("EXTRA_GROUP_ID", -1);
+                mlngEventID = extras.getLong("EXTRA_EVENT_ID", NULL_OBJECT);
+                mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", NULL_OBJECT);
+                mlngGroupID = extras.getLong("EXTRA_GROUP_ID", NULL_OBJECT);
             }
         }
     }
@@ -139,11 +140,11 @@ public class Details_Task extends AppCompatActivity {
         if(((CheckBox) findViewById(R.id.chkSessOneOff)).isChecked()){
             return mSessionList.getID(mSessionList.mSpinner.getSelectedItemPosition());
         }
-        return -1;
+        return NULL_OBJECT;
     }
 
     public void setOneOff(long plngTimeId){
-        if(plngTimeId != -1){
+        if(plngTimeId != NULL_OBJECT){
             ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(true);
         } else {
             ((CheckBox) findViewById(R.id.chkSessOneOff)).setChecked(false);
@@ -151,29 +152,29 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public int getTaskType(){
-        if(mlngEventID != -1){
+        if(mlngEventID != NULL_OBJECT){
             return 1;
         }
-        if(mlngLongTermID != -1){
+        if(mlngLongTermID != NULL_OBJECT){
             return 2;
         }
-        if(mlngGroupID != -1){
+        if(mlngGroupID != NULL_OBJECT){
             return 3;
         }
         return 0;
     }
 
     public long getTaskTypeID(){
-        if(mlngEventID != -1){
+        if(mlngEventID != NULL_OBJECT){
             return mlngEventID;
         }
-        if(mlngLongTermID != -1){
+        if(mlngLongTermID != NULL_OBJECT){
             return mlngLongTermID;
         }
-        if(mlngGroupID != -1){
+        if(mlngGroupID != NULL_OBJECT){
             return mlngGroupID;
         }
-        return -1;
+        return BASE_POSITION;
     }
 
     public boolean wasDetailsEdited(){
@@ -182,20 +183,20 @@ public class Details_Task extends AppCompatActivity {
     }
 
     public boolean wasSessionSessionReplaced(){
-        return mTask.flngTaskID != -1 &&
+        return mTask.flngTaskID != NULL_OBJECT &&
                 isSessionSet() &&
                 mTime.fblnSession; //&&
                 //(getSession() != mTime.flngTimeID);
     }
 
     public boolean wasSessionTimeReplaced(){
-        return mTask.flngTaskID != -1 &&
+        return mTask.flngTaskID != NULL_OBJECT &&
                 !isSessionSet() &&
                 mTime.fblnSession;
     }
 
     public boolean wasTimeSessionReplaced(){
-        return mTask.flngTaskID != -1 &&
+        return mTask.flngTaskID != NULL_OBJECT &&
                 isSessionSet() &&
                 !mTime.fblnSession;
     }
@@ -203,14 +204,14 @@ public class Details_Task extends AppCompatActivity {
 
     //region ACTIVITY INITIALIZATION
     private void setupViews() {
-        if (mlngGroupID != -1){//Group
+        if (mlngGroupID != NULL_OBJECT){//Group
             mGroupList.setIDSpinner(mTask.flngTaskTypeID);
         }
 
-        if (mlngEventID == -1){
+        if (mlngEventID == NULL_OBJECT){
             LoadSessionSpinner();
             LoadGroupSpinner();
-            if(mTask.flngTimeID != -1){
+            if(mTask.flngTimeID != NULL_OBJECT){
                 setOneOff(mTask.flngOneOff);
                 //It will only set it to one or the other because only 1 should ever evaluate to a record.
                 setSession(mTask.flngOneOff);
@@ -220,28 +221,28 @@ public class Details_Task extends AppCompatActivity {
     }
 
     private void setupInitialVisibility() {
-        if (mlngEventID != -1){ //Event
+        if (mlngEventID != NULL_OBJECT){ //Event
             (findViewById(R.id.spnTaskSessSel)).setVisibility(View.GONE);
             (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
             (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
             (findViewById(R.id.timeKeeper)).setVisibility(View.GONE);
-        } else if (mlngLongTermID != -1){ //Longterm
+        } else if (mlngLongTermID != NULL_OBJECT){ //Longterm
             (findViewById(R.id.spnTaskSessSel)).setVisibility(View.GONE);
             (findViewById(R.id.btnTaskAddSess)).setVisibility(View.GONE);
             (findViewById(R.id.spnTaskGroupSel)).setVisibility(View.GONE);
             timeKeeper.setMode(4);
-        } else if (mlngGroupID != -1 && mTask.flngTaskID == -1){ //Group
+        } else if (mlngGroupID != NULL_OBJECT && mTask.flngTaskID == NULL_OBJECT){ //Group
             (findViewById(R.id.spnTaskGroupSel)).setEnabled(false);
         }
         (findViewById(R.id.chkSessOneOff)).setVisibility(View.GONE);
     }
 
     public void LoadSessionSpinner(){
-        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1 and fblnComplete = 0",null);
+        Cursor cursor = DatabaseAccess.getRecordsFromTable("tblTime","fblnSession = 1 and fblnComplete = " + NULL_OBJECT + "",null);
 
         mSessionList.Clear();
         //Add pre-set session so that a value can be grabbed.
-        mSessionList.Add("No Session",(long)-1);
+        mSessionList.Add("No Session",NULL_OBJECT);
         while(cursor.moveToNext()){
             Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
             mSessionList.Add(tempTime.fstrTitle,
@@ -255,11 +256,11 @@ public class Details_Task extends AppCompatActivity {
 
         mGroupList.Clear();
         //Add pre-set session so that a value can be grabbed.
-        mGroupList.Add("No Group",(long)-1);
+        mGroupList.Add("No Group",NULL_OBJECT);
         while(cursor.moveToNext()){
             mGroupList.Add(cursor.getString(cursor.getColumnIndex("fstrTitle")),cursor.getLong(cursor.getColumnIndex("flngGroupID")));
         }
-        if(mlngGroupID != -1){
+        if(mlngGroupID != NULL_OBJECT){
             mGroupList.setIDSpinner(mlngGroupID);
         }
         mGroupList.mAdapter.notifyDataSetChanged();
@@ -268,7 +269,7 @@ public class Details_Task extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        /*if (mTask.flngTaskID != -1){
+        /*if (mTask.flngTaskID != NULL_OBJECT){
             getMenuInflater().inflate(R.menu.event_edit_menu, menu);
         }*/
         return true;
@@ -282,35 +283,35 @@ public class Details_Task extends AppCompatActivity {
             if(timeKeeper.validateTimeDetails()){
                 //updating and regular creation can probably be joined together but as it's just as simple to keep
                 //them seperated it will for now be.
-                if(mTask.flngTaskID != -1) {
+                if(mTask.flngTaskID != NULL_OBJECT) {
                     if (wasDetailsEdited()) {
                         mTask.updateTaskDetails(mTitle.getText().toString(),
                                 mDescription.getText().toString());
                     }
 
-                    if(mlngEventID == -1){
+                    if(mlngEventID == NULL_OBJECT){
                         if (wasSessionSessionReplaced()) {
                             mTime = new Time(getSession());
-                            if (getOneOff() != -1) {
-                                mTime = mTime.createOneOff(-1);
+                            if (getOneOff() != NULL_OBJECT) {
+                                mTime = mTime.createOneOff(NULL_OBJECT);
                             }
-                            //replace time id
+                            //replace mTime id
                             mTask.replaceTimeId(mTime.flngTimeID);
                         } else if (wasSessionTimeReplaced()) {
-                            //create new time id and replace.
-                            mTime = timeKeeper.createTimeDetails(-1,
-                                    -1,
-                                    -1,
+                            //create new mTime id and replace.
+                            mTime = timeKeeper.createTimeDetails(NULL_OBJECT,
+                                    NULL_POSITION,
+                                    NULL_OBJECT,
                                     false,
                                     "");
                             mTask.replaceTimeId(mTime.flngTimeID);
                         } else if (wasTimeSessionReplaced()) {
-                            //complete time and replace id
+                            //complete mTime and replace id
                             mTime.completeTime();
                             mTime = new Time(getSession());
-                            if (getOneOff() != -1){
+                            if (getOneOff() != NULL_OBJECT){
                                 mTask.updateOneOff(getOneOff());
-                                mTime = mTime.createOneOff(-1);
+                                mTime = mTime.createOneOff(NULL_OBJECT);
                             }
                             mTask.replaceTimeId(mTime.flngTimeID);
                         } else {
@@ -321,21 +322,21 @@ public class Details_Task extends AppCompatActivity {
                                     false,
                                     "");
                         }
-                        //Remove instances associated w/ original time
+                        //Remove instances associated w/ original mTime
                         mTask.finishActiveInstances(3);
                     }
                 } else {
-                    if (getOneOff() != -1) {
-                        //TODO: Create button to allow adding to next time instance istead of currently active (adding to next weekend during this weekend instead of this weekend)
+                    if (getOneOff() != NULL_OBJECT) {
+                        //TODO: Create button to allow adding to next mTime instance istead of currently active (adding to next weekend during this weekend instead of this weekend)
                         mTime = new Time(getSession());
-                        mTime = mTime.createOneOff(-1);
-                    } else if (getSession() != -1) {
+                        mTime = mTime.createOneOff(NULL_OBJECT);
+                    } else if (getSession() != NULL_OBJECT) {
                         mTime = new Time(getSession());
-                    } else if (mlngEventID == -1 && //Not event task
-                            (mlngLongTermID == -1 || timeKeeper.isTimeSet())) { //Not long term w/o time set
-                        mTime = timeKeeper.createTimeDetails(-1,
-                                -1,
-                                -1,
+                    } else if (mlngEventID == NULL_OBJECT && //Not event task
+                            (mlngLongTermID == NULL_OBJECT || timeKeeper.isTimeSet())) { //Not long term w/o mTime set
+                        mTime = timeKeeper.createTimeDetails(NULL_OBJECT,
+                                NULL_POSITION,
+                                NULL_OBJECT,
                                 false,
                                 "");
                     }
@@ -344,7 +345,7 @@ public class Details_Task extends AppCompatActivity {
                             Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
                             getTaskTitle(),
                             getTaskDesc(),
-                            (long) -1,
+                            NULL_DATE,
                             getTaskType(),
                             getTaskTypeID(),
                             getOneOff());
@@ -368,7 +369,7 @@ public class Details_Task extends AppCompatActivity {
             if(fblnSessionOnLoad && mSessionList.getID(position) != mTime.flngTimeID){
                 fblnSessionOnLoad = false;
             }
-            if(mSessionList.getID(position) != -1){
+            if(mSessionList.getID(position) != NULL_OBJECT){
                 timeKeeper.resetTimeKeeper();
                 timeKeeper.loadTimeKeeper(mSessionList.getID(position));
                 //Deactivate timekeeper for editing
@@ -403,7 +404,7 @@ public class Details_Task extends AppCompatActivity {
         if (requestCode == 1 &&
                 resultCode == RESULT_OK) {
             LoadSessionSpinner();
-            setSession(data.getLongExtra("EXTRA_SESSION_ID", -1));
+            setSession(data.getLongExtra("EXTRA_SESSION_ID", NULL_OBJECT));
         }
     }
 

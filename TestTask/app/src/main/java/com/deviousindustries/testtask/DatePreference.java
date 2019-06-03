@@ -111,7 +111,7 @@ public class DatePreference extends DialogPreference {
             dateval = defaultValue.toString();
         }
         lastYear = getYear(dateval);
-        lastMonth = getMonth(dateval)-1;
+        lastMonth = getMonth(dateval) - 1;
         lastDate = getDate(dateval);
     }
 

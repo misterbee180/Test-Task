@@ -9,8 +9,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.deviousindustries.testtask.Classes.Task;
-import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.classes.Task;
+import com.deviousindustries.testtask.classes.Time;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Details_Session extends AppCompatActivity{
 
@@ -31,7 +32,7 @@ public class Details_Session extends AppCompatActivity{
         fintent = getIntent();
         Bundle extras = fintent.getExtras();
         if (extras != null){
-            mTime = new Time(getIntent().getLongExtra("EXTRA_TIME_ID",-1));
+            mTime = new Time(getIntent().getLongExtra("EXTRA_TIME_ID",NULL_OBJECT));
         }
 
         ListView mSessionView = findViewById(R.id.lsvSessionTaskList);
@@ -52,7 +53,7 @@ public class Details_Session extends AppCompatActivity{
     @Override
     protected void onResume(){
         super.onResume();
-        if (mTime.flngTimeID != -1){
+        if (mTime.flngTimeID != NULL_OBJECT){
             LoadSession();
         }
     }
@@ -76,7 +77,7 @@ public class Details_Session extends AppCompatActivity{
     public void createSession (View view) {
         DatabaseAccess.mDatabase.beginTransaction();
         try {
-            if(mTime.flngTimeID != -1){
+            if(mTime.flngTimeID != NULL_OBJECT){
                 mTime.clearGenerationPoints();
             }
             mTime = timeKeeper.createTimeDetails(mTime.flngTimeID,
@@ -91,7 +92,7 @@ public class Details_Session extends AppCompatActivity{
                 while (oneOffs.moveToNext()) {
                     Task tempTask = new Task(oneOffs.getLong(oneOffs.getColumnIndex("flngTaskID")));
                     new Time(tempTask.flngTimeID).clearGenerationPoints();
-                    Time tempTime = mTime.createOneOff(tempTask.flngTimeID);//because we're supplying the time ID we shouldn't need to replace the session id
+                    Time tempTime = mTime.createOneOff(tempTask.flngTimeID);//because we're supplying the mTime ID we shouldn't need to replace the session id
 
                     tempTask.finishActiveInstances(3);
                     tempTime.generateInstances(true, tempTask.flngTaskID);
@@ -111,12 +112,12 @@ public class Details_Session extends AppCompatActivity{
     }
 
     public String getSessionTitle() {
-        TextView SessionTitle = findViewById(R.id.txbSessionTitle);
+        TextView SessionTitle = findViewById(R.id.Session_Title_EditText);
         return SessionTitle.getText().toString();
     }
 
     public void setSessionTitle(String pSessionTitle) {
-        TextView SessionTitle = findViewById(R.id.txbSessionTitle);
+        TextView SessionTitle = findViewById(R.id.Session_Title_EditText);
         SessionTitle.setText(pSessionTitle);
     }
 }

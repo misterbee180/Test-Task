@@ -3,7 +3,7 @@ package com.deviousindustries.testtask;
 import android.content.Intent;
 import android.database.Cursor;
 
-import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.classes.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,10 +13,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
+
 public class Details_Group extends AppCompatActivity {
 
     ArrayListContainer mGroupTask;
-    Long mlngGroupId = (long)-1;
+    Long mlngGroupId = NULL_OBJECT;
 
     FloatingActionButton fab;
 
@@ -39,7 +41,7 @@ public class Details_Group extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
-            mlngGroupId = getIntent().getLongExtra("EXTRA_GROUP_ID",-1);
+            mlngGroupId = getIntent().getLongExtra("EXTRA_GROUP_ID",NULL_OBJECT);
         }
 
         ListView mGroupView = findViewById(R.id.lsvGroupTaskList);
@@ -50,7 +52,7 @@ public class Details_Group extends AppCompatActivity {
 
     protected void onResume(){
         super.onResume();
-        if (mlngGroupId != -1){
+        if (mlngGroupId != NULL_OBJECT){
             LoadGroup();
         }
         setupInitialVisibility();
@@ -68,7 +70,7 @@ public class Details_Group extends AppCompatActivity {
 
     private void setupInitialVisibility() {
         //New Event Add - Force adding the event before the ability to add tasks is available
-        if (mlngGroupId == -1){
+        if (mlngGroupId == NULL_OBJECT){
             findViewById(R.id.txtGroupAddReq).setVisibility(View.GONE);
             fab.setVisibility(View.GONE);
         } else {
@@ -105,7 +107,7 @@ public class Details_Group extends AppCompatActivity {
     }
 
     public void ceaseGroupCreation(View view) {
-        boolean blnInitial = mlngGroupId == -1;
+        boolean blnInitial = mlngGroupId == NULL_OBJECT;
         try{
             DatabaseAccess.mDatabase.beginTransaction();
             mlngGroupId = DatabaseAccess.addRecordToTable("tblGroup",

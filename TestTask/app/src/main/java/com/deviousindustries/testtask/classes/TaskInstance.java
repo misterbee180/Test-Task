@@ -1,61 +1,35 @@
-package com.deviousindustries.testtask.Classes;
+package com.deviousindustries.testtask.classes;
 
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
 import com.deviousindustries.testtask.Viewer_Tasklist;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 @Entity(tableName = "tblTaskInstance")
 public class TaskInstance {
     @PrimaryKey(autoGenerate = true)
     public long flngInstanceID;
-
-    @ColumnInfo
     public long flngTaskID;
-
-    @ColumnInfo
     public long flngTaskDetailID;
-
-    @ColumnInfo
     public long fdtmFrom;
-
-    @ColumnInfo
     public long fdtmTo;
-
-    @ColumnInfo
     @NonNull
     public Boolean fblnFromTime;
-
-    @ColumnInfo
     @NonNull
     public Boolean fblnToTime;
-
-    @ColumnInfo
     @NonNull
     public Boolean fblnToDate;
-
-    @ColumnInfo
     public long fdtmCreated;
-
-    @ColumnInfo
     public long fdtmCompleted;
-
-    @ColumnInfo
     public long fdtmSystemCompleted;
-
-    @ColumnInfo
     public long fdtmDeleted;
-
-    @ColumnInfo
     public long fdtmEdited;
-
-    @ColumnInfo
     public long flngSessionID;
 
     @Ignore
@@ -64,22 +38,22 @@ public class TaskInstance {
     public String fstrDescription;
 
     public TaskInstance(){
-        flngInstanceID = -1;
-        flngTaskID = -1;
-        flngTaskDetailID = -1;
+        flngInstanceID = NULL_OBJECT;
+        flngTaskID = NULL_OBJECT;
+        flngTaskDetailID = NULL_OBJECT;
         fstrTitle = "";
         fstrDescription = "";
-        fdtmFrom = -1;
-        fdtmTo = -1;
+        fdtmFrom = NULL_DATE;
+        fdtmTo = NULL_DATE;
         fblnFromTime = false;
         fblnToTime = false;
         fblnToDate = false;
-        fdtmCreated = -1;
-        fdtmCompleted = -1;
-        fdtmSystemCompleted = -1;
-        fdtmDeleted = -1;
-        fdtmEdited = -1;
-        flngSessionID = -1;
+        fdtmCreated = NULL_DATE;
+        fdtmCompleted = NULL_DATE;
+        fdtmSystemCompleted = NULL_DATE;
+        fdtmDeleted = NULL_DATE;
+        fdtmEdited = NULL_DATE;
+        flngSessionID = NULL_OBJECT;
     }
 
     public TaskInstance(long plngInstanceID){
@@ -125,7 +99,7 @@ public class TaskInstance {
         fdtmTo = pdtmTo;
         fblnToTime = pblnToTime;
         fblnToDate = pblnToDate;
-        if(flngInstanceID == -1){
+        if(flngInstanceID == NULL_OBJECT){
             fdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
         } else {
             fdtmEdited = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();

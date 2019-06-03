@@ -1,4 +1,4 @@
-package com.deviousindustries.testtask.Classes;
+package com.deviousindustries.testtask.classes;
 
 import android.database.Cursor;
 
@@ -13,75 +13,48 @@ import com.deviousindustries.testtask.Viewer_Tasklist;
 import java.time.Duration;
 import java.util.Calendar;
 
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
+
 //Todo: remove session detail id and replace w/ title column. No reason to have task detail if record isn't copied over and over to other places
 
 @Entity(tableName = "tblTime")
 public class Time {
     @PrimaryKey(autoGenerate = true)
     public long flngTimeID;
-
-    @ColumnInfo
     public long fdtmFrom;
-
-    @ColumnInfo
     public long fdtmTo;
-
-    @ColumnInfo
     public boolean fblnFromTime;
-
-    @ColumnInfo
     public boolean fblnToTime;
-
-    @ColumnInfo
     public boolean fblnToDate;
-
-    @ColumnInfo
     public int fintTimeframe;
-
-    @ColumnInfo
     public long flngTimeframeID;
-
-    @ColumnInfo
-    public long flngRepetition;
-
-    @ColumnInfo
+    @ColumnInfo(name = "flngRepetition")
+    public int fintRepetition;
     public long fdtmCreated;
-
-    @ColumnInfo
     public int fintStarting;
-
-    @ColumnInfo
     public boolean fblnComplete;
-
-    @ColumnInfo
     public long flngGenerationID;
-
-    @ColumnInfo
     public boolean fblnThru;
-
-    @ColumnInfo
     @NonNull
     public boolean fblnSession;
-
-    @ColumnInfo
     @NonNull
     public String fstrTitle;
 
     //region Constructors
     public Time(){
-        flngTimeID = -1;
-        fdtmFrom = -1;
-        fdtmTo = -1;
+        flngTimeID = NULL_OBJECT;
+        fdtmFrom = NULL_DATE;
+        fdtmTo = NULL_DATE;
         fblnFromTime = false;
         fblnToTime = false;
         fblnToDate = false;
-        fintTimeframe = -1;
-        flngTimeframeID = -1;
-        flngRepetition = 0;
-        fdtmCreated = -1;
-        fintStarting = 0;
+        fintTimeframe = NULL_POSITION;
+        flngTimeframeID = NULL_OBJECT;
+        fintRepetition = BASE_POSITION;
+        fdtmCreated = NULL_DATE;
+        fintStarting = NULL_POSITION;
         fblnComplete = false;
-        flngGenerationID = -1;
+        flngGenerationID = NULL_OBJECT;
         fblnThru = false;
         fblnSession = false;
         fstrTitle = "";
@@ -99,7 +72,7 @@ public class Time {
                 fblnToDate = tblTime.getLong(tblTime.getColumnIndex("fblnToDate")) == 1;
                 fintTimeframe = tblTime.getInt(tblTime.getColumnIndex("fintTimeframe"));
                 flngTimeframeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeframeID"));
-                flngRepetition = tblTime.getLong(tblTime.getColumnIndex("flngRepetition"));
+                fintRepetition = tblTime.getInt(tblTime.getColumnIndex("flngRepetition"));
                 fdtmCreated = tblTime.getLong(tblTime.getColumnIndex("fdtmCreated"));
                 fintStarting = tblTime.getInt(tblTime.getColumnIndex("fintStarting"));
                 fblnComplete = tblTime.getLong(tblTime.getColumnIndex("fblnComplete")) == 1;
@@ -120,7 +93,7 @@ public class Time {
                 boolean pblnToDate,
                 int pintTimeframe,
                 long plngTimeframeID,
-                long plngRepetition,
+                int plngRepetition,
                 int pintStarting,
                 boolean pblnComplete,
                 long plngGenerationID,
@@ -134,7 +107,7 @@ public class Time {
         fblnToTime = pblnToTime;
         fintTimeframe = pintTimeframe;
         flngTimeframeID = plngTimeframeID;
-        flngRepetition = plngRepetition;
+        fintRepetition = plngRepetition;
         fdtmCreated = pdtmCreated;
         fintStarting = pintStarting;
         fblnComplete = pblnComplete;
@@ -151,7 +124,7 @@ public class Time {
                         fblnToDate,
                         fintTimeframe,
                         flngTimeframeID,
-                        flngRepetition,
+                        Long.parseLong(Integer.toString(fintRepetition)),
                         fdtmCreated,
                         fintStarting,
                         fblnComplete,
@@ -172,7 +145,7 @@ public class Time {
     }
 
     private long getLatestPriorityAndThru(){
-        //Returns the latest time instance associated w/ a time w/ the inclusing on the thru value.
+        //Returns the latest mTime instance associated w/ a mTime w/ the inclusing on the thru value.
         //This is important as you don't want to be evaluating dates already handled by a thru value.
         try(Cursor latestTimeInstance = DatabaseAccess.retrieveMostRecent("tblTimeInstance","flngTimeID", flngTimeID, "flngGenerationID")) {
             if (latestTimeInstance.moveToFirst()) {
@@ -181,7 +154,7 @@ public class Time {
                 return temp.getTimeInMillis();
             }
         }
-        return -1;
+        return NULL_DATE;
     }
 
     private long getNextPriority(boolean pblnTo){
@@ -201,14 +174,14 @@ public class Time {
                 return calPri.getTimeInMillis();
             }
         }
-        return -1;
+        return NULL_DATE;
     }
 
     private long getMaxUpcoming(){
         try(Cursor tblGeneration = DatabaseAccess.retrieveMaxUpcoming(flngTimeID)){
             tblGeneration.moveToFirst();
             long rtn = tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmUpcomingMax"));
-            return rtn == 0 ? -1 : rtn;
+            return rtn == 0 ? NULL_DATE : rtn;
         }
     }
 
@@ -220,16 +193,16 @@ public class Time {
                 "flngTimeID",
                 flngTimeID,
                 new String[]{"flngGenerationID"},
-                new Object[]{(long)-1});
+                new Object[]{(long)NULL_OBJECT});
     }
 
     public void buildTimeInstances(){
         while(true){
-            //While we can still attempt to generate an upcoming task that should be generated before today and while the time isn't already exempt (complete)
+            //While we can still attempt to generate an upcoming task that should be generated before today and while the mTime isn't already exempt (complete)
             TimeInstance tGen = new TimeInstance(flngTimeID);
             boolean blnSaveGen = true;
             if(getMaxUpcoming() <= Viewer_Tasklist.getEndCurrentDay().getTimeInMillis() && !fblnComplete){
-                if(flngRepetition != (long)0){
+                if(fintRepetition != (long)0){
                     //establish what repetition tasks associated w/ and whether current date fits
                     switch(fintTimeframe){
                         case 0: //Day
@@ -246,11 +219,11 @@ public class Time {
                             break;
                     }
                 } else {
-                    if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only time
+                    if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only mTime
                         evaluateDate(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_std","1")),tGen);
                     } else{
                         completeTime();
-                        blnSaveGen = false; //Don't want to save a new time generation if all we did was complete the time.
+                        blnSaveGen = false; //Don't want to save a new mTime generation if all we did was complete the mTime.
                     }
                 }
                 if(blnSaveGen) tGen.save();
@@ -263,7 +236,7 @@ public class Time {
     private void evaluateDate(int upcomingRange, TimeInstance pGen){
         pGen.fdtmPriority = fdtmFrom;
         Calendar tempUp = Viewer_Tasklist.getCalendar(fdtmFrom);
-        tempUp.add(Calendar.DAY_OF_YEAR, -1 * upcomingRange);
+        tempUp.add(Calendar.DAY_OF_YEAR, -upcomingRange);
         pGen.fdtmUpcoming = tempUp.getTimeInMillis();
 
         Calendar tempFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
@@ -281,7 +254,7 @@ public class Time {
         //Establishing starting date (either create + starting or prior priority)
         Calendar calBOD;
         boolean blnSet = false;
-        if(pdtmOrigPriority != -1){
+        if(pdtmOrigPriority != NULL_DATE){
             calBOD = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
@@ -302,11 +275,11 @@ public class Time {
         calEOD.set(Calendar.SECOND,59);
         calEOD.set(Calendar.MILLISECOND,999);
 
-        //Move the bounds by the occurs metric until the ending bound occurs after the current day/time.
+        //Move the bounds by the occurs metric until the ending bound occurs after the current day/mTime.
         while(true){
             if(calEOD.before(calNow)){
-                calBOD.add(Calendar.DAY_OF_YEAR,(int) flngRepetition);
-                calEOD.add(Calendar.DAY_OF_YEAR,(int) flngRepetition);
+                calBOD.add(Calendar.DAY_OF_YEAR,(int) fintRepetition);
+                calEOD.add(Calendar.DAY_OF_YEAR,(int) fintRepetition);
                 blnSet = false;
             } else {
                 //Finally move the beginning bound to the now date (or now + 1 if priority) if now happens to be w/i the bounds, otherwise select begging of bound
@@ -318,7 +291,7 @@ public class Time {
             }
         }
 
-        //Get from date cal and provide time details from it to calEvaluate
+        //Get from date cal and provide mTime details from it to calEvaluate
         Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
         calEvaluate.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
         calEvaluate.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -340,7 +313,7 @@ public class Time {
         //determine if calPriority is = the current day. If not (has to be before) use establish what a better starting week would be using starting and created details
         Calendar calBOW;
         boolean blnSet = false;
-        if(pdtmOrigPriority != -1){
+        if(pdtmOrigPriority != NULL_DATE){
             calBOW = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
@@ -365,8 +338,8 @@ public class Time {
         while(true){
             if(calEOW.before(calNow)){
                 if(blnSet) calBOW.setWeekDate(calBOW.getWeekYear(), calBOW.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
-                calBOW.add(Calendar.WEEK_OF_YEAR,(int) flngRepetition);
-                calEOW.add(Calendar.WEEK_OF_YEAR,(int) flngRepetition);
+                calBOW.add(Calendar.WEEK_OF_YEAR,(int) fintRepetition);
+                calEOW.add(Calendar.WEEK_OF_YEAR,(int) fintRepetition);
                 blnSet = false;
             } else {
                 //If we set the date to today via priority, make sure we don't reevaluate today.
@@ -375,7 +348,7 @@ public class Time {
                     //As going past the end of the week means that we need to reevaluate the repetition quantity, we need to see if day is saturday before simply moving up a day.
                     if(calBOW.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY){
                         calBOW.setWeekDate(calBOW.getWeekYear(), calBOW.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
-                        calBOW.add(Calendar.WEEK_OF_YEAR, (int) flngRepetition);
+                        calBOW.add(Calendar.WEEK_OF_YEAR, (int) fintRepetition);
                     } else {
                         calBOW.add(Calendar.DAY_OF_YEAR,1);
                     }
@@ -425,7 +398,7 @@ public class Time {
                 if(tblWeek.getInt(tblWeek.getColumnIndex("fbln" + columnName)) == 1){
                     //Don't need to evaluate for days past.
                     if(calWeekday.after(calNow)){
-                        //Make sure time details are represented in passed out dates.
+                        //Make sure mTime details are represented in passed out dates.
                         Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
                         calWeekday.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                         calWeekday.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -435,7 +408,7 @@ public class Time {
                         if(pblnFirst){
                             pGen.fdtmPriority = calWeekday.getTimeInMillis();
                             Calendar calUpcoming = (Calendar) calWeekday.clone();
-                            calUpcoming.add(Calendar.DAY_OF_YEAR, -1 * upcomingRange);
+                            calUpcoming.add(Calendar.DAY_OF_YEAR, -upcomingRange);
                             pGen.fdtmUpcoming = calUpcoming.getTimeInMillis();
                         }
                         if(fblnThru){
@@ -453,7 +426,7 @@ public class Time {
                             //Establish next day
                             if(calEvaluate.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY){
                                 calEvaluate.setWeekDate(calEvaluate.getWeekYear(), calEvaluate.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
-                                calEvaluate.add(Calendar.WEEK_OF_YEAR, (int) flngRepetition);
+                                calEvaluate.add(Calendar.WEEK_OF_YEAR, (int) fintRepetition);
                             } else calEvaluate.add(Calendar.DAY_OF_YEAR,1);
 
                             //Get the thru date
@@ -476,7 +449,7 @@ public class Time {
         if(blnComplete) return;
         //Othewise, establish what next evaluated week will be and call itself
         calEvaluate.setWeekDate(calEvaluate.getWeekYear(), calEvaluate.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
-        calEvaluate.add(Calendar.WEEK_OF_YEAR, (int) flngRepetition);
+        calEvaluate.add(Calendar.WEEK_OF_YEAR, (int) fintRepetition);
         recursiveWeekEval(calNow, calEvaluate, upcomingRange, pGen, pblnFirst);
     }
 
@@ -490,7 +463,7 @@ public class Time {
         //Establishing starting date (either create + starting or prior priority)
         Calendar calBOM;
         boolean blnSet = false;
-        if(pdtmOrigPriority != -1){
+        if(pdtmOrigPriority != NULL_DATE){
             calBOM = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
@@ -516,11 +489,11 @@ public class Time {
         calEOM.set(Calendar.SECOND, 59);
         calEOM.set(Calendar.MILLISECOND, 999);
 
-        //Move the bounds by the occurs metric until the ending bound occurs after the current day/time.
+        //Move the bounds by the occurs metric until the ending bound occurs after the current day/mTime.
         while (true) {
             if (calEOM.before(calNow)) {
                 if(blnSet) calBOM.set(Calendar.DAY_OF_MONTH,1);//resets DOM to first so that adding month will continue from first
-                calBOM.add(Calendar.MONTH, (int) flngRepetition);
+                calBOM.add(Calendar.MONTH, (int) fintRepetition);
                 //Use more complex logic for months as they don't have consistent end days.
                 calEOM = (Calendar) calBOM.clone();
                 calEOM.add(Calendar.MONTH, 1);
@@ -535,7 +508,7 @@ public class Time {
                 if(blnSet){
                     if(calBOM.get(Calendar.DAY_OF_MONTH) == calEOM.get(Calendar.DAY_OF_MONTH)){
                         calBOM.set(Calendar.DAY_OF_MONTH,1);//resets DOM to first so that adding month will continue from first
-                        calBOM.add(Calendar.MONTH, (int) flngRepetition);
+                        calBOM.add(Calendar.MONTH, (int) fintRepetition);
                     } else calBOM.add(Calendar.DAY_OF_YEAR,1);
                 } else
                     //if today occurs w/i the week associated w/ the occurrence pattern, start it on the current day (saves a few iterations later), otherwise start it on the sunday
@@ -595,7 +568,7 @@ public class Time {
                                 }
                             }
 
-                            //Make sure time details are represented in passed out dates.
+                            //Make sure mTime details are represented in passed out dates.
                             Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
                             calMonth.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                             calMonth.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -604,7 +577,7 @@ public class Time {
 
                             pGen.fdtmPriority = calMonth.getTimeInMillis();
                             Calendar tempUp = (Calendar) calMonth.clone();
-                            tempUp.add(Calendar.DAY_OF_MONTH, upcomingRange * -1);
+                            tempUp.add(Calendar.DAY_OF_MONTH, -upcomingRange);
                             pGen.fdtmUpcoming = tempUp.getTimeInMillis();
                             blnComplete = true;
                             break;
@@ -613,7 +586,7 @@ public class Time {
                         String[] strSpecificDays = tblMonth.getString(tblMonth.getColumnIndex("fstrSpecific")).split(",");
                         for (String strSpecificDay : strSpecificDays) {
                             if (calMonth.get(Calendar.DAY_OF_MONTH) == Long.parseLong(strSpecificDay.trim())) {
-                                //Make sure time details are represented in passed out dates.
+                                //Make sure mTime details are represented in passed out dates.
                                 Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
                                 calMonth.set(Calendar.HOUR_OF_DAY, calFrom.get(Calendar.HOUR_OF_DAY));
                                 calMonth.set(Calendar.MINUTE, calFrom.get(Calendar.MINUTE));
@@ -623,7 +596,7 @@ public class Time {
                                 if (pblnFirst) {
                                     pGen.fdtmPriority = calMonth.getTimeInMillis();
                                     Calendar tempUp = (Calendar) calMonth.clone();
-                                    tempUp.add(Calendar.DAY_OF_MONTH, upcomingRange * -1);
+                                    tempUp.add(Calendar.DAY_OF_MONTH, -upcomingRange);
                                     pGen.fdtmUpcoming = tempUp.getTimeInMillis();
                                 }
                                 if (fblnThru) {
@@ -641,7 +614,7 @@ public class Time {
                                     //Establish next day
                                     if (calEvaluate.get(Calendar.DAY_OF_MONTH) == calEOM.get(Calendar.DAY_OF_MONTH)) {
                                         calEvaluate.set(Calendar.DAY_OF_MONTH, 1);
-                                        calEvaluate.add(Calendar.MONTH, (int) flngRepetition);
+                                        calEvaluate.add(Calendar.MONTH, (int) fintRepetition);
                                         calEOM = (Calendar) calEvaluate.clone();
                                         calEOM.add(Calendar.MONTH, 1);
                                         calEOM.add(Calendar.DAY_OF_YEAR, -1);
@@ -669,7 +642,7 @@ public class Time {
 
         //Othewise, establish what next evaluated month will be and call itself
         calEvaluate.set(Calendar.DAY_OF_MONTH,1);
-        calEvaluate.add(Calendar.MONTH, (int) flngRepetition);
+        calEvaluate.add(Calendar.MONTH, (int) fintRepetition);
         calEOM = (Calendar) calEvaluate.clone();
         calEOM.add(Calendar.MONTH, 1);
         calEOM.add(Calendar.DAY_OF_YEAR, -1);
@@ -689,7 +662,7 @@ public class Time {
         //determine if calPriority is = the current day. If not (has to be before) use establish what a better starting week would be using starting and created details
         Calendar calBOY;
         boolean blnSet = false;
-        if(pdtmOrigPriority != -1){
+        if(pdtmOrigPriority != NULL_DATE){
             blnSet = true;
             calBOY = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
         } else {
@@ -718,13 +691,13 @@ public class Time {
             //I know this can be simplified but because it matches the established design I will leave it as it is
             if(calEOY.before(calNow)){
                 blnSet = false;
-                calBOY.add(Calendar.YEAR,(int) flngRepetition);
-                calEOY.add(Calendar.YEAR,(int) flngRepetition);
+                calBOY.add(Calendar.YEAR,(int) fintRepetition);
+                calEOY.add(Calendar.YEAR,(int) fintRepetition);
             } else {
                 if(blnSet){
                     if(calBOY.get(Calendar.DAY_OF_YEAR) == calEOY.get(Calendar.DAY_OF_YEAR)){
                         calBOY.set(Calendar.DAY_OF_YEAR, 1);
-                        calBOY.add(Calendar.YEAR,(int) flngRepetition);
+                        calBOY.add(Calendar.YEAR,(int) fintRepetition);
                     } else calBOY.add(Calendar.DAY_OF_YEAR,1);
                 }
 
@@ -732,10 +705,10 @@ public class Time {
                 Calendar calTempFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
                 calTempFrom.set(Calendar.YEAR, calBOY.get(Calendar.YEAR));
                 if(calBOY.after(calTempFrom)){
-                    calTempFrom.add(Calendar.YEAR,(int) flngRepetition);
+                    calTempFrom.add(Calendar.YEAR,(int) fintRepetition);
                 }
 
-                //Make sure time details are represented in passed out dates.
+                //Make sure mTime details are represented in passed out dates.
                 Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
                 calTempFrom.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                 calTempFrom.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -744,7 +717,7 @@ public class Time {
 
                 //Set dates
                 pGen.fdtmPriority = calTempFrom.getTimeInMillis();
-                calTempFrom.add(Calendar.DAY_OF_YEAR, upcomingRange * -1);
+                calTempFrom.add(Calendar.DAY_OF_YEAR, -upcomingRange);
                 pGen.fdtmUpcoming = calTempFrom.getTimeInMillis();
                 return;
             }
@@ -759,12 +732,12 @@ public class Time {
                 fblnFromTime,
                 fblnToTime,
                 fblnToDate,
-                -1,
-                -1,
-                0,
-                0,
+                NULL_POSITION,
+                NULL_OBJECT,
+                BASE_POSITION,
+                NULL_POSITION,
                 false,
-                -1,
+                NULL_OBJECT,
                 false);
     }
 
@@ -788,7 +761,7 @@ public class Time {
                         fblnFromTime,
                         fblnToTime,
                         fblnToDate,
-                        fblnSession ? flngTimeID : -1);
+                        fblnSession ? flngTimeID : NULL_OBJECT);
             }
         }
     }
@@ -816,25 +789,25 @@ public class Time {
                     }
 
                     Task tempTask;
-                    if(plngTaskId != -1){
+                    if(plngTaskId != NULL_OBJECT){
                         tempTask = new Task(plngTaskId);
                         tempTask.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
                                 tempTo.getTimeInMillis(),
                                 fblnFromTime,
                                 fblnToTime,
                                 fblnToDate,
-                                fblnSession ? flngTimeID : -1);
+                                fblnSession ? flngTimeID : NULL_OBJECT);
                     }else{
                         try(Cursor tblTask = DatabaseAccess.getRecordsFromTable("tblTask", "flngTimeID", flngTimeID)){
                             while (tblTask.moveToNext()) {
                                 tempTask = new Task(tblTask.getLong(tblTask.getColumnIndex("flngTaskID")));
-                                if(tempTask.fdtmDeleted == -1){
+                                if(tempTask.fdtmDeleted == NULL_DATE){
                                     tempTask.generateInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")),
                                             tempTo.getTimeInMillis(),
                                             fblnFromTime,
                                             fblnToTime,
                                             fblnToDate || tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")) > 0,
-                                            fblnSession ? flngTimeID : -1);
+                                            fblnSession ? flngTimeID : NULL_OBJECT);
                                 }
                             }
                         }
@@ -882,7 +855,7 @@ public class Time {
             }
         }
 
-        generateInstances(true, -1);
+        generateInstances(true, NULL_OBJECT);
     }
 
 
@@ -897,15 +870,15 @@ public class Time {
     }
 
     public void deleteTime(){
-        //complete time
+        //complete mTime
         completeTime();
-        //remove time instances
+        //remove mTime instances
         clearGenerationPoints();
     }
 
     public Time getCopy(){
 
-        return new Time(-1,
+        return new Time(NULL_OBJECT,
                 fdtmFrom,
                 fdtmTo,
                 fdtmCreated,
@@ -914,10 +887,10 @@ public class Time {
                 fblnToDate,
                 fintTimeframe,
                 flngTimeframeID,
-                flngRepetition,
+                fintRepetition,
                 fintStarting,
                 fblnComplete,
-                -1, //TODO: Once time instances generated this should be set to the corresponding time instance for the new time so that duplicated tasks aren't re-created.
+                NULL_OBJECT, //TODO: Once mTime instances generated this should be set to the corresponding mTime instance for the new mTime so that duplicated tasks aren't re-created.
                 fblnThru);
     }
     //endregion

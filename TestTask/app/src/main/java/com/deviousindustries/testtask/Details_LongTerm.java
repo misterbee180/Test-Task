@@ -7,8 +7,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
-import com.deviousindustries.testtask.Classes.Task;
-import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.deviousindustries.testtask.classes.Task;
+import com.deviousindustries.testtask.classes.TaskInstance;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
@@ -20,13 +20,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 //Todo: add option to make long term task out of task display instances
 public class Details_LongTerm extends AppCompatActivity {
     ArrayListContainer mLongTermTasksUnc = new ArrayListContainer();
     ArrayListContainer mLongTermTasksCmp = new ArrayListContainer();
     Long mlngTaskCount = (long)0;
-    Long mlngLongTermID = (long)-1;
+    Long mlngLongTermID = (long)NULL_OBJECT;
 
     FloatingActionButton fab;
 
@@ -125,7 +126,7 @@ public class Details_LongTerm extends AppCompatActivity {
                             try{
                                 DatabaseAccess.mDatabase.beginTransaction();
                                 Task tempTask = new Task(lngTaskId);
-                                TaskInstance ti = tempTask.generateInstance(-1, -1, false, false, false, -1);
+                                TaskInstance ti = tempTask.generateInstance(NULL_DATE, NULL_DATE, false, false, false, NULL_OBJECT);
                                 ti.finishInstance(2);
 
                                 DatabaseAccess.mDatabase.setTransactionSuccessful();
@@ -200,12 +201,12 @@ public class Details_LongTerm extends AppCompatActivity {
     }
 
     private void retrieveExtras(){
-        mlngLongTermID = getIntent().getLongExtra("EXTRA_LONGTERM_ID",-1);
+        mlngLongTermID = getIntent().getLongExtra("EXTRA_LONGTERM_ID",NULL_OBJECT);
     }
 
     private void setupInitialVisibility() {
         //New LongTerm Add - Force adding the LongTerm before the ability to add tasks is available
-        if (mlngLongTermID == -1){
+        if (mlngLongTermID == NULL_OBJECT){
             fab.setVisibility(View.GONE);
             findViewById(R.id.lsvLongTermTaskListUnc).setVisibility(View.GONE);
             findViewById(R.id.lsvLongTermTaskListCmp).setVisibility(View.GONE);
@@ -230,7 +231,7 @@ public class Details_LongTerm extends AppCompatActivity {
     }
 
     private void setupViews() {
-        if (mlngLongTermID != -1){
+        if (mlngLongTermID != NULL_OBJECT){
             Cursor cursor = DatabaseAccess.getRecordsFromTable("tblLongTerm", "flngLongTermID", mlngLongTermID);
             cursor.moveToFirst();
             setLongTermTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
@@ -240,7 +241,7 @@ public class Details_LongTerm extends AppCompatActivity {
 
     public void confirmActivity(View view){
         boolean blnContinue = false;
-        if(mlngLongTermID == -1){
+        if(mlngLongTermID == NULL_OBJECT){
             blnContinue = true;
         }
         mlngLongTermID = DatabaseAccess.addRecordToTable("tblLongTerm",
@@ -273,7 +274,7 @@ public class Details_LongTerm extends AppCompatActivity {
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        if (mlngLongTermID != -1){
+        if (mlngLongTermID != NULL_OBJECT){
             getMenuInflater().inflate(R.menu.longterm_edit_menu, menu);
         }
         return true;

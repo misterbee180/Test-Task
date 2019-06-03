@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/session"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".timekeeper.TimekeeperFragment">
+
+    <Spinner
+        android:id="@+id/Repetition_Spinner"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:entries="@array/RepetitionArray"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/Timeframe_Spinner"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/TimeRange"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Repetition_Spinner" />
+
+    <Spinner
+        android:id="@+id/Starting_Spinner"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/Starting"
+        app:layout_constraintTop_toBottomOf="@id/Timeframe_Spinner" />
+
+    <FrameLayout
+        android:id="@+id/Timeframe_Frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/Starting_Spinner">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/General_Constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent">
+
+            <TextView
+                android:id="@+id/FromDate_Description_Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/TimeKeeper_FromDate"
+                app:layout_constraintBaseline_toBaselineOf="@+id/FromDate_Add_Rmv_Button"
+                app:layout_constraintStart_toEndOf="@+id/FromDate_Add_Rmv_Button" />
+
+            <TextView
+                android:id="@+id/ToDate_Description_Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/TimeKeeper_ToDate"
+                app:layout_constraintBaseline_toBaselineOf="@+id/ToDate_Add_Rmv_Button"
+                app:layout_constraintStart_toEndOf="@+id/ToDate_Add_Rmv_Button" />
+
+            <TextView
+                android:id="@+id/FromDate_Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBaseline_toBaselineOf="@+id/FromDate_Add_Rmv_Button"
+                app:layout_constraintStart_toEndOf="@+id/FromDate_Description_Text"
+                tools:text="Sample From" />
+
+            <TextView
+                android:id="@+id/ToDate_Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBaseline_toBaselineOf="@+id/ToDate_Description_Text"
+                app:layout_constraintStart_toEndOf="@+id/ToDate_Description_Text"
+                tools:text="Sample To" />
+
+            <Button
+                android:id="@+id/FromDate_Add_Rmv_Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/Add"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/ToDate_Add_Rmv_Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/Add"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/FromDate_Add_Rmv_Button" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/Week_Constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Starting_Spinner"
+            tools:visibility="gone">
+
+            <CheckBox
+                android:id="@+id/Friday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Friday"
+                app:layout_constraintLeft_toRightOf="@+id/Tuesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Thursday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Tuesday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Tuesday"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/Monday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Monday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Monday"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <CheckBox
+                android:id="@+id/Sunday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Sunday"
+                app:layout_constraintLeft_toRightOf="@+id/Thursday_Checkbox"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <CheckBox
+                android:id="@+id/Thursday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Thursday"
+                app:layout_constraintLeft_toRightOf="@+id/Monday_Checkbox"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <CheckBox
+                android:id="@+id/Saturday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Saturday"
+                app:layout_constraintLeft_toRightOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Friday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Wednesday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Wednesday"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/Tuesday_Checkbox" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/Month_Constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Starting_Spinner"
+            tools:visibility="gone">
+
+            <RadioGroup
+                android:id="@+id/TimeKeeper_Monthly_RadioGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <RadioButton
+                    android:id="@+id/General_Monthly_Radio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/TimeKeeper_Month_Gen"
+                    app:layout_constraintBottom_toTopOf="@+id/First_Month_Checkbox" />
+
+                <RadioButton
+                    android:id="@+id/Specific_Montly_Radio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/TimeKeeper_Month_Spec"
+                    app:layout_constraintTop_toBottomOf="@+id/Last_Month_Checkbox" />
+
+            </RadioGroup>
+
+            <LinearLayout
+                android:id="@+id/General_Monthly_Layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toRightOf="@id/TimeKeeper_Monthly_RadioGroup"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <CheckBox
+                    android:id="@+id/First_Month_Checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:text="@string/TimeKeeper_Month_Gen_First" />
+
+                <CheckBox
+                    android:id="@+id/Middle_Month_Checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/TimeKeeper_Month_Gen_Middle" />
+
+                <CheckBox
+                    android:id="@+id/Last_Month_Checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/TimeKeeper_Month_Gen_Last" />
+
+                <CheckBox
+                    android:id="@+id/After_Week_Checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/TimeKeeper_Month_Gen_AfterWkn" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/Specific_Monthly_Layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toRightOf="@id/TimeKeeper_Monthly_RadioGroup"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <Button
+                    android:id="@+id/Specific_Add_Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:text="@string/TimeKeeper_Month_Spec_Add" />
+
+                <EditText
+                    android:id="@+id/Specific_Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:enabled="false"
+                    android:inputType="" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
+
+
+    <Button
+        android:id="@+id/FromTime_Add_Rmv_Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Add"
+        app:layout_constraintTop_toBottomOf="@id/Timeframe_Frame"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/FromTime_Description_Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/TimeKeeper_From_Time"
+        app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Add_Rmv_Button"
+        app:layout_constraintStart_toEndOf="@+id/FromTime_Add_Rmv_Button" />
+
+    <TextView
+        android:id="@+id/FromTime_Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Add_Rmv_Button"
+        app:layout_constraintStart_toEndOf="@+id/FromTime_Description_Text"
+        tools:text="Sample From Time" />
+
+    <Button
+        android:id="@+id/ToTime_Add_Rmv_Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Add"
+        app:layout_constraintTop_toBottomOf="@id/FromTime_Add_Rmv_Button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/ToTime_Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/ToTime_Add_Rmv_Button"
+        app:layout_constraintStart_toEndOf="@+id/ToTime_Description_Text"
+        tools:text="Sample To Time" />
+
+    <TextView
+        android:id="@+id/ToTime_Description_Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/TimeKeeper_To_Time"
+        app:layout_constraintBaseline_toBaselineOf="@+id/ToTime_Add_Rmv_Button"
+        app:layout_constraintStart_toEndOf="@+id/ToTime_Add_Rmv_Button" />
+
+    <CheckBox
+        android:id="@+id/Thru_CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Days Thru"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Rmv_Button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

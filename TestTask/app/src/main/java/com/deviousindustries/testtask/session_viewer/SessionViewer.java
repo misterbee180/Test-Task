@@ -1,16 +1,13 @@
-package com.deviousindustries.testtask.SessionViewer;
+package com.deviousindustries.testtask.session_viewer;
 
 import android.os.Bundle;
 
+import com.deviousindustries.testtask.DatabaseAccess;
 import com.deviousindustries.testtask.R;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
-
-import android.view.View;
-import android.widget.ListView;
 
 public class SessionViewer extends AppCompatActivity{
     @Override
@@ -21,6 +18,7 @@ public class SessionViewer extends AppCompatActivity{
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setupViewFragment();
+        //DatabaseAccess.forceWALCheckpoint();
     }
 
     private void setupViewFragment() {

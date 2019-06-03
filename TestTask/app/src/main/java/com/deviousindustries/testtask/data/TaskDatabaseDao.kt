@@ -1,8 +1,9 @@
-package com.deviousindustries.testtask.Data
+package com.deviousindustries.testtask.data
 
 import android.database.Cursor
 import androidx.room.*
-import com.deviousindustries.testtask.Classes.*
+import com.deviousindustries.testtask.constants.*
+import com.deviousindustries.testtask.classes.*
 
 @Dao
 interface TaskDatabaseDao {
@@ -18,7 +19,7 @@ interface TaskDatabaseDao {
     fun insertTaskDetail(taskDetail: TaskDetail)
 
     @Insert
-    fun insertTime(time: Time)
+    fun insertTime(time: Time):Long
 
     @Insert
     fun insertTimeInstance(timeInstance: TimeInstance)
@@ -33,16 +34,16 @@ interface TaskDatabaseDao {
     fun insertEvent(event: Event)
 
     @Insert
-    fun insertDay(day: Day)
+    fun insertDay(day: Day): Long
 
     @Insert
-    fun insertWeek(week: Week)
+    fun insertWeek(week: Week): Long
 
     @Insert
-    fun insertMonth(month: Month)
+    fun insertMonth(month: Month): Long
 
     @Insert
-    fun insertYear(year: Year)
+    fun insertYear(year: Year): Long
     //endregion
     
     //region Updates
@@ -146,23 +147,20 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblLongTerm WHERE flngLongTermID = :ID")
     fun loadLongTerm(ID: Long): Cursor
 
-    @Query("SELECT * FROM tblDay WHERE flngDayID = :ID")
-    fun loadDay(ID: Long): Cursor
-
     @Query("SELECT * FROM tblWeek WHERE flngWeekID = :ID")
-    fun loadWeek(ID: Long): Cursor
+    fun loadWeek(ID: Long): Week
 
     @Query("SELECT * FROM tblMonth WHERE flngMonthID = :ID")
-    fun loadMonth(ID: Long): Cursor
+    fun loadMonth(ID: Long): Month
 
-    @Query("SELECT * FROM tblYear WHERE flngYearID = :ID")
-    fun loadYear(ID: Long): Cursor
-
-    @Query("SELECT fstrTitle, flngTimeID FROM tblTime WHERE fblnSession = 1 and fblnComplete = 0")
+    @Query("SELECT fstrTitle, flngTimeID FROM tblTime WHERE fblnSession = 1 and fblnComplete = $NULL_OBJECT")
     fun loadActiveSessions(): List<Session>
 
-    @Query("SELECT * FROM tblTask WHERE flngTimeID = :ID and fdtmDeleted = -1")
+    @Query("SELECT * FROM tblTask WHERE flngTimeID = :ID and fdtmDeleted = $NULL_DATE")
     fun loadActiveTasksFromTime(ID: Long): List<Task>
+
+    @Query("SELECT fstrTitle FROM tblTime WHERE flngTimeID = :ID")
+    fun loadSession(ID: Long): String
 
 //    @Query("SELECT * FROM tblTaskInstance where flngTaskID IN (:tasks)")
 //    fun loadActiveTaskInstanceFromTask(tasks:List<Task>): List<TaskInstance>
@@ -170,4 +168,5 @@ interface TaskDatabaseDao {
 
 
     //endregion
+
 }

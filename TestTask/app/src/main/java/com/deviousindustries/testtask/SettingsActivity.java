@@ -277,11 +277,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("DatePref"));
             bindPreferenceSummaryToValue(findPreference("TimePref"));
 
-            Preference test = findPreference("enable_debug");
-            test.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            findPreference(getString(R.string.WAL_Checkpoint))
+                    .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //DatabaseAccess.resetTaskEval();
+                    DatabaseAccess.forceWALCheckpoint();
                     return true;
                 }
             });

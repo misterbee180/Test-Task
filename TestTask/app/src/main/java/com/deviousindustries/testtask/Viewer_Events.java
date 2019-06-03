@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
-import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.deviousindustries.testtask.classes.TaskInstance;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Viewer_Events extends AppCompatActivity {
 
@@ -103,15 +104,15 @@ public class Viewer_Events extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             try(Cursor curEventTask = DatabaseAccess.retrieveEventTasksFromEvent(tmpEventID)){
                                 while (curEventTask.moveToNext()){
-                                    new TaskInstance(-1,
+                                    new TaskInstance(NULL_OBJECT,
                                             curEventTask.getLong(curEventTask.getColumnIndex("flngTaskID")),
                                             curEventTask.getLong(curEventTask.getColumnIndex("flngTaskDetailID")),
-                                            (long) -1,
-                                            (long) -1,
+                                            NULL_DATE,
+                                            NULL_DATE,
                                             false,
                                             false,
                                             false,
-                                            -1);
+                                            NULL_OBJECT);
                                 }
                             }
                             ((Viewer_Events)getActivity()).setEventsList();

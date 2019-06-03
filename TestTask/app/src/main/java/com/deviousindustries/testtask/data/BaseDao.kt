@@ -1,9 +1,7 @@
-package com.deviousindustries.testtask.Data
+package com.deviousindustries.testtask.data
 
-import android.database.Cursor
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.Query
 import androidx.room.Update
 
 interface BaseDao<T> {

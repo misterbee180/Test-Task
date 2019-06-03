@@ -7,7 +7,7 @@
     tools:context="com.deviousindustries.testtask.TimeKeeper">
 
     <Spinner
-        android:id="@+id/spnRepitition"
+        android:id="@+id/Repetition_Spinner"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -17,32 +17,32 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
-        android:id="@+id/spnTimeframe"
+        android:id="@+id/Timeframe_Spinner"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/TimeRange"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spnRepitition" />
+        app:layout_constraintTop_toBottomOf="@+id/Repetition_Spinner" />
 
     <Spinner
-        android:id="@+id/spnStarting"
+        android:id="@+id/Starting_Spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/Starting"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-        app:layout_constraintTop_toBottomOf="@id/spnTimeframe"/>
+        app:layout_constraintTop_toBottomOf="@id/Timeframe_Spinner"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/CLayNoFrequency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spnStarting">
+        app:layout_constraintTop_toBottomOf="@+id/Starting_Spinner">
 
         <Button
-            android:id="@+id/Timekeeper_NoFreq_BtnFromDate"
+            android:id="@+id/FromDate_Add_Rmv_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_FromDate"
@@ -50,11 +50,11 @@
             app:layout_constraintLeft_toLeftOf="parent"/>
 
         <Button
-            android:id="@+id/Timekeeper_NoFreq_BtnToDate"
+            android:id="@+id/ToDate_Add_Rmv_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_ToDate"
-            app:layout_constraintTop_toBottomOf="@+id/Timekeeper_NoFreq_BtnFromDate"
+            app:layout_constraintTop_toBottomOf="@+id/FromDate_Add_Rmv_Button"
             app:layout_constraintLeft_toLeftOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -66,23 +66,23 @@
             app:layout_constraintTop_toBottomOf="@+id/CLayNoFrequency">
 
             <CheckBox
-                android:id="@+id/chkFriday"
+                android:id="@+id/Friday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Friday"
-                app:layout_constraintLeft_toRightOf="@+id/chkTuesday"
-                app:layout_constraintTop_toBottomOf="@+id/chkThursday" />
+                app:layout_constraintLeft_toRightOf="@+id/Tuesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Thursday_Checkbox" />
 
             <CheckBox
-                android:id="@+id/chkTuesday"
+                android:id="@+id/Tuesday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Tuesday"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/chkMonday" />
+                app:layout_constraintTop_toBottomOf="@+id/Monday_Checkbox" />
 
             <CheckBox
-                android:id="@+id/chkMonday"
+                android:id="@+id/Monday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Monday"
@@ -90,37 +90,37 @@
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <CheckBox
-                android:id="@+id/chkSunday"
+                android:id="@+id/Sunday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Sunday"
-                app:layout_constraintLeft_toRightOf="@+id/chkThursday"
+                app:layout_constraintLeft_toRightOf="@+id/Thursday_Checkbox"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <CheckBox
-                android:id="@+id/chkThursday"
+                android:id="@+id/Thursday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Thursday"
-                app:layout_constraintLeft_toRightOf="@+id/chkMonday"
+                app:layout_constraintLeft_toRightOf="@+id/Monday_Checkbox"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <CheckBox
-                android:id="@+id/chkSaturday"
+                android:id="@+id/Saturday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Saturday"
-                app:layout_constraintLeft_toRightOf="@+id/chkWednesday"
-                app:layout_constraintTop_toBottomOf="@+id/chkFriday" />
+                app:layout_constraintLeft_toRightOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Friday_Checkbox" />
 
             <CheckBox
-                android:id="@+id/chkWednesday"
+                android:id="@+id/Wednesday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Wednesday"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/chkTuesday" />
+                app:layout_constraintTop_toBottomOf="@+id/Tuesday_Checkbox" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -138,23 +138,23 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <RadioButton
-                android:id="@+id/TimeKeeper_Monthly_Gen"
+                android:id="@+id/General_Monthly_Radio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/TimeKeeper_Month_Gen"
-                app:layout_constraintBottom_toTopOf="@+id/TimeKeeper_Monthly_First" />
+                app:layout_constraintBottom_toTopOf="@+id/First_Month_Checkbox" />
 
             <RadioButton
-                android:id="@+id/TimeKeeper_Monthly_Spec"
+                android:id="@+id/Specific_Montly_Radio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/TimeKeeper_Month_Spec"
-                app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Last" />
+                app:layout_constraintTop_toBottomOf="@+id/Last_Month_Checkbox" />
 
         </RadioGroup>
 
         <CheckBox
-            android:id="@+id/TimeKeeper_Monthly_First"
+            android:id="@+id/First_Month_Checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_Month_Gen_First"
@@ -163,31 +163,31 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
         <CheckBox
-            android:id="@+id/TimeKeeper_Monthly_Middle"
+            android:id="@+id/Middle_Month_Checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_Month_Gen_Middle"
-            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
-            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_First" />
+            app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+            app:layout_constraintTop_toBottomOf="@+id/First_Month_Checkbox" />
 
         <CheckBox
-            android:id="@+id/TimeKeeper_Monthly_Last"
+            android:id="@+id/Last_Month_Checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_Month_Gen_Last"
-            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
-            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Middle" />
+            app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+            app:layout_constraintTop_toBottomOf="@+id/Middle_Month_Checkbox" />
 
         <CheckBox
-            android:id="@+id/TimeKeeper_Monthly_AfterWkn"
+            android:id="@+id/After_Week_Checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_Month_Gen_AfterWkn"
-            app:layout_constraintStart_toStartOf="@+id/TimeKeeper_Monthly_First"
-            app:layout_constraintTop_toBottomOf="@+id/TimeKeeper_Monthly_Last" />
+            app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+            app:layout_constraintTop_toBottomOf="@+id/Last_Month_Checkbox" />
 
         <Button
-            android:id="@+id/TimeKeeper_Monthly_Btn_Add"
+            android:id="@+id/Specific_Add_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/TimeKeeper_Month_Spec_Add"
@@ -196,36 +196,36 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
         <EditText
-            android:id="@+id/TimeKeeper_Monthly_Txt_Display"
+            android:id="@+id/Specific_Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
             android:enabled="false"
-            app:layout_constraintLeft_toLeftOf="@+id/TimeKeeper_Monthly_Btn_Add"
-            app:layout_constraintTop_toBottomOf="@id/TimeKeeper_Monthly_Btn_Add" android:inputType=""  />
+            app:layout_constraintLeft_toLeftOf="@+id/Specific_Add_Button"
+            app:layout_constraintTop_toBottomOf="@id/Specific_Add_Button" android:inputType=""  />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/Timekeeper_BtnFromTime"
+        android:id="@+id/FromTime_Add_Rmv_Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_From_Time"
         app:layout_constraintTop_toBottomOf="@+id/CLayMonthly" />
 
     <Button
-        android:id="@+id/Timekeeper_BtnToTime"
+        android:id="@+id/ToTime_Add_Rmv_Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/TimeKeeper_To_Time"
-        app:layout_constraintTop_toBottomOf="@+id/Timekeeper_BtnFromTime" />
+        app:layout_constraintTop_toBottomOf="@+id/FromTime_Add_Rmv_Button" />
 
     <CheckBox
-        android:id="@+id/Timekeeper_ChkThru"
+        android:id="@+id/Thru_CheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Days Thru"
-        app:layout_constraintTop_toBottomOf="@id/Timekeeper_BtnToTime"
+        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Rmv_Button"
         android:visibility="gone"/>
 
 

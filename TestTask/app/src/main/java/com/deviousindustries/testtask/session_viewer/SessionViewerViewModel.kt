@@ -1,4 +1,4 @@
-package com.deviousindustries.testtask.SessionViewer
+package com.deviousindustries.testtask.session_viewer
 
 import android.content.Context
 import android.content.Intent
@@ -6,16 +6,12 @@ import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.deviousindustries.testtask.Classes.Session
-import com.deviousindustries.testtask.Classes.Task
-import com.deviousindustries.testtask.Classes.Time
+import com.deviousindustries.testtask.session.Session
 import com.deviousindustries.testtask.DatabaseAccess
-import com.deviousindustries.testtask.Details_Session
-import java.lang.Exception
 
 class SessionViewerViewModel : ViewModel() {
 
-    var sessionList = MutableLiveData<List<Session>>()
+    var sessionList = MutableLiveData<List<com.deviousindustries.testtask.classes.Session>>()
 
     init {
         sessionList.value = listOf()
@@ -33,14 +29,8 @@ class SessionViewerViewModel : ViewModel() {
 
     fun createSession(context: Context){
         startActivity(context,
-                Intent(context, Details_Session::class.java),
+                Intent(context, Session::class.java),
                 null)
-    }
-
-    fun viewSessionDetails(context: Context, sessionID: Long){
-        val intent = Intent(context, Details_Session::class.java)
-        intent.putExtra("EXTRA_TIME_ID", sessionID)
-        startActivity(context, intent, null)
     }
 
     fun deleteSession(sessionID: Long){

@@ -13,9 +13,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.deviousindustries.testtask.Classes.Task;
-import com.deviousindustries.testtask.Classes.TaskInstance;
-import com.deviousindustries.testtask.Classes.Time;
+import com.deviousindustries.testtask.classes.Task;
+import com.deviousindustries.testtask.classes.TaskInstance;
+import com.deviousindustries.testtask.classes.Time;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Details_Instance extends AppCompatActivity {
 
@@ -53,7 +54,7 @@ public class Details_Instance extends AppCompatActivity {
     }
 
     private void retrieveExtras() {
-        long instance_id = getIntent().getLongExtra("EXTRA_INSTANCE_ID",-1);
+        long instance_id = getIntent().getLongExtra("EXTRA_INSTANCE_ID",NULL_OBJECT);
         mInstance = new TaskInstance(instance_id);
         setTaskTitle(mInstance.fstrTitle);
         setTaskDesc(mInstance.fstrDescription);
@@ -72,7 +73,7 @@ public class Details_Instance extends AppCompatActivity {
                     new String[] {"fstrTitle", "fstrDescription"},
                     new Object[] {getTaskTitle(), getTaskDesc()});
 
-            //As the instance is being updated we are assuming new title / desc and new time.
+            //As the instance is being updated we are assuming new title / desc and new mTime.
             //This is logic that in the future might want to be made more robust.
             mInstance = new TaskInstance(mInstance.flngInstanceID,
                     mInstance.flngTaskID,
@@ -82,7 +83,7 @@ public class Details_Instance extends AppCompatActivity {
                     timeKeeper.fblnFromTime,
                     timeKeeper.fblnToTime,
                     timeKeeper.fblnToDate,
-                    -1);
+                    NULL_OBJECT);
 
             setResult(RESULT_OK);
             finish();
@@ -151,8 +152,8 @@ public class Details_Instance extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             Bundle args = getArguments();
-            final long lngInstanceID = args.getLong("instance",-1);
-            final long lngTaskID = args.getLong("task",-1);
+            final long lngInstanceID = args.getLong("instance",NULL_OBJECT);
+            final long lngTaskID = args.getLong("task",NULL_OBJECT);
             builder.setMessage("Delete Instance?")
                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -160,7 +161,7 @@ public class Details_Instance extends AppCompatActivity {
                                 DatabaseAccess.mDatabase.beginTransaction();
                                 Task tt = new Task(lngTaskID);
                                 Time tm = new Time(tt.flngTimeID);
-                                if(tm.flngRepetition <= 0){
+                                if(tm.fintRepetition <= BASE_POSITION){
                                     tt.deleteTask();
                                 } else {
                                     TaskInstance ti = new TaskInstance(lngInstanceID);

@@ -1,30 +1,26 @@
-package com.deviousindustries.testtask.Classes;
+package com.deviousindustries.testtask.classes;
 
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 
 @Entity(tableName = "tblTaskDetail")
 public class TaskDetail {
     @PrimaryKey(autoGenerate = true)
     public long flngTaskDetailID;
-
-    @ColumnInfo
     @NonNull
     public String fstrTitle;
-
-    @ColumnInfo
     @NonNull
     public String fstrDescription;
 
     public TaskDetail(){
-        flngTaskDetailID = -1;
+        flngTaskDetailID = NULL_OBJECT;
         fstrTitle = "";
         fstrDescription = "";
     }

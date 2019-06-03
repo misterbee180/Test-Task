@@ -1,40 +1,25 @@
-package com.deviousindustries.testtask.Classes;
+package com.deviousindustries.testtask.classes;
 
 import android.database.Cursor;
 
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
 import com.deviousindustries.testtask.Viewer_Tasklist;
-
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 @Entity(tableName = "tblTask")
 public class Task {
     @PrimaryKey(autoGenerate = true)
     public long flngTaskID;
-
-    @ColumnInfo
     public long flngTaskDetailID;
-
-    @ColumnInfo
     public long flngTimeID;
-
-    @ColumnInfo
     public int fintTaskType;
-
-    @ColumnInfo
     public long flngTaskTypeID;
-
-    @ColumnInfo
     public long fdtmCreated;
-
-    @ColumnInfo
     public long fdtmDeleted;
-
-    @ColumnInfo
     public long flngOneOff;
 
     //Create task detail object
@@ -44,14 +29,14 @@ public class Task {
     public String fstrDescription;
 
     public Task(){
-        flngTaskID = -1;
-        flngTimeID = -1;
-        flngTaskDetailID = -1;
+        flngTaskID = NULL_OBJECT;
+        flngTimeID = NULL_OBJECT;
+        flngTaskDetailID = NULL_OBJECT;
         fdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
-        fdtmDeleted = -1;
+        fdtmDeleted = NULL_DATE;
         fintTaskType = 0;
-        flngTaskTypeID = -1;
-        flngOneOff = -1;
+        flngTaskTypeID = NULL_OBJECT;
+        flngOneOff = NULL_OBJECT;;
 
         //Create task detail object
         fstrTitle = "";
@@ -125,7 +110,7 @@ public class Task {
 
             finishActiveInstances(3);
 
-            if(flngTimeID != -1){ //For events and scenarios where there's no time associated to task
+            if(flngTimeID != NULL_OBJECT){ //For events and scenarios where there's no mTime associated to task
                 Time tempTime = new Time(flngTimeID);
                 if(tempTime.fblnSession == false){
                     tempTime.deleteTime();
@@ -146,7 +131,7 @@ public class Task {
                                   boolean pblnToDate,
                                   long plngSessionID){
 
-        return new TaskInstance(-1,
+        return new TaskInstance(NULL_OBJECT,
                 flngTaskID,
                 flngTaskDetailID,
                 pdtmFrom,
@@ -154,7 +139,7 @@ public class Task {
                 pblnFromTime,
                 pblnToTime,
                 pblnToDate,
-                flngOneOff == -1 ? plngSessionID : flngOneOff); //replace -1 w/ proper session detail id if one off
+                flngOneOff == NULL_OBJECT ? plngSessionID : flngOneOff); //replace NULL_OBJECT w/ proper session detail id if one off
     }
 
     public void clearInstances(){

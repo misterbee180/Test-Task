@@ -1,4 +1,4 @@
-package com.deviousindustries.testtask.Data
+package com.deviousindustries.testtask.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -9,10 +9,10 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
-import com.deviousindustries.testtask.Classes.*
+import com.deviousindustries.testtask.classes.*
 
 @Database(entities = arrayOf(Task::class, TaskInstance::class, TaskDetail::class, Time::class, TimeInstance::class, LongTerm::class, Group::class, Event::class, Day::class, Week::class, Month::class, Year::class),
-        version = 22,
+        version = 25,
         exportSchema = false)
 abstract class TaskDatabase: RoomDatabase() {
     abstract val taskDatabaseDao: TaskDatabaseDao
@@ -29,7 +29,7 @@ abstract class TaskDatabase: RoomDatabase() {
                             TaskDatabase::class.java,
                             "TaskDatabase.db"
                     )
-                            .addMigrations(MIGRATION_21_22)
+                            .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_25)
                             .allowMainThreadQueries()
                             .build()
                     INSTANCE = instance
@@ -80,6 +80,58 @@ abstract class TaskDatabase: RoomDatabase() {
                 updateColumn(database, "tblMonth", "fblnAfterWkn", "fblnAfterWkn", true, "0", false)
                 updateColumn(database, "tblMonth", "fstrSpecific", "fstrSpecific", true, "0", false)
                 updateColumn(database, "tblYear", "flngYearID", "flngYearID", true, "-1", true)
+            }
+        }
+        val MIGRATION_22_23 = object : Migration(22,23){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                //No changes - Changed column name in class... Hopefully this doesn't suck
+            }
+        }
+        val MIGRATION_23_24 = object : Migration(23,24){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                //No changes - Changed column name in class... Hopefully this doesn't suck
+            }
+        }
+
+        val MIGRATION_25 = object : Migration(24,25){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                val queries = listOf("UPDATE tblTask SET flngTaskDetailID = 0 WHERE flngTaskDetailID = -1",
+                        "UPDATE tblTask SET flngTimeID = 0 WHERE flngTimeID = -1",
+                        "UPDATE tblTask SET flngTaskTypeID = 0 WHERE flngTaskTypeID = -1",
+                        "UPDATE tblTask SET flngOneOff = 0 WHERE flngOneOff = -1",
+                        "UPDATE tblTime SET flngTimeframeID = 0 WHERE flngTimeframeID = -1",
+                        "UPDATE tblTime SET flngRepetition = 0 WHERE flngRepetition = -1",
+                        "UPDATE tblTime SET flngGenerationID = 0 WHERE flngGenerationID = -1",
+                        "UPDATE tblTimeInstance SET flngTimeID = 0 WHERE flngTimeID = -1",
+                        "UPDATE tblTaskInstance SET flngTaskID = 0 WHERE flngTaskID = -1",
+                        "UPDATE tblTaskInstance SET flngTaskDetailID = 0 WHERE flngTaskDetailID = -1",
+                        "UPDATE tblTaskInstance SET flngSessionID = 0 WHERE flngSessionID = -1",
+                        "DELETE from tblTimeInstance WHERE flngTimeID = 0",
+                        "DELETE from tblTime WHERE flngTimeID = 0",
+                        "DELETE from tblTimeInstance WHERE flngTimeID NOT IN (SELECT flngTimeID FROM tblTime)")
+
+                for(query in queries){
+                    database.execSQL(query)
+                }
+
+                updateColumn(database, "tblTask", "flngTaskID", "flngTaskID", true, "0", true)
+                updateColumn(database, "tblTask", "flngTaskDetailID", "flngTaskDetailID", true, "0", false)
+                updateColumn(database, "tblTask", "flngTimeID", "flngTimeID", true, "0", false)
+                updateColumn(database, "tblTask", "flngTaskTypeID", "flngTaskTypeID", true, "0", false)
+                updateColumn(database, "tblTask", "flngOneOff", "flngOneOff", true, "0", false)
+
+                updateColumn(database, "tblTime", "flngTimeID", "flngTimeID", true, "0", true)
+                updateColumn(database, "tblTime", "flngTimeframeID", "flngTimeframeID", true, "0", false)
+                updateColumn(database, "tblTime", "flngRepetition", "flngRepetition", true, "0", false)
+                updateColumn(database, "tblTime", "flngGenerationID", "flngGenerationID", true, "0", false)
+
+                updateColumn(database, "tblTimeInstance", "flngGenerationID", "flngGenerationID", true, "0", true)
+                updateColumn(database, "tblTimeInstance", "flngTimeID", "flngTimeID", true, "0", false)
+
+                updateColumn(database, "tblTaskInstance", "flngInstanceID", "flngInstanceID", true, "0", true)
+                updateColumn(database, "tblTaskInstance", "flngTaskID", "flngTaskID", true, "0", false)
+                updateColumn(database, "tblTaskInstance", "flngTaskDetailID", "flngTaskDetailID", true, "0", false)
+                updateColumn(database, "tblTaskInstance", "flngSessionID", "flngSessionID", true, "0", false)
             }
         }
         //endregion

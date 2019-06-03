@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import androidx.annotation.NonNull;
 
-import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.classes.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
@@ -24,6 +24,7 @@ import android.widget.ListView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Viewer_Task extends AppCompatActivity {
 
@@ -142,12 +143,15 @@ public class Viewer_Task extends AppCompatActivity {
                 "LEFT JOIN tblGroup g\n" +
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
-                "WHERE (tm.fblnComplete = 0 \n" +
+                "WHERE (tm.fblnComplete = " + NULL_OBJECT + "\n"+
                 "OR EXISTS (SELECT 1\n" +
                 "FROM tblTaskInstance ti\n" +
                 "WHERE ti.flngTaskID = t.flngTaskID\n" +
-                "AND (ti.fdtmCompleted = -1 AND ti.fdtmSystemCompleted = -1 AND ti.fdtmDeleted = -1)))\n" +
-                "AND t.fdtmDeleted = -1\n";
+                "AND (ti.fdtmCompleted = " + NULL_DATE + "\n" +
+                "AND ti.fdtmSystemCompleted = " + NULL_DATE + "\n" +
+                "AND ti.fdtmDeleted = " + NULL_DATE + "\n" +
+                ")))\n" +
+                "AND t.fdtmDeleted = "+ NULL_DATE + "\n";
 
         switch(mSorting) {
             case Ascending:

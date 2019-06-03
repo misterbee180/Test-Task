@@ -1,32 +1,25 @@
-package com.deviousindustries.testtask.Classes;
+package com.deviousindustries.testtask.classes;
 
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 @Entity(tableName = "tblTimeInstance")
 public class TimeInstance {
     @PrimaryKey(autoGenerate = true)
     public long flngGenerationID;
-
-    @ColumnInfo
     public long flngTimeID;
-
-    @ColumnInfo
     public long fdtmUpcoming;
-
-    @ColumnInfo
     public long fdtmPriority;
-
-    @ColumnInfo
     public int fintThru;
 
     public TimeInstance(){
-        flngTimeID = -1;
-        fdtmUpcoming = -1;
-        fdtmPriority = -1;
+        flngGenerationID = NULL_OBJECT;
+        flngTimeID = NULL_OBJECT;
+        fdtmUpcoming = NULL_DATE;
+        fdtmPriority = NULL_DATE;
         fintThru = 0;
     }
 
@@ -36,7 +29,7 @@ public class TimeInstance {
     }
 
     void save(){
-        if(fdtmUpcoming != -1){
+        if(fdtmUpcoming != NULL_DATE){
             DatabaseAccess.addRecordToTable("tblTimeInstance",
                     new String[]{"flngTimeID","fdtmUpcoming","fdtmPriority","fintThru"},
                     new Object[]{flngTimeID, fdtmUpcoming, fdtmPriority, fintThru});

@@ -5,11 +5,11 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
 
-import com.deviousindustries.testtask.Classes.Time;
-import com.deviousindustries.testtask.Data.TaskDatabase;
-import com.deviousindustries.testtask.Data.TaskDatabase_Impl;
+import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.data.TaskDatabase;
 
 import java.util.Calendar;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class BusinessLogic {
 
@@ -26,7 +26,7 @@ public class BusinessLogic {
                 TaskDatabase.Companion.getInstance(mContext).getTaskDatabaseDao());
         DatabaseAccess.mDatabase.beginTransaction();
         try{
-            try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){
+            try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = " + NULL_OBJECT + "\n", null)){
                 while (tblTime.moveToNext()) {
                     Time tempTime = new Time(tblTime.getLong(tblTime.getColumnIndex("flngTimeID")));
                     tempTime.buildTimeInstances(); //build generation points

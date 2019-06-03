@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
-import com.deviousindustries.testtask.Classes.Task;
+import com.deviousindustries.testtask.classes.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
@@ -19,11 +19,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Details_Event extends AppCompatActivity {
 
     ArrayListContainer mEventTasks = new ArrayListContainer();
-    long mlngEventID = -1;
+    long mlngEventID = NULL_OBJECT;
 
     FloatingActionButton fab;
 
@@ -56,7 +57,7 @@ public class Details_Event extends AppCompatActivity {
         try{
             super.onResume();
             retrieveExtras();
-            if (mlngEventID != -1){
+            if (mlngEventID != NULL_OBJECT){
                 retrieveEventTasks();
             }
             setupInitialVisibility();
@@ -130,13 +131,13 @@ public class Details_Event extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
-            mlngEventID = getIntent().getLongExtra("EXTRA_EVENT_ID",-1);
+            mlngEventID = getIntent().getLongExtra("EXTRA_EVENT_ID",NULL_OBJECT);
         }
     }
 
     private void setupInitialVisibility() {
         //New Event Add - Force adding the event before the ability to add tasks is available
-        if (mlngEventID == -1){
+        if (mlngEventID == NULL_OBJECT){
             fab.setVisibility(View.GONE);
             findViewById(R.id.lsvEventTaskList).setVisibility(View.GONE);
             findViewById(R.id.txtEventAddReq).setVisibility(View.GONE);
@@ -155,7 +156,7 @@ public class Details_Event extends AppCompatActivity {
     }
 
     private void setupViews() {
-        if (mlngEventID != -1){
+        if (mlngEventID != NULL_OBJECT){
             Cursor cursor = DatabaseAccess.getRecordsFromTable("tblEvent", "flngEventID", mlngEventID);
             cursor.moveToFirst();
             setEventTitle(cursor.getString(cursor.getColumnIndex("fstrTitle")));
@@ -165,7 +166,7 @@ public class Details_Event extends AppCompatActivity {
 
     public void confirmEventCreation(View view){
         try{
-            boolean blnInitial = mlngEventID == -1;
+            boolean blnInitial = mlngEventID == NULL_OBJECT;
             DatabaseAccess.mDatabase.beginTransaction();
             mlngEventID = DatabaseAccess.addRecordToTable("tblEvent",
                     new String[] {"fstrTitle","fstrDescription"},
@@ -210,7 +211,7 @@ public class Details_Event extends AppCompatActivity {
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        if (mlngEventID != -1){
+        if (mlngEventID != NULL_OBJECT){
             getMenuInflater().inflate(R.menu.event_edit_menu, menu);
         }
         return true;

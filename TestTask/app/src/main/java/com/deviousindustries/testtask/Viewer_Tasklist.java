@@ -11,10 +11,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 
-import com.deviousindustries.testtask.Classes.TaskInstance;
-import com.deviousindustries.testtask.Classes.Time;
-import com.deviousindustries.testtask.Data.TaskDatabase;
-import com.deviousindustries.testtask.SessionViewer.SessionViewer;
+import com.deviousindustries.testtask.classes.TaskInstance;
+import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.data.TaskDatabase;
+import com.deviousindustries.testtask.session_viewer.SessionViewer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
@@ -30,7 +30,7 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class Viewer_Tasklist extends AppCompatActivity {
     ListView mDisplayListView;
@@ -199,10 +199,10 @@ public class Viewer_Tasklist extends AppCompatActivity {
         try{
             super.onResume();
             boolean blnRedoSync = false;
-            //THE ONLY TIME that this should run is if the alarm is somehow not ran at the designated time
+            //THE ONLY TIME that this should run is if the alarm is somehow not ran at the designated mTime
             // or the application is accessed between the beginning of the next day and the alarm kicking off.
-            if(mPrefs.getLong("general_last_sync",-1) < getBeginningCurentDay().getTimeInMillis() || blnRedoSync){
-                //This is so that it displays the right things the first time the app opens
+            if(mPrefs.getLong("general_last_sync",NULL_DATE) < getBeginningCurentDay().getTimeInMillis() || blnRedoSync){
+                //This is so that it displays the right things the first mTime the app opens
                 generateTaskInstances();
 
                 //Cancel any alarms which may already be set up to run
@@ -427,7 +427,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         
         //Load Events
         try(Cursor eventDisplayInstance = DatabaseAccess.retrieveEventTaskInstances()){
-            long lngEventId = -1;
+            long lngEventId = NULL_OBJECT;
             while(eventDisplayInstance.moveToNext()){
                 if (lngEventId != eventDisplayInstance.getLong(eventDisplayInstance.getColumnIndex("flngEventID"))) {
                     lngEventId = eventDisplayInstance.getLong(eventDisplayInstance.getColumnIndex("flngEventID"));
@@ -441,7 +441,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         //Load Regular Tasks
         mAdapter.addSeparatorItem("Priority");
         int i = 0;
-        long lngSessionId = -1;
+        long lngSessionId = NULL_OBJECT;
         while (i < priorityList.size()){
             if (lngSessionId != priorityList.get(i).mSession){
                 mAdapter.addGroupItem("Session: " + priorityList.get(i).mSessionTitle, priorityList.get(i).mSession);
@@ -452,7 +452,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         }
         mAdapter.addSeparatorItem("Today");
         i = 0;
-        lngSessionId = (long)-1;
+        lngSessionId = NULL_OBJECT;
         while (i < todayList.size()){
             if (lngSessionId != todayList.get(i).mSession){
                 mAdapter.addGroupItem("Session: " + todayList.get(i).mSessionTitle, todayList.get(i).mSession);
@@ -463,7 +463,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         }
         mAdapter.addSeparatorItem("Standard");
         i = 0;
-        lngSessionId = (long)-1;
+        lngSessionId = NULL_OBJECT;
         while (i < standardList.size()){
             if (lngSessionId != standardList.get(i).mSession){
                 mAdapter.addGroupItem("Session: " + standardList.get(i).mSessionTitle, standardList.get(i).mSession);
@@ -475,7 +475,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
         if (mPrefs.getBoolean("upcoming_switch", true)){
             mAdapter.addSeparatorItem("Upcoming");
             i = 0;
-            lngSessionId = (long)-1;
+            lngSessionId = NULL_OBJECT;
             while (i < upcomingList.size()){
                 if (lngSessionId != upcomingList.get(i).mSession){
                     mAdapter.addGroupItem("Session: " + upcomingList.get(i).mSessionTitle, upcomingList.get(i).mSession);
@@ -499,23 +499,23 @@ public class Viewer_Tasklist extends AppCompatActivity {
 
         //Todo: redesign to not use as many booleans. Make considerations for thru tasks.
         char result;
-        Calendar calNow = getCurrentCalendar(); //represents the time now
+        Calendar calNow = getCurrentCalendar(); //represents the mTime now
         Calendar calFromWithTime = null;
         Calendar calToWithTime = null;
-        Calendar calFrom; //represents the from time of a task
-        Calendar calTo; //represents the to time of a task
+        Calendar calFrom; //represents the from mTime of a task
+        Calendar calTo; //represents the to mTime of a task
         Calendar calCreate = getCurrentCalendar(); //represents when the task was created
         calCreate.setTimeInMillis(pdtmCreated);
 
         //Start: Set General From Details
-        if (pdtmFrom != -1) {
+        if (pdtmFrom != NULL_OBJECT) {
             calFrom = getCalendar(pdtmFrom);
         }else{
             calFrom = (Calendar)calCreate.clone();
         }
 
         //Start: Set General To Details
-        if(pdtmTo != -1 && pblnToDateSet) calTo = getCalendar(pdtmTo);
+        if(pdtmTo != NULL_DATE && pblnToDateSet) calTo = getCalendar(pdtmTo);
         else {
             calTo = (Calendar)calFrom.clone();
             if(pblnToTimeSet){
@@ -527,14 +527,14 @@ public class Viewer_Tasklist extends AppCompatActivity {
             }
         }
 
-        //if time details exists we need to make sure from and to w/ time details are populated
+        //if mTime details exists we need to make sure from and to w/ mTime details are populated
         if(pblnFromTimeSet || pblnToTimeSet){
             calFromWithTime = (Calendar) calFrom.clone();
             if(pblnToTimeSet) {
                 calToWithTime = (Calendar) calTo.clone();
             } else {
                 calToWithTime = (Calendar) calFrom.clone();
-                //Must have been from time that was set so assume till end of day
+                //Must have been from mTime that was set so assume till end of day
                 calToWithTime.add(Calendar.DAY_OF_YEAR,1);
                 calToWithTime.set(Calendar.HOUR_OF_DAY, 0);
                 calToWithTime.set(Calendar.MINUTE,0);
@@ -553,18 +553,18 @@ public class Viewer_Tasklist extends AppCompatActivity {
         calTo.set(Calendar.MINUTE,0);
         calTo.set(Calendar.MILLISECOND,0);
 
-        //if either of the time settings is set and the from and the to dates surround now then it's a priority
+        //if either of the mTime settings is set and the from and the to dates surround now then it's a priority
         //this will handle cases both are set and where only one or the other is set
 
         //Evaluate Time Details
-        if((!pblnFromTimeSet && pblnToTimeSet) //Just to time set
+        if((!pblnFromTimeSet && pblnToTimeSet) //Just to mTime set
         && calNow.after(calFrom) && calNow.before(calToWithTime)){
             result = 'P';
-        } else if((pblnFromTimeSet && !pblnToTimeSet) && //Just from time set
-                calNow.after(calFromWithTime) && calNow.before(calTo)){ //Exists w/i time bounds
+        } else if((pblnFromTimeSet && !pblnToTimeSet) && //Just from mTime set
+                calNow.after(calFromWithTime) && calNow.before(calTo)){ //Exists w/i mTime bounds
             result = 'P';
         } else if((pblnFromTimeSet && pblnToTimeSet) && //Time details exist
-                calNow.after(calFromWithTime) && calNow.before(calToWithTime)){ //Exists w/i time bounds
+                calNow.after(calFromWithTime) && calNow.before(calToWithTime)){ //Exists w/i mTime bounds
             result = 'P';
         } else if ((calNow.after(calFrom) && calNow.before(calTo)) ||
                 (calNow.equals(calFrom))) {

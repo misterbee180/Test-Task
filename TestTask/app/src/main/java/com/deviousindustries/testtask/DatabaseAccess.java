@@ -1,23 +1,18 @@
 package com.deviousindustries.testtask;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
-import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import androidx.sqlite.db.SupportSQLiteQueryBuilder;
 
-import com.deviousindustries.testtask.Classes.Task;
-import com.deviousindustries.testtask.Classes.TaskDetail;
-import com.deviousindustries.testtask.Classes.Time;
-import com.deviousindustries.testtask.Data.TaskDatabaseDao;
-
-import java.util.Calendar;
+import com.deviousindustries.testtask.classes.Task;
+import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.data.TaskDatabaseDao;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 /**
  * Created by Misterbee180 on 8/10/2017.
@@ -137,7 +132,7 @@ public class DatabaseAccess {
                                         String[] pstrAddColumns,
                                         Object[] pobjAddValues){
 
-        return addRecordToTable(pstrTableName, pstrAddColumns, pobjAddValues, "", -1);
+        return addRecordToTable(pstrTableName, pstrAddColumns, pobjAddValues, "", NULL_OBJECT);
     }
 
     public static long addRecordToTable(String pstrTableName,
@@ -146,7 +141,7 @@ public class DatabaseAccess {
                                         String pstrColumnID,
                                         long plngID){
 
-        boolean blnUpdate = pstrColumnID != "" && plngID != -1;
+        boolean blnUpdate = pstrColumnID != "" && plngID != NULL_OBJECT;
 
         ContentValues values = generateContentValues(pstrAddColumns, pobjAddValues);
 
@@ -219,15 +214,15 @@ public class DatabaseAccess {
     public static Cursor findOneOffs(long plngTimeID){
         String rawQuery = "SELECT t.flngTaskID\n" +
                 "FROM tblTask t\n" +
-                "WHERE t.fdtmDeleted = -1\n" + //Task is not deleted
-                "and t.flngOneOff = ?\n" + //Task is associated w/ time
+                "WHERE t.fdtmDeleted = " + NULL_DATE + "\n" + //Task is not deleted
+                "and t.flngOneOff = ?\n" + //Task is associated w/ mTime
                 "and NOT EXISTS (\n" + //No completed instances
                 "SELECT 1\n" +
                 "FROM tblTaskInstance ti\n" +
                 "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(ti.fdtmCompleted = -1\n" +
-                "AND ti.fdtmSystemCompleted = -1\n" +
-                "AND ti.fdtmEdited = -1))";
+                "AND NOT(ti.fdtmCompleted = " + NULL_DATE + "\n" +
+                "AND ti.fdtmSystemCompleted = " + NULL_DATE + "\n" +
+                "AND ti.fdtmEdited = " + NULL_DATE + "))";
         String[] parms = new String[]{Long.toString(plngTimeID)};
         return DatabaseAccess.mDatabase.query(rawQuery, parms);
     }
@@ -240,17 +235,17 @@ public class DatabaseAccess {
                 "FROM tblTask t \n" +
                 "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
                 "AND t.fintTaskType = 2 \n" +
-                "AND t.fdtmDeleted = -1) \n " +
+                "AND t.fdtmDeleted = " + NULL_DATE + ") \n " +
                 //And none of the tasks do not have a completed task instance associated with them
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTask t \n" +
                 "WHERE t.flngTaskTypeID = lt.flngLongTermID \n" +
                 "AND t.fintTaskType = 2 \n" +
-                "AND t.fdtmDeleted = -1 \n" +
+                "AND t.fdtmDeleted = " + NULL_DATE + " \n" +
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance ti \n" +
                 "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(ti.fdtmCompleted == -1 AND ti.fdtmSystemCompleted = -1))) \n" +
+                "AND NOT(ti.fdtmCompleted = " + NULL_DATE + " AND ti.fdtmSystemCompleted = " + NULL_DATE + "))) \n" +
                 "ORDER BY lt.flngLongTermID";
 
         return mDatabase.query(rawGetCompleteLongTerms,null);
@@ -261,7 +256,7 @@ public class DatabaseAccess {
                 "CASE WHEN EXISTS(SELECT 1 FROM tblTask t \n" +
                 "JOIN tblTaskInstance ti \n" +
                 "ON t.flngTaskID = ti.flngTaskID \n" +
-                "AND ti.fdtmSystemCompleted = -1 AND ti.fdtmCompleted = -1 \n" +
+                "AND ti.fdtmSystemCompleted = " + NULL_DATE + " AND ti.fdtmCompleted = " + NULL_DATE + " \n" +
                 "WHERE t.fintTaskType = 1 \n" +
                 "AND t.flngTaskTypeID = e.flngEventID) THEN 1 ELSE 0 END as fblnActive \n" +
                 "FROM tblEvent e \n";
@@ -280,12 +275,12 @@ public class DatabaseAccess {
                 "LEFT JOIN tblGroup g\n" +
                 "ON g.flngGroupID = t.flngTaskTypeID\n" +
                 "AND t.fintTaskType = 3\n" +
-                "WHERE (tm.fblnComplete = 0 \n" +
+                "WHERE (tm.fblnComplete = " + NULL_OBJECT + "\n" +
                 "OR EXISTS (SELECT 1\n" +
                 "FROM tblTaskInstance ti\n" +
                 "WHERE ti.flngTaskID = t.flngTaskID\n" +
-                "AND (ti.fdtmCompleted = -1 AND ti.fdtmSystemCompleted = -1 AND ti.fdtmDeleted = -1)))\n" +
-                "AND t.fdtmDeleted = -1\n";
+                "AND (ti.fdtmCompleted = " + NULL_DATE + " AND ti.fdtmSystemCompleted = " + NULL_DATE + " AND ti.fdtmDeleted = " + NULL_DATE + ")))\n" +
+                "AND t.fdtmDeleted = " + NULL_DATE + "\n";
 
         switch(pintSorting) {
             case 0: //Ascending
@@ -349,18 +344,18 @@ public class DatabaseAccess {
         return DatabaseAccess.mDatabase.query(
                 SupportSQLiteQueryBuilder.builder("tblTask")
                         .columns(new String[] {"flngTaskID"})
-                        .selection("fdtmDeleted = -1 and flngTimeID = ?",new String[] {Long.toString(plngTimeID)})
+                        .selection("fdtmDeleted = " + NULL_DATE + " and flngTimeID = ?",new String[] {Long.toString(plngTimeID)})
                         .create());
     }
 
     public static Cursor getTasksFromGroup(Long plngGroupID){
         String rawString = "SELECT flngTaskID FROM tblTask t\n" +
                 "JOIN tblTime tm ON tm.flngTimeID = t.flngTimeID\n" +
-                "WHERE t.fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = -1\n" +
+                "WHERE t.fintTaskType = 3 and flngTaskTypeID = ? and fdtmDeleted = " + NULL_DATE + "\n" +
                 "AND (tm.flngRepetition > 0 \n" +
                 "OR EXISTS (SELECT 1 FROM tblTaskInstance ti\n" +
                 "WHERE ti.flngTaskID = t.flngTaskID \n" +
-                "and ti.fdtmCompleted = -1 and ti.fdtmSystemCompleted = -1 and ti.fdtmDeleted = -1))\n";
+                "and ti.fdtmCompleted = " + NULL_DATE + " and ti.fdtmSystemCompleted = " + NULL_DATE + " and ti.fdtmDeleted = " + NULL_DATE + "))\n";
         return mDatabase.query(rawString, new String[] {plngGroupID.toString()});
     }
 
@@ -372,12 +367,12 @@ public class DatabaseAccess {
                 "JOIN tblLongTerm lt \n" +
                 "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
                 "AND t.fintTaskType = 2\n" +
-                "AND t.fdtmDeleted = -1 \n" +
+                "AND t.fdtmDeleted = " + NULL_DATE + " \n" +
                 "WHERE lt.flngLongTermID = ? \n" +
                 "AND NOT EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance i \n" +
                 "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(i.fdtmCompleted == -1 AND i.fdtmSystemCompleted = -1)) \n" +
+                "AND NOT(i.fdtmCompleted == " + NULL_DATE + " AND i.fdtmSystemCompleted = " + NULL_DATE + ")) \n" +
                 "ORDER BY t.flngTaskID";
 
         String rawGetCompleteLongTermTasks = "SELECT td.fstrTitle, t.flngTaskID \n" +
@@ -387,12 +382,12 @@ public class DatabaseAccess {
                 "JOIN tblLongTerm lt \n" +
                 "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
                 "AND t.fintTaskType = 2\n" +
-                "AND t.fdtmDeleted = -1 \n" +
+                "AND t.fdtmDeleted = " + NULL_DATE + " \n" +
                 "WHERE lt.flngLongTermID = ? \n" +
                 "AND EXISTS (SELECT 1 \n" +
                 "FROM tblTaskInstance i \n" +
                 "WHERE i.flngTaskID = t.flngTaskID \n" +
-                "AND NOT(i.fdtmCompleted == -1 AND i.fdtmSystemCompleted = -1)) \n" +
+                "AND NOT(i.fdtmCompleted == " + NULL_DATE + " AND i.fdtmSystemCompleted = " + NULL_DATE + ")) \n" +
                 "ORDER BY t.flngTaskID";
 
         String[] parameters = {Long.toString(plngLongTermID)};
@@ -403,9 +398,9 @@ public class DatabaseAccess {
 
     public static  Cursor retrieveActiveTaskInstanceFromTask(Long plngTaskId){
         String selection = "flngTaskID = ? " +
-                "AND fdtmCompleted = -1 " +
-                "and fdtmSystemCompleted = -1 " +
-                "and fdtmDeleted = -1 ";
+                "AND fdtmCompleted = " + NULL_DATE + " " +
+                "and fdtmSystemCompleted = " + NULL_DATE + " " +
+                "and fdtmDeleted = " + NULL_DATE + " ";
         String[] selectionArgs = {Long.toString(plngTaskId)};
 
         return mDatabase.query(
@@ -419,9 +414,9 @@ public class DatabaseAccess {
                 "FROM tblTaskInstance ti \n" +
                 "JOIN tblTask t \n" +
                 "ON t.flngTaskID = ti.flngTaskId \n" +
-                "AND ti.fdtmCompleted = -1 \n" +
-                "AND ti.fdtmSystemCompleted = -1 \n" +
-                "AND ti.fdtmDeleted = -1 \n" +
+                "AND ti.fdtmCompleted = " + NULL_DATE + " \n" +
+                "AND ti.fdtmSystemCompleted = " + NULL_DATE + " \n" +
+                "AND ti.fdtmDeleted = " + NULL_DATE + " \n" +
                 "AND t.fintTaskType = 1 \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = ti.flngTaskDetailID \n" +
@@ -437,8 +432,8 @@ public class DatabaseAccess {
                 "FROM tblTaskInstance ti \n" +
                 "JOIN tblTask t \n" +
                 "ON t.flngTaskID = ti.flngTaskId \n" +
-                "AND ti.fdtmCompleted = -1 \n" +
-                "AND ti.fdtmSystemCompleted = -1 \n" +
+                "AND ti.fdtmCompleted = " + NULL_DATE + " \n" +
+                "AND ti.fdtmSystemCompleted = " + NULL_DATE + " \n" +
                 "WHERE t.fintTaskType = 1 \n" +
                 "AND t.flngTaskTypeID = ?";
 
@@ -448,7 +443,7 @@ public class DatabaseAccess {
     }
 
     public static  Cursor retrieveEventTasksFromEvent(Long plngEventId){
-        String selection = "fintTaskType = 1 AND flngTaskTypeID == ? AND fdtmDeleted = -1";
+        String selection = "fintTaskType = 1 AND flngTaskTypeID == ? AND fdtmDeleted = " + NULL_DATE + "";
         String[] selectionArgs = {Long.toString(plngEventId)};
 
         return mDatabase.query(
@@ -458,7 +453,7 @@ public class DatabaseAccess {
     }
 
     public static  Cursor retrieveTasksAssociatedWithLongTerm(Long plngLongTermId){
-        String selection = "flngTaskTypeID = ? and fintTaskType = 2 AND fdtmDeleted = -1";
+        String selection = "flngTaskTypeID = ? and fintTaskType = 2 AND fdtmDeleted = " + NULL_DATE + "";
         String[] selectionArgs = {Long.toString(plngLongTermId)};
 
         return mDatabase.query(
@@ -468,7 +463,8 @@ public class DatabaseAccess {
     }
 
     public static  Cursor getInstancesForTasklist(){
-        String rawQuery = "SELECT i.*, ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
+        String rawQuery = "SELECT i.*" +
+                ", ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, IFNULL(tm.fstrTitle,'') as fstrSessionTitle  \n" +
                 "FROM tblTaskInstance i \n" +
                 "JOIN tblTaskDetail td \n" +
                 "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
@@ -480,13 +476,17 @@ public class DatabaseAccess {
                 "LEFT JOIN tblLongTerm lt \n" +
                 "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
                 "AND t.fintTaskType = 2 \n" +
-                "WHERE i.fdtmCompleted = -1 \n" +
-                "AND i.fdtmSystemCompleted = -1 \n" +
-                "AND i.fdtmDeleted = -1 \n" +
+                "WHERE i.fdtmCompleted = " + NULL_DATE + " \n" +
+                "AND i.fdtmSystemCompleted = " + NULL_DATE + " \n" +
+                "AND i.fdtmDeleted = " + NULL_DATE + " \n" +
                 //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
                 "ORDER BY i.flngSessionID, i.flngTaskID";
 
         return DatabaseAccess.mDatabase.query(rawQuery);
+    }
+
+    public static void forceWALCheckpoint(){
+        mDatabase.query("PRAGMA wal_checkpoint(FULL)").close();
     }
     //endregion
 }

@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
+
 public class Viewer_LongTerm extends AppCompatActivity {
     ArrayListContainer mLongTermListUnc;
     ArrayListContainer mLongTermListCmp;
@@ -134,7 +136,7 @@ public class Viewer_LongTerm extends AppCompatActivity {
         try(Cursor tblLongTerm = DatabaseAccess.getRecordsFromTable("tblLongTerm")){
             mLongTermListUnc.Clear();
             while (tblLongTerm.moveToNext()){
-                if(mLongTermListCmp.FindID(tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID"))) == -1){
+                if(mLongTermListCmp.FindID(tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID"))) == NULL_OBJECT){
                     mLongTermListUnc.Add(tblLongTerm.getString(tblLongTerm.getColumnIndex("fstrTitle")),tblLongTerm.getLong(tblLongTerm.getColumnIndex("flngLongTermID")));
                 }
             }

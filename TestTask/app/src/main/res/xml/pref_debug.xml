@@ -24,4 +24,7 @@
         android:title="Time Preference"
         android:summary="TimeSummary"
          />
+    <Preference android:title="Acts like a button"
+        android:key="@string/WAL_Checkpoint"
+        android:summary="Fires a WAL Checkpoint"/>
 </PreferenceScreen>

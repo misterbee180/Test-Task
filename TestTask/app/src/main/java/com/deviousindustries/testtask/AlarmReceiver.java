@@ -15,11 +15,12 @@ import android.os.Bundle;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.deviousindustries.testtask.Classes.TaskInstance;
+import com.deviousindustries.testtask.classes.TaskInstance;
 
 import java.util.Calendar;
 
 import static android.content.Context.ALARM_SERVICE;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
@@ -37,7 +38,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             b.generateTaskInstances();
 
             Boolean blnToday = false;
-            try(Cursor tblInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "fdtmCompleted = -1 and fdtmSystemCompleted = -1 and fdtmDeleted = -1",null)){
+            try(Cursor tblInstance = DatabaseAccess.getRecordsFromTable("tblTaskInstance", "fdtmCompleted = " + NULL_DATE + " and fdtmSystemCompleted = " + NULL_DATE + " and fdtmDeleted = " + NULL_DATE + "",null)){
                 int i = 0;
                 while(tblInstance.moveToNext()){
                     i++;
@@ -46,9 +47,9 @@ public class AlarmReceiver extends BroadcastReceiver {
                     if(from.after(b.getBeginningCurentDay()) && from.before(b.getEndCurrentDay())){
                         //        - Need to generate push for today
                         if(blnToday == false){
-                            //Check that the last time this was ran was NOT TODAY
+                            //Check that the last mTime this was ran was NOT TODAY
                             Boolean blnRedo = false;
-                            if(b.getCalendar(b.mPrefs.getLong("general_last_sync",-1)).before(b.getBeginningCurentDay()) ||
+                            if(b.getCalendar(b.mPrefs.getLong("general_last_sync",NULL_DATE)).before(b.getBeginningCurentDay()) ||
                             blnRedo){
                                 //Generate notification for today
                                 generatePush(context, "Tasks Available", "Click to see what tasks have to do today");

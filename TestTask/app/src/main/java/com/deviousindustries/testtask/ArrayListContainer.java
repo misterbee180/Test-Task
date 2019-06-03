@@ -6,6 +6,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 /**
  * Created by Misterbee180 on 7/16/2017.
@@ -59,7 +60,7 @@ public class ArrayListContainer {
                 return tmpDecoder.mIndexNumber;
             }
         }
-        return (long)-1;
+        return NULL_OBJECT;
     }
 
     //This function could just be replaced with an array of Ints. We just need to make sure that this list is ordered the same way as the array list.
@@ -70,7 +71,7 @@ public class ArrayListContainer {
             if (tmpDecoder.mIndexNumber == plngID)
                 return tmpDecoder.mItemNumber;
         }
-        return -1;
+        return NULL_POSITION;
     }
 
     public void setIDListView(Long plngID){

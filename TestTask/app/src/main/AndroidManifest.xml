@@ -14,7 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Session.Session"></activity>
         <activity
             android:name=".Details_Instance"
             android:label="@string/title_activity_details_instance" />
@@ -44,9 +43,12 @@
             android:label="@string/title_activity_details_session" />
         <activity android:name=".TimeKeeper" />
         <activity
-            android:name=".SessionViewer.SessionViewer"
+            android:name=".session_viewer.SessionViewer"
             android:label="@string/title_activity_viewer_session"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".session.Session"
+            android:label="@string/title_activity_details_session"/>
         <activity
             android:name=".Viewer_Task"
             android:label="@string/title_activity_viewer_task"

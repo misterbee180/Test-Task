@@ -72,6 +72,13 @@
         <item>Repetes Every Forth</item>
     </string-array>
 
+    <string-array name="Session_RepetitionArray">
+        <item>Repetes Every </item>
+        <item>Repetes Every Other</item>
+        <item>Repetes Every Third</item>
+        <item>Repetes Every Forth</item>
+    </string-array>
+
     <!--TimeKeeper-->
     <string name="Monday">Monday</string>
     <string name="Tuesday">Tuesday</string>
@@ -82,10 +89,10 @@
     <string name="Sunday">Sunday</string>
 
 
-    <string name="TimeKeeper_From_Time">From Time</string>
-    <string name="TimeKeeper_To_Time">To Time</string>
-    <string name="TimeKeeper_ToDate">To Date</string>
-    <string name="TimeKeeper_FromDate">From Date</string>
+    <string name="TimeKeeper_From_Time">From Time:</string>
+    <string name="TimeKeeper_To_Time">To Time:</string>
+    <string name="TimeKeeper_ToDate">To Date:</string>
+    <string name="TimeKeeper_FromDate">From Date:</string>
     <string name="TimeKeeper_Month_Gen">General Dates</string>
     <string name="TimeKeeper_Month_Spec">Specific Days</string>
     <string name="TimeKeeper_Month_Gen_First">First of Month</string>
@@ -213,6 +220,9 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="WAL_Checkpoint">Run WAL Checkpoint</string>
+    <string name="Remove">-</string>
+    <string name="Add">+</string>
 
 
 </resources>

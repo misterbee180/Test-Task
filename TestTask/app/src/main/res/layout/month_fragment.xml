@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".session.MonthFragment">
+
+    <RadioGroup
+        android:id="@+id/TimeKeeper_Monthly_RadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/General_Monthly_Radio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Gen"
+            app:layout_constraintBottom_toTopOf="@+id/First_Month_Checkbox" />
+
+        <RadioButton
+            android:id="@+id/Specific_Montly_Radio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/TimeKeeper_Month_Spec"
+            app:layout_constraintTop_toBottomOf="@+id/Last_Month_Checkbox" />
+
+    </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/First_Month_Checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_Month_Gen_First"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toRightOf="@id/TimeKeeper_Monthly_RadioGroup"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <CheckBox
+        android:id="@+id/Middle_Month_Checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_Month_Gen_Middle"
+        app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+        app:layout_constraintTop_toBottomOf="@+id/First_Month_Checkbox" />
+
+    <CheckBox
+        android:id="@+id/Last_Month_Checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_Month_Gen_Last"
+        app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+        app:layout_constraintTop_toBottomOf="@+id/Middle_Month_Checkbox" />
+
+    <CheckBox
+        android:id="@+id/After_Week_Checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_Month_Gen_AfterWkn"
+        app:layout_constraintStart_toStartOf="@+id/First_Month_Checkbox"
+        app:layout_constraintTop_toBottomOf="@+id/Last_Month_Checkbox" />
+
+    <Button
+        android:id="@+id/Specific_Add_Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TimeKeeper_Month_Spec_Add"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/TimeKeeper_Monthly_RadioGroup"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText
+        android:id="@+id/Specific_Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:enabled="false"
+        app:layout_constraintLeft_toLeftOf="@+id/Specific_Add_Button"
+        app:layout_constraintTop_toBottomOf="@id/Specific_Add_Button" android:inputType=""  />
+</androidx.constraintlayout.widget.ConstraintLayout>

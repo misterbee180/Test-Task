@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+import static com.deviousindustries.testtask.constants.ConstantsKt.*;
+
 public class CustomAdapter extends BaseAdapter {
     private static final int TYPE_ITEM = 0;
     private static final int TYPE_SEPARATOR = 1;
@@ -42,7 +44,7 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     void addSeparatorItem(final String pName) {
-        mData.add(new itemDetail(pName, (long)-1));
+        mData.add(new itemDetail(pName, NULL_OBJECT));
         // save separator position
         mSeparatorsSet.add(mData.size() - 1);
         notifyDataSetChanged();

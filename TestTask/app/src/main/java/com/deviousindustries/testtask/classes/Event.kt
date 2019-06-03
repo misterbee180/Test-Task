@@ -1,20 +1,16 @@
-package com.deviousindustries.testtask.Classes
+package com.deviousindustries.testtask.classes
 
 import androidx.annotation.NonNull
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.deviousindustries.testtask.constants.NULL_OBJECT
 
-@Entity(tableName = "tblLongTerm")
-public class LongTerm {
+@Entity(tableName = "tblEvent")
+public class Event {
     @PrimaryKey(autoGenerate = true)
-    public var flngLongTermID: Long = 0L
-
-    @ColumnInfo
+    public var flngEventID: Long = NULL_OBJECT
     @NonNull
     public var fstrTitle : String = ""
-
-    @ColumnInfo
     @NonNull
     public var fstrDescription: String = ""
 }

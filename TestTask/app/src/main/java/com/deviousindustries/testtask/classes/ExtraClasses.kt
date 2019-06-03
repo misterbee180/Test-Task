@@ -1,4 +1,4 @@
-package com.deviousindustries.testtask.Classes
+package com.deviousindustries.testtask.classes
 
 import androidx.room.ColumnInfo
 
