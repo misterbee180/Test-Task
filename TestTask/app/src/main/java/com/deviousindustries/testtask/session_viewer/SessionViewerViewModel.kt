@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deviousindustries.testtask.session.Session
 import com.deviousindustries.testtask.DatabaseAccess
+import com.deviousindustries.testtask.classes.Time
 
 class SessionViewerViewModel : ViewModel() {
 

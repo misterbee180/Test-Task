@@ -138,6 +138,9 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblTimeInstance WHERE flngGenerationID = :ID")
     fun loadTimeInstance(ID: Long): Cursor
 
+    @Query("SELECT * FROM tblTimeInstance WHERE flngTimeID = :timeID")
+    fun loadTimeInstancesFromTime(timeID: Long): Array<TimeInstance>
+
     @Query("SELECT * FROM tblEvent WHERE flngEventID = :ID")
     fun loadEvent(ID: Long): Cursor
 

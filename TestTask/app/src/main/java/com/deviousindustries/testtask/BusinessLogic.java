@@ -28,13 +28,13 @@ public class BusinessLogic {
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = " + NULL_OBJECT + "\n", null)){
                 while (tblTime.moveToNext()) {
-                    Time tempTime = new Time(tblTime.getLong(tblTime.getColumnIndex("flngTimeID")));
+                    Time tempTime = Time.getInstance(tblTime.getLong(tblTime.getColumnIndex("flngTimeID")));
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
                 try(Cursor tblTimeInstance = DatabaseAccess.getValidGenerationPoints(getEndCurrentDay().getTimeInMillis(), getBeginningCurentDay().getTimeInMillis())){
                     while (tblTimeInstance.moveToNext()) {
-                        Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
+                        Time tempTime = Time.getInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
                         long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
                         if (tiGenerationID > tempTime.flngGenerationID) {
                             Calendar tempTo = getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));

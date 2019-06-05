@@ -161,7 +161,7 @@ public class Details_Instance extends AppCompatActivity {
                             try{
                                 DatabaseAccess.mDatabase.beginTransaction();
                                 Task tt = new Task(lngTaskID);
-                                Time tm = new Time(tt.flngTimeID);
+                                Time tm = Time.getInstance(tt.flngTimeID);
                                 if(tm.fintRepetition <= BASE_POSITION){
                                     tt.deleteTask();
                                 } else {

@@ -3,6 +3,7 @@ package com.deviousindustries.testtask.classes
 import androidx.annotation.NonNull
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.constants.NULL_OBJECT
 
 @Entity(tableName = "tblMonth")
@@ -15,6 +16,16 @@ class Month {
     var fblnAfterWkn: Boolean = false
     @NonNull
     var fstrSpecific: String = ""
+
+    companion object{
+        fun getInstance(monthId: Long): Month{
+            if(monthId != NULL_OBJECT){
+                return DatabaseAccess.taskDatabaseDao.loadMonth(monthId)
+            } else {
+                return Month()
+            }
+        }
+    }
 }
 
 @Entity(tableName = "tblWeek")
@@ -28,6 +39,16 @@ class Week {
     var fblnFriday: Boolean = false
     var fblnSaturday: Boolean = false
     var fblnSunday: Boolean = false
+
+    companion object{
+        fun getInstance(weekId: Long): Week{
+            if(weekId != NULL_OBJECT){
+                return DatabaseAccess.taskDatabaseDao.loadWeek(weekId)
+            } else {
+                return Week()
+            }
+        }
+    }
 }
 
 @Entity(tableName = "tblDay")

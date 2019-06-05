@@ -35,4 +35,8 @@ public class TimeInstance {
                     new Object[]{flngTimeID, fdtmUpcoming, fdtmPriority, fintThru});
         }
     }
+
+    void delete(){
+        DatabaseAccess.taskDatabaseDao.deleteTimeInstance(this);
+    }
 }

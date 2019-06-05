@@ -5,9 +5,11 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
+import com.deviousindustries.testtask.Utilities;
 import com.deviousindustries.testtask.Viewer_Tasklist;
 
 import java.time.Duration;
@@ -40,6 +42,25 @@ public class Time {
     @NonNull
     public String fstrTitle;
 
+    @Ignore
+    public Integer originalTimeframe;
+    @Ignore
+    public Week week;
+    @Ignore
+    public Month month;
+
+    public static Time getInstance(Long timeID){
+        if(timeID != NULL_OBJECT){
+            Time temp = DatabaseAccess.taskDatabaseDao.loadTime(timeID);
+            temp.week = temp.fintRepetition == WEEK_POSITION ? Week.Companion.getInstance(temp.flngTimeframeID) : Week.Companion.getInstance(NULL_OBJECT);
+            temp.month = temp.fintRepetition == MONTH_POSITION ? Month.Companion.getInstance(temp.flngTimeframeID) : Month.Companion.getInstance(NULL_OBJECT);
+            temp.originalTimeframe = temp.fintTimeframe;
+            return temp;
+        } else {
+            return new Time();
+        }
+    }
+
     //region Constructors
     public Time(){
         flngTimeID = NULL_OBJECT;
@@ -51,37 +72,15 @@ public class Time {
         fintTimeframe = NULL_POSITION;
         flngTimeframeID = NULL_OBJECT;
         fintRepetition = BASE_POSITION;
-        fdtmCreated = NULL_DATE;
+        fdtmCreated = Utilities.Companion.getCurrentCalendar().getTimeInMillis();
         fintStarting = NULL_POSITION;
         fblnComplete = false;
         flngGenerationID = NULL_OBJECT;
         fblnThru = false;
         fblnSession = false;
         fstrTitle = "";
-    }
-
-    public Time(long plngTimeId){
-        this();
-        try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime", "flngTimeID", plngTimeId)){
-            if(tblTime.moveToFirst()){
-                flngTimeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeID"));
-                fdtmFrom = tblTime.getLong(tblTime.getColumnIndex("fdtmFrom"));
-                fdtmTo = tblTime.getLong(tblTime.getColumnIndex("fdtmTo"));
-                fblnFromTime = tblTime.getLong(tblTime.getColumnIndex("fblnFromTime")) == 1;
-                fblnToTime = tblTime.getLong(tblTime.getColumnIndex("fblnToTime")) == 1;
-                fblnToDate = tblTime.getLong(tblTime.getColumnIndex("fblnToDate")) == 1;
-                fintTimeframe = tblTime.getInt(tblTime.getColumnIndex("fintTimeframe"));
-                flngTimeframeID = tblTime.getLong(tblTime.getColumnIndex("flngTimeframeID"));
-                fintRepetition = tblTime.getInt(tblTime.getColumnIndex("flngRepetition"));
-                fdtmCreated = tblTime.getLong(tblTime.getColumnIndex("fdtmCreated"));
-                fintStarting = tblTime.getInt(tblTime.getColumnIndex("fintStarting"));
-                fblnComplete = tblTime.getLong(tblTime.getColumnIndex("fblnComplete")) == 1;
-                flngGenerationID = tblTime.getInt(tblTime.getColumnIndex("flngGenerationID"));
-                fblnThru = tblTime.getInt(tblTime.getColumnIndex("fblnThru")) == 1;
-                fblnSession = tblTime.getLong(tblTime.getColumnIndex("fblnSession")) == 1;
-                fstrTitle = tblTime.getString(tblTime.getColumnIndex("fstrTitle"));
-            }
-        }
+        month = new Month();
+        week = new Week();
     }
 
     public Time(long plngTimeID,
@@ -139,6 +138,68 @@ public class Time {
     }
     //endregion
 
+    public void saveTime(){
+        DatabaseAccess.mDatabase.beginTransaction();
+        try{
+            flngTimeframeID = saveTimeframe();
+            if (flngTimeID != NULL_OBJECT) {
+                clearGenerationPoints();
+                DatabaseAccess.taskDatabaseDao.updateTime(this);
+            }
+            else {
+                flngTimeID = DatabaseAccess.taskDatabaseDao.insertTime(this);
+            }
+            if(!fblnComplete) buildTimeInstances();
+            refreshTaskInstances();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseAccess.mDatabase.endTransaction();
+        }
+    }
+
+    private Long saveTimeframe() {
+        Long returnTimeframeID = flngTimeframeID;
+
+        //Establish what needs to be deleted if anything
+        if (originalTimeframe != fintTimeframe && originalTimeframe != NULL_POSITION) {
+            //possibly delete
+            //do not use original ID
+            returnTimeframeID = NULL_OBJECT;
+        }
+
+        switch (getTimeframe()) {
+            case 0 :  //Day
+            {
+                if(returnTimeframeID != NULL_OBJECT){} //Don't need to do this becase day currently has nothing to update
+                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertDay(new Day());
+            }
+            case 1 : //Week
+            {
+                if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateWeek(week);
+                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertWeek(week);
+            }
+            case 2 : //Month
+            {
+                if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateMonth(month);
+                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertMonth(month);
+            }
+            case 3 : //Year
+            {
+                if(returnTimeframeID != NULL_OBJECT) {}//Don't need to do this becase year currently has nothing to update
+                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertYear(new Year());
+            }
+        }
+
+        return returnTimeframeID;
+    }
+
+    private Integer getTimeframe(){
+        if(fintRepetition == BASE_POSITION) return NULL_POSITION;
+        return fintTimeframe;
+    }
+
     //region TimeGeneration Class
     private boolean timeInstanceExist(){
         return DatabaseAccess.getRecordsFromTable("tblTimeInstance", "flngTimeID", flngTimeID).getCount() > 0;
@@ -186,14 +247,15 @@ public class Time {
     }
 
     public void clearGenerationPoints(){
-        DatabaseAccess.deleteRecordFromTable("tblTimeInstance",
-                "flngTimeID",
-                flngTimeID);
-        DatabaseAccess.updateRecordFromTable("tblTime",
-                "flngTimeID",
-                flngTimeID,
-                new String[]{"flngGenerationID"},
-                new Object[]{(long)NULL_OBJECT});
+
+        //Finds and deletes all time instances
+        for(TimeInstance instance : DatabaseAccess.taskDatabaseDao.loadTimeInstancesFromTime(flngTimeID)){
+            instance.delete();
+        }
+
+        //resets the generation ID
+        flngGenerationID = NULL_OBJECT;
+        DatabaseAccess.taskDatabaseDao.updateTime(this);
     }
 
     public void buildTimeInstances(){
@@ -842,12 +904,10 @@ public class Time {
 
     public void completeTime(){
         fblnComplete = true;
-        DatabaseAccess.updateRecordFromTable("tblTime","flngTimeID", flngTimeID,
-                new String[]{"fblnComplete"},
-                new Object[]{true});
+        DatabaseAccess.taskDatabaseDao.updateTime(this);
     }
 
-    public void refreshInstances(){
+    public void refreshTaskInstances(){
         try(Cursor curTask = DatabaseAccess.getTasksFromTime(flngTimeID)){
             while (curTask.moveToNext()){
                 Task tempTask = new Task(curTask.getLong(curTask.getColumnIndex("flngTaskID")));
@@ -870,10 +930,18 @@ public class Time {
     }
 
     public void deleteTime(){
-        //complete mTime
-        completeTime();
-        //remove mTime instances
-        clearGenerationPoints();
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            //complete mTime
+            completeTime();
+            //remove timeInstances
+            clearGenerationPoints();
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally{
+            DatabaseAccess.mDatabase.endTransaction();
+        }
     }
 
     public Time getCopy(){

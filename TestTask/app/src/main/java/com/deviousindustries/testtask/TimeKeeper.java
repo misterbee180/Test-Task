@@ -426,7 +426,7 @@ public class TimeKeeper extends ConstraintLayout implements View.OnClickListener
 
     //region INITIALIZATION
     public void loadTimeKeeper(long plngTimeID){
-        Time tempTime = new Time(plngTimeID);
+        Time tempTime = Time.getInstance(plngTimeID);
         loadTimeKeeper(tempTime);
     }
 

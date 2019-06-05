@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/session"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     tools:context=".timekeeper.TimekeeperFragment">
-
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name = "viewmodel"
+            type = "com.deviousindustries.testtask.timekeeper.TimekeeperViewModel"/>
+    </data>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <Spinner
         android:id="@+id/Repetition_Spinner"
         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/RepetitionArray"
+        android:entries="@{viewmodel.isSession ? @stringArray/Session_RepetitionArray : @stringArray/RepetitionArray }"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:selectedItemPosition="@{viewmodel.repetition}"/>
 
     <Spinner
         android:id="@+id/Timeframe_Spinner"
@@ -25,7 +31,8 @@
         android:entries="@array/TimeRange"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Repetition_Spinner" />
+        app:layout_constraintTop_toBottomOf="@+id/Repetition_Spinner"
+        android:selectedItemPosition="@{viewmodel.timeframe}"/>
 
     <Spinner
         android:id="@+id/Starting_Spinner"
@@ -33,7 +40,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/Starting"
-        app:layout_constraintTop_toBottomOf="@id/Timeframe_Spinner" />
+        app:layout_constraintTop_toBottomOf="@id/Timeframe_Spinner"
+        android:selectedItemPosition="@{viewmodel.starting}"/>
 
     <FrameLayout
         android:id="@+id/Timeframe_Frame"
@@ -45,8 +53,9 @@
             android:id="@+id/General_Constraint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="@{viewmodel.displayGeneral ? View.VISIBLE : View.GONE}"
             app:layout_constraintLeft_toLeftOf="parent"
-            tools:visibility="gone">
+            tools:visibility="visible">
 
             <TextView
                 android:id="@+id/FromDate_Description_Text"
@@ -71,6 +80,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:text="@{viewmodel.FromDate}"
                 app:layout_constraintBaseline_toBaselineOf="@+id/FromDate_Add_Button"
                 app:layout_constraintStart_toEndOf="@+id/FromDate_Description_Text"
                 tools:text="Sample From" />
@@ -80,13 +90,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:text="@{viewmodel.toDate}"
                 app:layout_constraintBaseline_toBaselineOf="@+id/ToDate_Description_Text"
                 app:layout_constraintStart_toEndOf="@+id/ToDate_Description_Text"
                 tools:text="Sample To" />
 
             <Button
                 android:id="@+id/FromDate_Add_Button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/Add"
@@ -95,7 +106,7 @@
 
             <Button
                 android:id="@+id/ToDate_Add_Button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/Add"
@@ -104,19 +115,21 @@
 
             <Button
                 android:id="@+id/FromDate_Remove_Button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/Remove"
+                android:visibility='@{viewmodel.fromDate == "" ? View.GONE : View.VISIBLE}'
                 app:layout_constraintBaseline_toBaselineOf="@+id/FromDate_Text"
                 app:layout_constraintStart_toEndOf="@+id/barrier3" />
 
             <Button
                 android:id="@+id/ToDate_Remove_Button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/Remove"
+                android:visibility='@{viewmodel.toDate == "" ? View.GONE : View.VISIBLE}'
                 app:layout_constraintBaseline_toBaselineOf="@+id/ToDate_Text"
                 app:layout_constraintStart_toEndOf="@+id/barrier3" />
 
@@ -136,73 +149,82 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/Starting_Spinner"
-            tools:visibility="visible">
-
-            <CheckBox
-                android:id="@+id/Friday_Checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Friday"
-                app:layout_constraintLeft_toRightOf="@+id/Tuesday_Checkbox"
-                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
-                app:layout_constraintTop_toBottomOf="@+id/Thursday_Checkbox" />
-
-            <CheckBox
-                android:id="@+id/Tuesday_Checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Tuesday"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/Monday_Checkbox" />
+            tools:visibility="gone"
+            android:visibility="@{viewmodel.displayWeek ? View.VISIBLE : View.GONE}">
 
             <CheckBox
                 android:id="@+id/Monday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Monday"
+                android:checked="@{viewmodel.week.fblnMonday}"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <CheckBox
-                android:id="@+id/Sunday_Checkbox"
+                android:id="@+id/Tuesday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/Sunday"
-                app:layout_constraintLeft_toRightOf="@+id/Thursday_Checkbox"
-                app:layout_constraintStart_toEndOf="@+id/Thursday_Checkbox"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <CheckBox
-                android:id="@+id/Thursday_Checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Thursday"
-                app:layout_constraintLeft_toRightOf="@+id/Monday_Checkbox"
-                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <CheckBox
-                android:id="@+id/Saturday_Checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Saturday"
-                app:layout_constraintLeft_toRightOf="@+id/Wednesday_Checkbox"
-                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
-                app:layout_constraintTop_toBottomOf="@+id/Friday_Checkbox" />
+                android:text="@string/Tuesday"
+                android:checked="@{viewmodel.week.fblnTuesday}"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/Monday_Checkbox" />
 
             <CheckBox
                 android:id="@+id/Wednesday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Wednesday"
+                android:checked="@{viewmodel.week.fblnWednesday}"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/Tuesday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Thursday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Thursday"
+                android:checked="@{viewmodel.week.fblnThursday}"
+                app:layout_constraintLeft_toRightOf="@+id/Monday_Checkbox"
+                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <CheckBox
+                android:id="@+id/Friday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Friday"
+                android:checked="@{viewmodel.week.fblnFriday}"
+                app:layout_constraintLeft_toRightOf="@+id/Tuesday_Checkbox"
+                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Thursday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Saturday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Saturday"
+                android:checked="@{viewmodel.week.fblnSaturday}"
+                app:layout_constraintLeft_toRightOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/Friday_Checkbox" />
+
+            <CheckBox
+                android:id="@+id/Sunday_Checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Sunday"
+                android:checked="@{viewmodel.week.fblnSunday}"
+                app:layout_constraintLeft_toRightOf="@+id/Thursday_Checkbox"
+                app:layout_constraintStart_toEndOf="@+id/Thursday_Checkbox"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/Month_Constraint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="@{viewmodel.displayMonth ? View.VISIBLE : View.GONE}"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/Starting_Spinner"
             tools:visibility="gone">
@@ -211,6 +233,7 @@
                 android:id="@+id/General_Monthly_Radio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="@{!viewmodel.monthSpecificRadio}"
                 android:text="@string/TimeKeeper_Month_Gen"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -219,6 +242,7 @@
                 android:id="@+id/Specific_Montly_Radio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="@{viewmodel.monthSpecificRadio}"
                 android:text="@string/TimeKeeper_Month_Spec"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/General_Monthly_Radio" />
@@ -228,56 +252,68 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:visibility="@{viewmodel.displayGeneralMonthly ? View.VISIBLE : View.GONE}"
                 app:layout_constraintStart_toEndOf="@id/barrier5"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="gone">
 
                 <CheckBox
                     android:id="@+id/First_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:checked="@{viewmodel.month.fblnFirst}"
                     android:text="@string/TimeKeeper_Month_Gen_First" />
 
                 <CheckBox
                     android:id="@+id/Middle_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:checked="@{viewmodel.month.fblnMiddle}"
                     android:text="@string/TimeKeeper_Month_Gen_Middle" />
 
                 <CheckBox
                     android:id="@+id/Last_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:checked="@{viewmodel.month.fblnLast}"
                     android:text="@string/TimeKeeper_Month_Gen_Last" />
 
                 <CheckBox
                     android:id="@+id/After_Week_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:checked="@{viewmodel.month.fblnAfterWkn}"
                     android:text="@string/TimeKeeper_Month_Gen_AfterWkn" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/Specific_Monthly_Layout"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintStart_toEndOf="@id/barrier5"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <Button
-                    android:id="@+id/Specific_Add_Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:text="@string/TimeKeeper_Month_Spec_Add" />
+                android:orientation="horizontal"
+                android:visibility="@{viewmodel.displaySpecificMonthly ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="@+id/Specific_Montly_Radio"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/barrier5">
 
                 <EditText
                     android:id="@+id/Specific_Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:layout_weight="1"
                     android:ems="10"
                     android:enabled="false"
-                    android:inputType="" />
+                    android:inputType=""
+                    android:text="@{viewmodel.monthSpecificString}" />
+
+                <Button
+                    android:id="@+id/Specific_Add_Button"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    android:text="@string/Add" />
+
             </LinearLayout>
 
             <androidx.constraintlayout.widget.Barrier
@@ -285,17 +321,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="right"
-                app:constraint_referenced_ids="General_Monthly_Radio,Specific_Montly_Radio" />
+                app:constraint_referenced_ids="General_Monthly_Radio,Specific_Montly_Radio"
+                tools:layout_editor_absoluteX="121dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 
 
     <Button
         android:id="@+id/FromTime_Add_Button"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:text="@string/Add"
+        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/Timeframe_Frame" />
 
@@ -315,20 +352,22 @@
         android:layout_marginStart="8dp"
         app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Add_Button"
         app:layout_constraintStart_toEndOf="@+id/FromTime_Description_Text"
+        android:text="@{viewmodel.fromTime}"
         tools:text="Sample From Time" />
 
     <Button
         android:id="@+id/FromTime_Remove_Button"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/Remove"
         app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Text"
-        app:layout_constraintStart_toEndOf="@+id/barrier4" />
+        app:layout_constraintStart_toEndOf="@+id/barrier4"
+        android:visibility='@{viewmodel.fromTime == "" ? View.GONE : View.VISIBLE}'/>
 
     <Button
         android:id="@+id/ToTime_Add_Button"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/Add"
@@ -342,7 +381,8 @@
         android:layout_marginStart="8dp"
         app:layout_constraintBaseline_toBaselineOf="@+id/ToTime_Add_Button"
         app:layout_constraintStart_toEndOf="@+id/ToTime_Description_Text"
-        tools:text="Sample To Time" />
+        tools:text="Sample To Time"
+        android:text="@{viewmodel.toTime}"/>
 
     <TextView
         android:id="@+id/ToTime_Description_Text"
@@ -355,10 +395,11 @@
 
     <Button
         android:id="@+id/ToTime_Remove_Button"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/Remove"
+        android:visibility='@{viewmodel.toTime == "" ? View.GONE : View.VISIBLE}'
         app:layout_constraintBaseline_toBaselineOf="@+id/ToTime_Text"
         app:layout_constraintStart_toEndOf="@+id/barrier4" />
 
@@ -369,7 +410,8 @@
         android:text="Days Thru"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Button" />
+        app:layout_constraintTop_toBottomOf="@id/ToTime_Add_Button"
+        android:checked="@={viewmodel.mTime.fblnThru}"/>
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier4"
@@ -379,4 +421,13 @@
         app:constraint_referenced_ids="ToTime_Text,FromTime_Text"
         tools:layout_editor_absoluteX="411dp" />
 
+    <!--<TextView-->
+        <!--android:id="@+id/textView"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@{String.valueOf(viewmodel.mTime.fblnThru)}"-->
+        <!--tools:layout_editor_absoluteX="104dp"-->
+        <!--tools:layout_editor_absoluteY="316dp" />-->
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

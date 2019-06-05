@@ -28,13 +28,15 @@ public class Details_Session extends AppCompatActivity{
         Utilities.Companion.instantiate(getApplicationContext());
         timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(2);
-        mTime = new Time();
+        Long loadID = NULL_OBJECT;
 
         fintent = getIntent();
         Bundle extras = fintent.getExtras();
         if (extras != null){
-            mTime = new Time(getIntent().getLongExtra("EXTRA_TIME_ID",NULL_OBJECT));
+            loadID = getIntent().getLongExtra("EXTRA_TIME_ID",NULL_OBJECT);
         }
+
+        mTime = Time.getInstance(loadID);
 
         ListView mSessionView = findViewById(R.id.lsvSessionTaskList);
         mSessionTaskList = new ArrayListContainer();
@@ -86,13 +88,13 @@ public class Details_Session extends AppCompatActivity{
                     mTime.flngTimeframeID,
                     true,
                     getSessionTitle());
-            mTime.refreshInstances();
+            mTime.refreshTaskInstances();
 
             //Because session changed (possibly) we need to update any oneoffs that haven't yet been completed.
             try(Cursor oneOffs = DatabaseAccess.findOneOffs(mTime.flngTimeID)) {
                 while (oneOffs.moveToNext()) {
                     Task tempTask = new Task(oneOffs.getLong(oneOffs.getColumnIndex("flngTaskID")));
-                    new Time(tempTask.flngTimeID).clearGenerationPoints();
+                    Time.getInstance(tempTask.flngTimeID).clearGenerationPoints();
                     Time tempTime = mTime.createOneOff(tempTask.flngTimeID);//because we're supplying the mTime ID we shouldn't need to replace the session id
 
                     tempTask.finishActiveInstances(3);

@@ -178,7 +178,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
 //                                    }
 //                                }
 //                            }
-                            Time tempTime = new Time(getArguments().getLong("TimeID"));
+                            Time tempTime = Time.getInstance(getArguments().getLong("TimeID"));
                             tempTime.finishTaskInstances(2);
                             ((Viewer_Tasklist)getActivity()).loadTasksFromDatabase();
                         }
@@ -307,15 +307,15 @@ public class Viewer_Tasklist extends AppCompatActivity {
         try{
             try(Cursor tblTime = DatabaseAccess.getRecordsFromTable("tblTime","fblnComplete = 0", null)){
                 while (tblTime.moveToNext()) {
-                    Time tempTime = new Time(tblTime.getLong(tblTime.getColumnIndex("flngTimeID")));
+                    Time tempTime = Time.getInstance(tblTime.getLong(tblTime.getColumnIndex("flngTimeID")));
                     tempTime.buildTimeInstances(); //build generation points
                 }
 
                 try(Cursor tblTimeInstance = DatabaseAccess.getValidGenerationPoints(getEndCurrentDay().getTimeInMillis(), getBeginningCurentDay().getTimeInMillis())){
                     while (tblTimeInstance.moveToNext()) {
-                        Time tempTime = new Time(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
+                        Time tempTime = Time.getInstance(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngTimeID")));
                         long tiGenerationID = tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID"));
-                        if (tiGenerationID > tempTime.flngGenerationID) {
+                        if (tempTime != null && tiGenerationID > tempTime.flngGenerationID) {
                             Calendar tempTo = getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
                             if (tempTime.fblnThru) {
                                 tempTo.add(Calendar.DAY_OF_YEAR, tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));

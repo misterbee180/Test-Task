@@ -111,7 +111,7 @@ public class Task {
             finishActiveInstances(3);
 
             if(flngTimeID != NULL_OBJECT){ //For events and scenarios where there's no mTime associated to task
-                Time tempTime = new Time(flngTimeID);
+                Time tempTime = Time.getInstance(flngTimeID);
                 if(tempTime.fblnSession == false){
                     tempTime.deleteTime();
                 }

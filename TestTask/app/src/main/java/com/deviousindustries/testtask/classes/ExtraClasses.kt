@@ -7,3 +7,9 @@ data class Session(
         //@ColumnInfo(name="fstrDescription") var description: String,
         @ColumnInfo(name="flngTimeID") var timeID: Long
 )
+
+class SpinnerElement(val text: String, val id: Int){
+    override fun toString(): String {
+        return text
+    }
+}

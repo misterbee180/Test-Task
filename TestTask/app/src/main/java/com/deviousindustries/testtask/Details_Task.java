@@ -48,7 +48,6 @@ public class Details_Task extends AppCompatActivity {
         timeKeeper = findViewById(R.id.timeKeeper);
         timeKeeper.setMode(1);
         mTask = new Task();
-        mTime = new Time();
         mlngEventID = NULL_OBJECT;
         mlngLongTermID = NULL_OBJECT;
         mlngGroupID = NULL_OBJECT;
@@ -75,6 +74,7 @@ public class Details_Task extends AppCompatActivity {
     }
 
     private void retrieveExtras() {
+        Long loadTimeID = NULL_OBJECT;
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null){
@@ -92,14 +92,15 @@ public class Details_Task extends AppCompatActivity {
                     mlngGroupID = mTask.flngTaskTypeID;
 
                 }
-                mTime = new Time(mTask.flngTimeID);
-                timeKeeper.loadTimeKeeper(mTime);
+                loadTimeID = mTask.flngTimeID;
             } else {
                 mlngEventID = extras.getLong("EXTRA_EVENT_ID", NULL_OBJECT);
                 mlngLongTermID = extras.getLong("EXTRA_LONGTERM_ID", NULL_OBJECT);
                 mlngGroupID = extras.getLong("EXTRA_GROUP_ID", NULL_OBJECT);
             }
         }
+        mTime = Time.getInstance(loadTimeID);
+        timeKeeper.loadTimeKeeper(mTime);
     }
 
     @Override
@@ -245,7 +246,7 @@ public class Details_Task extends AppCompatActivity {
         //Add pre-set session so that a value can be grabbed.
         mSessionList.Add("No Session",NULL_OBJECT);
         while(cursor.moveToNext()){
-            Time tempTime = new Time(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
+            Time tempTime = Time.getInstance(cursor.getLong(cursor.getColumnIndex("flngTimeID")));
             mSessionList.Add(tempTime.fstrTitle,
                     tempTime.flngTimeID);
         }
@@ -292,7 +293,7 @@ public class Details_Task extends AppCompatActivity {
 
                     if(mlngEventID == NULL_OBJECT){
                         if (wasSessionSessionReplaced()) {
-                            mTime = new Time(getSession());
+                            mTime = Time.getInstance(getSession());
                             if (getOneOff() != NULL_OBJECT) {
                                 mTime = mTime.createOneOff(NULL_OBJECT);
                             }
@@ -309,7 +310,7 @@ public class Details_Task extends AppCompatActivity {
                         } else if (wasTimeSessionReplaced()) {
                             //complete mTime and replace id
                             mTime.completeTime();
-                            mTime = new Time(getSession());
+                            mTime = Time.getInstance(getSession());
                             if (getOneOff() != NULL_OBJECT){
                                 mTask.updateOneOff(getOneOff());
                                 mTime = mTime.createOneOff(NULL_OBJECT);
@@ -329,10 +330,10 @@ public class Details_Task extends AppCompatActivity {
                 } else {
                     if (getOneOff() != NULL_OBJECT) {
                         //TODO: Create button to allow adding to next mTime instance istead of currently active (adding to next weekend during this weekend instead of this weekend)
-                        mTime = new Time(getSession());
+                        mTime = Time.getInstance(getSession());
                         mTime = mTime.createOneOff(NULL_OBJECT);
                     } else if (getSession() != NULL_OBJECT) {
-                        mTime = new Time(getSession());
+                        mTime = Time.getInstance(getSession());
                     } else if (mlngEventID == NULL_OBJECT && //Not event task
                             (mlngLongTermID == NULL_OBJECT || timeKeeper.isTimeSet())) { //Not long term w/o mTime set
                         mTime = timeKeeper.createTimeDetails(NULL_OBJECT,

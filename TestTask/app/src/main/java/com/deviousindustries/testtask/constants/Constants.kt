@@ -15,3 +15,9 @@ const val END_HOUR = 23
 const val END_MINUTE = 59
 const val END_SECOND = 59
 const val END_MILLI = 999
+
+//Timekeeper Positions
+const val DAY_POSITION = 0
+const val WEEK_POSITION = 1
+const val MONTH_POSITION = 2
+const val YEAR_POSITION = 3

@@ -1,25 +1,34 @@
 package com.deviousindustries.testtask.timekeeper
 
 import android.annotation.SuppressLint
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deviousindustries.testtask.constants.*
 import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.classes.*
-import java.lang.Exception
 import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
 //Possible improvement: Used savedState details to pass mTime ID (or call VM factory to provide constructor values)
 class TimekeeperViewModel : ViewModel() {
-    var timeID : Long = NULL_OBJECT
+    val displaySpecificMonthly = MutableLiveData<Boolean>()
+    val displayGeneralMonthly = MutableLiveData<Boolean>()
+    val displayThru = MutableLiveData<Boolean>()
+    val displayMonth = MutableLiveData<Boolean>()
+    val displayWeek = MutableLiveData<Boolean>()
+    val displayGeneral = MutableLiveData<Boolean>()
+    val displayTimeframe = MutableLiveData<Boolean>()
+    val displayStarting = MutableLiveData<Boolean>()
+    val test = MutableLiveData<Boolean>().apply { this.value = false }
     var mTime = MutableLiveData<Time>()
+    var timeID : Long = NULL_OBJECT
+
     var week = MutableLiveData<Week>()
     var month = MutableLiveData<Month>()
     var isSession = MutableLiveData<Boolean>()
-    var originalTimeframe = NULL_POSITION
 
     //Indicators of what date or mTime values being set
     var settingDate = ""
@@ -127,10 +136,80 @@ class TimekeeperViewModel : ViewModel() {
         return timeString
     }
 
+    private var _repetition = MutableLiveData<Int>()
+    var repetition: LiveData<Int> = _repetition
+    private fun loadRepetition(repetition: Int){
+        if(isSession.value!!) _repetition.value = repetition - 1
+        else _repetition.value = repetition
+    }
+
+    fun setRepetition(position: Int){
+        if(_repetition.value != position) {
+            _repetition.value = position
+
+            //set correct time value
+            var repValue = position
+            if(isSession.value!!) repValue += 1
+            mTime.value?.fintRepetition = repValue
+            displayTimeframeAndStarting(repValue)
+        }
+    }
+
+    private fun displayTimeframeAndStarting(repetitionPosition: Int){
+        if(repetitionPosition != BASE_POSITION){
+            displayTimeframe.value = true
+            displayStarting.value = true
+            determineTimeframeVisibility(timeframe.value!!)
+        } else {
+            displayTimeframe.value = false
+            displayStarting.value = false
+            displayWeek.value = false
+            displayMonth.value = false
+            displayGeneral.value = true
+        }
+    }
+
+    private fun determineTimeframeVisibility(timeframePosition: Int) {
+        //reset visibility to start
+        displayMonth.value = false
+        displayWeek.value = false
+        displayGeneral.value = false
+        displayThru.value = false
+
+        when (timeframePosition) {
+            1 -> {
+                displayWeek.value = true
+                displayThru.value = true
+            }
+            2 -> {
+                displayMonth.value = true
+                displayThru.value = true
+                setupMonthView(monthSpecificRadio.value!!)
+            }
+            else -> {
+                displayNoDetails()
+                displayThru.value = false
+            }
+        }
+    }
+
+    fun setupMonthView(isSpecific: Boolean) {
+        displayGeneralMonthly.value = !isSpecific
+        displaySpecificMonthly.value = isSpecific
+        monthSpecificRadio.value = isSpecific
+    }
+
+    private fun displayNoDetails() {
+        displayWeek.value = false
+        displayMonth.value = false
+        displayGeneral.value = false
+    }
+
     var timeframe = MutableLiveData<Int>()
     fun setTimeframe(position: Int){
         timeframe.value = if(position == NULL_POSITION) BASE_POSITION else position
         mTime.value?.fintTimeframe = timeframe.value
+        determineTimeframeVisibility(timeframe.value!!)
     }
 
     var starting = MutableLiveData<Int>()
@@ -147,14 +226,11 @@ class TimekeeperViewModel : ViewModel() {
     var monthSpecificString = MutableLiveData<String>()
 
     init{
-        mTime.value = Time()
-        week.value = Week()
-        month.value = Month()
         monthSpecificRadio.value = false;
         isSession.value = false;
         monthSpecificString.value = ""
-        timeframe.value = 0
-        starting.value = 0
+        timeframe.value = BASE_POSITION
+        starting.value = BASE_POSITION
         fromDate.value = ""
         toDate.value = ""
         fromTime.value = ""
@@ -162,98 +238,27 @@ class TimekeeperViewModel : ViewModel() {
     }
 
 
-    fun loadTime(timeID: Long){
+    fun loadTimekeeper(timeID: Long){
         this.timeID = timeID
+        mTime.value = Time.getInstance(timeID)
         if(timeID != NULL_OBJECT){
-            mTime.value = DatabaseAccess.taskDatabaseDao.loadTime(timeID)
             if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
             if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
+            loadRepetition(mTime.value!!.fintRepetition)
             setTimeframe(mTime.value!!.fintTimeframe)
             setStarting(mTime.value!!.fintStarting)
-            if(mTime.value!!.fintRepetition != BASE_POSITION){
-                when(mTime.value!!.fintTimeframe){
-                    1 -> week.value = DatabaseAccess.taskDatabaseDao.loadWeek(mTime.value!!.flngTimeframeID)
-                    2 -> {
-                        month.value = DatabaseAccess.taskDatabaseDao.loadMonth(mTime.value!!.flngTimeframeID)
-                        establishMonthRadio()
-                    }
-                }
-            }
+            establishMonthRadio()
         }
-    }
-
-    fun saveTime(){
-        DatabaseAccess.mDatabase.beginTransaction()
-        try{
-            mTime.value!!.flngTimeframeID = saveTimeframe()
-            if (timeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateTime(mTime.value!!)
-            else mTime.value!!.flngTimeID = DatabaseAccess.taskDatabaseDao.insertTime(mTime.value!!)
-            DatabaseAccess.mDatabase.setTransactionSuccessful()
-        } catch(e:Exception) {
-            e.printStackTrace()
-        } finally {
-            DatabaseAccess.mDatabase.endTransaction()
-        }
-    }
-
-    private fun getTimeframe(): Int {
-        if(mTime.value!!.fintRepetition == BASE_POSITION) return NULL_POSITION
-        return mTime.value!!.fintTimeframe
-    }
-
-    private fun saveTimeframe(): Long {
-        var returnTimeframeID = mTime.value!!.flngTimeframeID
-
-        //Establish what needs to be deleted if anything
-        if (originalTimeframe != mTime.value!!.fintTimeframe &&
-                originalTimeframe != NULL_POSITION) {
-            //possibly delete
-            //do not use original ID
-            returnTimeframeID = NULL_OBJECT
-        }
-
-        when (getTimeframe()) {
-            0 -> //Day
-                {
-                    if(returnTimeframeID != NULL_OBJECT) //DatabaseAccess.taskDatabaseDao.updateDay
-                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertDay(Day())
-                }
-            1 -> //Week
-                {
-                    if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateWeek(week.value!!)
-                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertWeek(week.value!!)
-                }
-            2 -> //Month
-                {
-                    if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateMonth(month.value!!)
-                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertMonth(month.value!!)
-                }
-            3 -> //Year
-                {
-                    if(returnTimeframeID != NULL_OBJECT)
-                    else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertYear(Year())
-                }
-        }
-
-        return returnTimeframeID
     }
 
     private fun establishMonthRadio(){
-        if(month.value?.fstrSpecific != ""){
+        if(mTime.value!!.month.fstrSpecific != ""){
             monthSpecificRadio.value = true
         }
     }
 
-    fun setRepetitionID(position: Int){
-        mTime.value?.fintRepetition = getRepetitionID(position)
-    }
-
-    private fun getRepetitionID(position: Int):Int{
-        var id = position
-        if(isSession.value!!){
-            id += 1
-        }
-        return id
+    fun saveTime(){
+        mTime.value!!.saveTime()
     }
 
     fun updateSpecific(){
@@ -269,7 +274,7 @@ class TimekeeperViewModel : ViewModel() {
             }
         }
         monthSpecificString.value = stringBuilder.toString()
-        month.value!!.fstrSpecific = stringBuilder.toString()
+        mTime.value!!.month.fstrSpecific = stringBuilder.toString()
     }
 
     fun removeDate(source: String){

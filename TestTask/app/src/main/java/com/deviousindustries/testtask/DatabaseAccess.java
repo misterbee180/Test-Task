@@ -35,12 +35,12 @@ public class DatabaseAccess {
     public static void deleteSession(Long sessionID){
         try{
             DatabaseAccess.mDatabase.beginTransaction();
-            Time tempTime = taskDatabaseDao.loadTime(sessionID);
+            Time tempTime = Time.getInstance(sessionID);
             for(Task task : taskDatabaseDao.loadActiveTasksFromTime(sessionID)){
                 task.finishActiveInstances(3);
                 task.replaceTimeId(tempTime.getCopy().flngTimeID);
             }
-            DatabaseAccess.taskDatabaseDao.deleteTime(tempTime);
+            tempTime.deleteTime();
             DatabaseAccess.mDatabase.setTransactionSuccessful();
         }catch (Exception e){
             e.printStackTrace();
