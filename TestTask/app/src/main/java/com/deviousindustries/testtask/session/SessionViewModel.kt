@@ -1,5 +1,6 @@
 package com.deviousindustries.testtask.session
 
+import android.os.AsyncTask
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel;
 import com.deviousindustries.testtask.constants.NULL_OBJECT
@@ -18,10 +19,6 @@ class SessionViewModel : ViewModel() {
         eventComplete.value = false
     }
 
-    fun setTimekeeper(timekeeperViewModel: TimekeeperViewModel){
-        this.timekeeperViewModel = timekeeperViewModel
-    }
-
     fun Start(sessionID: Long){
         this.sessionID = sessionID
         timekeeperViewModel.isSession.value = true
@@ -31,17 +28,23 @@ class SessionViewModel : ViewModel() {
     }
 
     fun saveSession(){
-        DatabaseAccess.mDatabase.beginTransaction()
-        try{
-            timekeeperViewModel.saveTimekeeper()
-                    .updateToSession(title.value!!)
-            eventComplete.value = true
+        eventComplete.value = true
+        SaveSession().execute()
+    }
 
-            DatabaseAccess.mDatabase.setTransactionSuccessful()
-        } catch(e:Exception){
-            e.printStackTrace()
-        } finally {
-            DatabaseAccess.mDatabase.endTransaction()
+    inner class SaveSession():AsyncTask<Unit, Unit, Unit>(){
+        override fun doInBackground(vararg params: Unit?) {
+            DatabaseAccess.mDatabase.beginTransaction()
+            try{
+                timekeeperViewModel.saveTimekeeper()
+                        .updateToSession(title.value!!)
+
+                DatabaseAccess.mDatabase.setTransactionSuccessful()
+            } catch(e:Exception){
+                e.printStackTrace()
+            } finally {
+                DatabaseAccess.mDatabase.endTransaction()
+            }
         }
     }
 }

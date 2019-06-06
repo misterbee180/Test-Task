@@ -34,7 +34,7 @@ class SessionFragment() : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(activity!!).get(SessionViewModel::class.java)
-        viewModel.setTimekeeper(ViewModelProviders.of(activity!!).get(TimekeeperViewModel::class.java))
+        viewModel.timekeeperViewModel = (ViewModelProviders.of(activity!!).get(TimekeeperViewModel::class.java))
 
         val bundle = arguments
         if (bundle != null) {

@@ -243,38 +243,29 @@ class TimekeeperViewModel : ViewModel() {
 
     fun loadTimekeeper(timeID: Long){
         this.timeID = timeID
-//        LoadTimekeeper().execute(timeID)
-        mTime.value = Time.getInstance(timeID)
-        if(timeID != NULL_OBJECT){
-            if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
-            if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
-            loadRepetition(mTime.value!!.fintRepetition)
-            setTimeframe(mTime.value!!.fintTimeframe)
-            setStarting(mTime.value!!.fintStarting)
-            establishMonthRadio()
-        }
+        LoadTimekeeper().execute(timeID)
     }
 
-//    inner class LoadTimekeeper : AsyncTask<Long, Int, Time>(){
-//
-//        override fun doInBackground(vararg params: Long?):Time {
-//            return Time.getInstance(params[0]!!)
-//        }
-//
-//        override fun onPostExecute(result: Time) {
-//            super.onPostExecute(result)
-//
-//            mTime.value = result
-//            if(mTime.value!!.flngTimeID != NULL_OBJECT){
-//                if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
-//                if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
-//                loadRepetition(mTime.value!!.fintRepetition)
-//                setTimeframe(mTime.value!!.fintTimeframe)
-//                setStarting(mTime.value!!.fintStarting)
-//                establishMonthRadio()
-//            }
-//        }
-//    }
+    inner class LoadTimekeeper : AsyncTask<Long, Int, Time>(){
+
+        override fun doInBackground(vararg params: Long?):Time {
+            return Time.getInstance(params[0]!!)
+        }
+
+        override fun onPostExecute(result: Time) {
+            super.onPostExecute(result)
+
+            mTime.value = result
+            if(timeID != NULL_OBJECT){
+                if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
+                if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
+                loadRepetition(mTime.value!!.fintRepetition)
+                setTimeframe(mTime.value!!.fintTimeframe)
+                setStarting(mTime.value!!.fintStarting)
+                establishMonthRadio()
+            }
+        }
+    }
 
     private fun establishMonthRadio(){
         monthSpecificRadio.value = mTime.value!!.month.fstrSpecific != ""
