@@ -1,6 +1,8 @@
 package com.deviousindustries.testtask.timekeeper
 
 import android.annotation.SuppressLint
+import android.os.AsyncTask
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +11,7 @@ import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.classes.*
 import java.lang.StringBuilder
+import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -208,7 +211,7 @@ class TimekeeperViewModel : ViewModel() {
     var timeframe = MutableLiveData<Int>()
     fun setTimeframe(position: Int){
         timeframe.value = if(position == NULL_POSITION) BASE_POSITION else position
-        mTime.value?.fintTimeframe = timeframe.value
+        mTime.value!!.fintTimeframe = position
         determineTimeframeVisibility(timeframe.value!!)
     }
 
@@ -240,6 +243,7 @@ class TimekeeperViewModel : ViewModel() {
 
     fun loadTimekeeper(timeID: Long){
         this.timeID = timeID
+//        LoadTimekeeper().execute(timeID)
         mTime.value = Time.getInstance(timeID)
         if(timeID != NULL_OBJECT){
             if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
@@ -251,14 +255,41 @@ class TimekeeperViewModel : ViewModel() {
         }
     }
 
+//    inner class LoadTimekeeper : AsyncTask<Long, Int, Time>(){
+//
+//        override fun doInBackground(vararg params: Long?):Time {
+//            return Time.getInstance(params[0]!!)
+//        }
+//
+//        override fun onPostExecute(result: Time) {
+//            super.onPostExecute(result)
+//
+//            mTime.value = result
+//            if(mTime.value!!.flngTimeID != NULL_OBJECT){
+//                if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
+//                if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
+//                loadRepetition(mTime.value!!.fintRepetition)
+//                setTimeframe(mTime.value!!.fintTimeframe)
+//                setStarting(mTime.value!!.fintStarting)
+//                establishMonthRadio()
+//            }
+//        }
+//    }
+
     private fun establishMonthRadio(){
-        if(mTime.value!!.month.fstrSpecific != ""){
-            monthSpecificRadio.value = true
-        }
+        monthSpecificRadio.value = mTime.value!!.month.fstrSpecific != ""
+        if(monthSpecificRadio.value!!) loadMonthArray(mTime.value!!.month.fstrSpecific)
     }
 
-    fun saveTime(){
-        mTime.value!!.saveTime()
+    private fun loadMonthArray(specific: String){
+        for(day in specific.split(',')){
+            monthSpecificArray[day.trim().toInt()-1] = true
+        }
+        updateSpecific()
+    }
+
+    fun saveTimekeeper(): Time{
+        return mTime.value!!.apply{ saveTime()}
     }
 
     fun updateSpecific(){

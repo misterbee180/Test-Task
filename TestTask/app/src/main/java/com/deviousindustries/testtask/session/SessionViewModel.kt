@@ -33,13 +33,8 @@ class SessionViewModel : ViewModel() {
     fun saveSession(){
         DatabaseAccess.mDatabase.beginTransaction()
         try{
-            timekeeperViewModel.saveTime()
-
-            val time = timekeeperViewModel.mTime.value!!
-            time.fstrTitle = title.value!!
-            time.fblnSession = true
-
-            DatabaseAccess.taskDatabaseDao.updateTime(time)
+            timekeeperViewModel.saveTimekeeper()
+                    .updateToSession(title.value!!)
             eventComplete.value = true
 
             DatabaseAccess.mDatabase.setTransactionSuccessful()

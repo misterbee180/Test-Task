@@ -157,7 +157,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Monday"
-                android:checked="@{viewmodel.week.fblnMonday}"
+                android:checked="@{viewmodel.mTime.week.fblnMonday}"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -166,7 +166,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Tuesday"
-                android:checked="@{viewmodel.week.fblnTuesday}"
+                android:checked="@{viewmodel.mTime.week.fblnTuesday}"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/Monday_Checkbox" />
 
@@ -174,8 +174,8 @@
                 android:id="@+id/Wednesday_Checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="@{viewmodel.mTime.week.fblnWednesday}"
                 android:text="@string/Wednesday"
-                android:checked="@{viewmodel.week.fblnWednesday}"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/Tuesday_Checkbox" />
 
@@ -184,7 +184,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Thursday"
-                android:checked="@{viewmodel.week.fblnThursday}"
+                android:checked="@{viewmodel.mTime.week.fblnThursday}"
                 app:layout_constraintLeft_toRightOf="@+id/Monday_Checkbox"
                 app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -194,7 +194,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Friday"
-                android:checked="@{viewmodel.week.fblnFriday}"
+                android:checked="@{viewmodel.mTime.week.fblnFriday}"
                 app:layout_constraintLeft_toRightOf="@+id/Tuesday_Checkbox"
                 app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
                 app:layout_constraintTop_toBottomOf="@+id/Thursday_Checkbox" />
@@ -204,7 +204,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Saturday"
-                android:checked="@{viewmodel.week.fblnSaturday}"
+                android:checked="@{viewmodel.mTime.week.fblnSaturday}"
                 app:layout_constraintLeft_toRightOf="@+id/Wednesday_Checkbox"
                 app:layout_constraintStart_toEndOf="@+id/Wednesday_Checkbox"
                 app:layout_constraintTop_toBottomOf="@+id/Friday_Checkbox" />
@@ -214,7 +214,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/Sunday"
-                android:checked="@{viewmodel.week.fblnSunday}"
+                android:checked="@{viewmodel.mTime.week.fblnSunday}"
                 app:layout_constraintLeft_toRightOf="@+id/Thursday_Checkbox"
                 app:layout_constraintStart_toEndOf="@+id/Thursday_Checkbox"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -261,28 +261,28 @@
                     android:id="@+id/First_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="@{viewmodel.month.fblnFirst}"
+                    android:checked="@{viewmodel.mTime.month.fblnFirst}"
                     android:text="@string/TimeKeeper_Month_Gen_First" />
 
                 <CheckBox
                     android:id="@+id/Middle_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="@{viewmodel.month.fblnMiddle}"
+                    android:checked="@{viewmodel.mTime.month.fblnMiddle}"
                     android:text="@string/TimeKeeper_Month_Gen_Middle" />
 
                 <CheckBox
                     android:id="@+id/Last_Month_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="@{viewmodel.month.fblnLast}"
+                    android:checked="@{viewmodel.mTime.month.fblnLast}"
                     android:text="@string/TimeKeeper_Month_Gen_Last" />
 
                 <CheckBox
                     android:id="@+id/After_Week_Checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="@{viewmodel.month.fblnAfterWkn}"
+                    android:checked="@{viewmodel.mTime.month.fblnAfterWkn}"
                     android:text="@string/TimeKeeper_Month_Gen_AfterWkn" />
             </LinearLayout>
 

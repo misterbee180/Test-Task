@@ -52,8 +52,8 @@ public class Time {
     public static Time getInstance(Long timeID){
         if(timeID != NULL_OBJECT){
             Time temp = DatabaseAccess.taskDatabaseDao.loadTime(timeID);
-            temp.week = temp.fintRepetition == WEEK_POSITION ? Week.Companion.getInstance(temp.flngTimeframeID) : Week.Companion.getInstance(NULL_OBJECT);
-            temp.month = temp.fintRepetition == MONTH_POSITION ? Month.Companion.getInstance(temp.flngTimeframeID) : Month.Companion.getInstance(NULL_OBJECT);
+            temp.week = temp.fintTimeframe == WEEK_POSITION ? Week.Companion.getInstance(temp.flngTimeframeID) : Week.Companion.getInstance(NULL_OBJECT);
+            temp.month = temp.fintTimeframe == MONTH_POSITION ? Month.Companion.getInstance(temp.flngTimeframeID) : Month.Companion.getInstance(NULL_OBJECT);
             temp.originalTimeframe = temp.fintTimeframe;
             return temp;
         } else {
@@ -79,6 +79,7 @@ public class Time {
         fblnThru = false;
         fblnSession = false;
         fstrTitle = "";
+        originalTimeframe = NULL_POSITION;
         month = new Month();
         week = new Week();
     }
@@ -159,6 +160,20 @@ public class Time {
         }
     }
 
+    public void updateToSession(String title){
+        try{
+            DatabaseAccess.mDatabase.beginTransaction();
+            fstrTitle = title;
+            fblnSession = true;
+            DatabaseAccess.taskDatabaseDao.updateTime(this);
+            DatabaseAccess.mDatabase.setTransactionSuccessful();
+        } catch(Exception e){
+            e.printStackTrace();
+        } finally{
+            DatabaseAccess.mDatabase.endTransaction();
+        }
+    }
+
     private Long saveTimeframe() {
         Long returnTimeframeID = flngTimeframeID;
 
@@ -174,21 +189,25 @@ public class Time {
             {
                 if(returnTimeframeID != NULL_OBJECT){} //Don't need to do this becase day currently has nothing to update
                     else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertDay(new Day());
+                    break;
             }
             case 1 : //Week
             {
                 if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateWeek(week);
                     else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertWeek(week);
+                    break;
             }
             case 2 : //Month
             {
                 if(returnTimeframeID != NULL_OBJECT) DatabaseAccess.taskDatabaseDao.updateMonth(month);
                     else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertMonth(month);
+                    break;
             }
             case 3 : //Year
             {
                 if(returnTimeframeID != NULL_OBJECT) {}//Don't need to do this becase year currently has nothing to update
                     else returnTimeframeID = DatabaseAccess.taskDatabaseDao.insertYear(new Year());
+                    break;
             }
         }
 
