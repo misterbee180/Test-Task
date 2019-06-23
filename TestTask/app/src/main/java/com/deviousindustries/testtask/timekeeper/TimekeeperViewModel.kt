@@ -2,16 +2,13 @@ package com.deviousindustries.testtask.timekeeper
 
 import android.annotation.SuppressLint
 import android.os.AsyncTask
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deviousindustries.testtask.constants.*
-import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.classes.*
 import java.lang.StringBuilder
-import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 

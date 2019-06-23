@@ -11,7 +11,10 @@ class Utilities(){
         private var instantiated = false;
         lateinit var preferences : SharedPreferences
         fun instantiate(context: Context){
-            if(!instantiated) preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            if(!instantiated) {
+                preferences = PreferenceManager.getDefaultSharedPreferences(context)
+                DatabaseAccess.getInstance(context)
+            };
         }
 
         fun getCurrentCalendar(): Calendar {
@@ -41,6 +44,24 @@ class Utilities(){
             return currentCalendar
         }
 
+        fun getEndCurrentDay(): Calendar {
+            return getCurrentCalendar().apply {
+                set(Calendar.HOUR_OF_DAY, END_HOUR)
+                set(Calendar.MINUTE, END_MINUTE)
+                set(Calendar.SECOND, END_SECOND)
+                set(Calendar.MILLISECOND, END_MILLI)
+            }
+        }
+
+        fun getBeginningCurentDay(): Calendar {
+            return getCurrentCalendar().apply {
+                set(Calendar.HOUR_OF_DAY, BEGIN_HOUR)
+                set(Calendar.MINUTE, BEGIN_MINUTE)
+                set(Calendar.SECOND, BEGIN_SECOND)
+                set(Calendar.MILLISECOND, BEGIN_MILLI)
+            }
+        }
+
         fun getCalendar(milliDate: Long,
                         asBeginning: Boolean = false,
                         asEnd: Boolean = false): Calendar{
@@ -60,5 +81,7 @@ class Utilities(){
                 }
             }
         }
+
+
     }
 }

@@ -1,6 +1,7 @@
 package com.deviousindustries.testtask;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder;
 
 import com.deviousindustries.testtask.classes.Task;
 import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.data.TaskDatabase;
 import com.deviousindustries.testtask.data.TaskDatabaseDao;
 import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
@@ -22,13 +24,11 @@ public class DatabaseAccess {
     public static SupportSQLiteDatabase mDatabase = null;
     public static TaskDatabaseDao taskDatabaseDao = null;
 
-    public static SupportSQLiteDatabase getInstance(@NonNull SupportSQLiteOpenHelper helper, TaskDatabaseDao dao){
+    public static void getInstance(Context context){
         if(mDatabase == null) {
-            mDatabase = helper.getWritableDatabase();
-            taskDatabaseDao = dao;
+            mDatabase = TaskDatabase.Companion.getInstance(context).getOpenHelper().getWritableDatabase();
+            taskDatabaseDao = TaskDatabase.Companion.getInstance(context).getTaskDatabaseDao();
         }
-
-        return mDatabase;
     }
 
     //region NewFunctions
@@ -481,6 +481,37 @@ public class DatabaseAccess {
                 "AND i.fdtmDeleted = " + NULL_DATE + " \n" +
                 //"ORDER BY CASE WHEN t.fblnOneOff = 1 THEN -1 ELSE t.flngSessionID END ";
                 "ORDER BY i.flngSessionID, i.flngTaskID";
+
+        return DatabaseAccess.mDatabase.query(rawQuery);
+    }
+
+    public static  Cursor newGetInstancesForTasklist(){
+        String rawQuery = "SELECT i.flngInstanceID, i.fdtmFrom, i.fdtmTo, i.fblnFromTime, i.fblnToTime, i.fblnToDate, i.fdtmCreated, ifNULL(lt.fstrTitle||': ','')||td.fstrTitle as fstrTitle, \n" +
+                "CASE WHEN i.flngSessionID <> " + NULL_OBJECT + " THEN i.flngSessionID \n" +
+                "WHEN t.fintTaskType = 1 THEN t.flngTaskTypeID \n" +
+                "ELSE " + NULL_OBJECT + " END AS flngGroupKey, \n" +
+                "CASE WHEN i.flngSessionID <> " + NULL_OBJECT + " THEN 'TODO' \n" +
+                "WHEN t.fintTaskType = 1 THEN 'EVENT' \n" +
+                "ELSE '' END AS fstrGroupType, \n" +
+                "CASE WHEN i.flngSessionID <> " + NULL_OBJECT + " THEN tm.fstrTitle \n" +
+                "WHEN t.fintTaskType = 1 THEN e.fstrTitle \n" +
+                "ELSE '' END AS fstrGroupTitle \n" +
+                "FROM tblTaskInstance i \n" +
+                "JOIN tblTaskDetail td \n" +
+                "ON td.flngTaskDetailID = i.flngTaskDetailID \n" +
+                "JOIN tblTask t \n" +
+                "ON t.flngTaskID = i.flngTaskID\n" +
+                "LEFT JOIN tblTime tm\n" +
+                "ON tm.flngTimeID = i.flngSessionID\n" +
+                "LEFT JOIN tblLongTerm lt \n" +
+                "ON lt.flngLongTermID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 2 \n" +
+                "LEFT JOIN tblEvent e \n" +
+                "ON e.flngEventID = t.flngTaskTypeID \n" +
+                "AND t.fintTaskType = 1 \n" +
+                "WHERE i.fdtmCompleted = " + NULL_DATE + " \n" +
+                "AND i.fdtmSystemCompleted = " + NULL_DATE + " \n" +
+                "AND i.fdtmDeleted = " + NULL_DATE;
 
         return DatabaseAccess.mDatabase.query(rawQuery);
     }

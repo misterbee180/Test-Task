@@ -58,6 +58,10 @@
             android:label="@string/title_activity_viewer_events"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".task_list.TaskListNew"
+            android:label="TaskListNew"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".Details_Event"
             android:label="@string/title_activity_details_event"
             android:theme="@style/AppTheme.NoActionBar" />

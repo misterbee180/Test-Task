@@ -8,8 +8,15 @@ data class Session(
         @ColumnInfo(name="flngTimeID") var timeID: Long
 )
 
-class SpinnerElement(val text: String, val id: Int){
-    override fun toString(): String {
-        return text
+interface TaskListRecord{
+    companion object{
+        const val NULL_SECTION = -1
+        const val NULL_ID = -1L
     }
+
+    fun getRecordID(): Long
+    fun getElementType(): Int
+    fun getItemTitle(): String
+    fun getPriority(): Int
+    fun getGroup(): Int
 }

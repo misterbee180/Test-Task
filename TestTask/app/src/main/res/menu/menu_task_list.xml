@@ -6,7 +6,7 @@
         android:id="@+id/action_settings"
         android:orderInCategory="50"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        app:showAsAction="" />
     <item
         android:id="@+id/action_task"
         android:orderInCategory="100"
@@ -33,5 +33,11 @@
         android:id="@+id/action_longTerm"
         android:orderInCategory="250"
         android:title="@string/action_LongTerm"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_new"
+        android:orderInCategory="300"
+        android:title="new"
         app:showAsAction="never" />
 </menu>

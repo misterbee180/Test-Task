@@ -2,6 +2,7 @@ package com.deviousindustries.testtask.data
 
 import android.database.Cursor
 import androidx.room.*
+import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.constants.*
 import com.deviousindustries.testtask.classes.*
 
@@ -135,11 +136,17 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblTime WHERE flngTimeID = :ID")
     fun loadTime(ID: Long): Time
 
+    @Query("SELECT * FROM tblTime WHERE fblnComplete = $FALSE_INT")
+    fun getUncompleteTimes(): Array<Time>
+
     @Query("SELECT * FROM tblTimeInstance WHERE flngGenerationID = :ID")
     fun loadTimeInstance(ID: Long): Cursor
 
     @Query("SELECT * FROM tblTimeInstance WHERE flngTimeID = :timeID")
     fun loadTimeInstancesFromTime(timeID: Long): Array<TimeInstance>
+
+    @Query("SELECT * FROM tblTimeInstance WHERE fdtmUpcoming < :eod AND fdtmPriority + $FULL_DAY_MILLI * fintThru >= :bod")
+    fun getValidGenerationPoints(bod: Long, eod: Long) : Array<TimeInstance>
 
     @Query("SELECT * FROM tblEvent WHERE flngEventID = :ID")
     fun loadEvent(ID: Long): Cursor

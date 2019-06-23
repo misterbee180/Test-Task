@@ -15,6 +15,7 @@ import com.deviousindustries.testtask.classes.TaskInstance;
 import com.deviousindustries.testtask.classes.Time;
 import com.deviousindustries.testtask.data.TaskDatabase;
 import com.deviousindustries.testtask.session_viewer.SessionViewer;
+import com.deviousindustries.testtask.task_list.TaskListNew;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
@@ -42,8 +43,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mContext = this;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        DatabaseAccess.getInstance(TaskDatabase.Companion.getInstance(getApplicationContext()).getOpenHelper(),
-                TaskDatabase.Companion.getInstance(getApplicationContext()).getTaskDatabaseDao());
+        DatabaseAccess.getInstance(getApplicationContext());
         super.onCreate(savedInstanceState);
         //Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_task_display);
@@ -361,6 +361,11 @@ public class Viewer_Tasklist extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void viewNew() {
+        Intent intent = new Intent(this, TaskListNew.class);
+        startActivity(intent);
+    }
+
     public void viewEvents() {
         Intent intent = new Intent(this, Viewer_Events.class);
         startActivity(intent);
@@ -400,7 +405,7 @@ public class Viewer_Tasklist extends AppCompatActivity {
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnFromTime")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnToTime")) == 1,
                         displayInstance.getLong(displayInstance.getColumnIndex("fblnToDate")) == 1,
-                        displayInstance.getLong(displayInstance.getColumnIndex("fdtmCreated")));
+                        displayInstance.getLong(displayInstance.getColumnIndex("fdtmCreated"))) ;
                 if (result == 'P') {
                     priorityList.add(new taskInstances(displayInstance.getString(displayInstance.getColumnIndex("fstrTitle")),
                             displayInstance.getLong(displayInstance.getColumnIndex("flngInstanceID")),
@@ -610,6 +615,9 @@ public class Viewer_Tasklist extends AppCompatActivity {
                 break;
             case R.id.action_longTerm:
                 viewLongTerm();
+                break;
+            case R.id.action_new:
+                viewNew();
                 break;
         }
 

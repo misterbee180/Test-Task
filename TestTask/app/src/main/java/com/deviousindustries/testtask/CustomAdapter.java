@@ -120,12 +120,12 @@ public class CustomAdapter extends BaseAdapter {
                     break;
                 case TYPE_SEPARATOR:
                     convertView = mInflater.inflate(R.layout.seperator_item1, null);
-                    holder.textView = convertView.findViewById(android.R.id.text1);
+                    holder.textView = convertView.findViewById(R.id.title_text);
                     holder.id = new TextView(convertView.getContext());
                     break;
                 case TYPE_GROUP:
                     convertView = mInflater.inflate(R.layout.task_group1, null);
-                    holder.textView = convertView.findViewById(android.R.id.text1);
+                    holder.textView = convertView.findViewById(R.id.title_text);
                     holder.id = new TextView(convertView.getContext());
                     break;
             }
