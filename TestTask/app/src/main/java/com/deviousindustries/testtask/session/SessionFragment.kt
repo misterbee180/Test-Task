@@ -31,44 +31,33 @@ class SessionFragment() : Fragment() {
         return inflater.inflate(R.layout.session_fragment, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProviders.of(activity!!).get(SessionViewModel::class.java)
         viewModel.timekeeperViewModel = (ViewModelProviders.of(activity!!).get(TimekeeperViewModel::class.java))
 
-        val bundle = arguments
-        if (bundle != null) {
-            viewModel.Start(bundle.getLong("SESSION_ID",NULL_OBJECT))
-        }
+        viewModel.start(arguments?.getLong("SESSION_ID", NULL_OBJECT) ?: NULL_OBJECT)
 
         setObservables()
         setEvents()
 
-        //Add timekeeper fragment
-        childFragmentManager
-                .beginTransaction()
-                .replace(R.id.container, TimekeeperFragment.newInstance().apply {
-                    arguments = Bundle().apply {
-                        putLong("TIME_ID",viewModel.sessionID)
-                    }
-                })
-                .commitNow()
+        viewModel.timekeeperViewModel.loadTimekeeper(viewModel.sessionID)
     }
 
-    fun setObservables(){
-        viewModel.title.observe(this, Observer{title ->
+    private fun setObservables() {
+        viewModel.title.observe(this, Observer { title ->
             setTitle(title)
         })
 
         viewModel.eventComplete.observe(this, Observer { complete ->
-            if(complete){
+            if (complete) {
                 completeSession()
                 viewModel.eventComplete.value = false
             }
         })
     }
 
-    fun completeSession(){
+    private fun completeSession() {
         with(activity!!) {
             intent.putExtra("EXTRA_SESSION_ID", viewModel.sessionID);
             setResult(RESULT_OK, intent)
@@ -76,13 +65,13 @@ class SessionFragment() : Fragment() {
         }
     }
 
-    fun setEvents(){
+    private fun setEvents() {
         activity!!.findViewById<EditText>(R.id.Session_Title_EditText)
                 .addTextChangedListener(onTextChanged = { s, start, before, count ->
-            viewModel.title.value = s.toString()
-        })
+                    viewModel.title.value = s.toString()
+                })
 
-        activity!!.findViewById<Button>(R.id.Confirm_Button).setOnClickListener{_ ->
+        activity!!.findViewById<Button>(R.id.Confirm_Button).setOnClickListener { _ ->
             viewModel.saveSession()
         }
     }
@@ -90,7 +79,7 @@ class SessionFragment() : Fragment() {
     //REQUIRED for 2 way setting
     private fun setTitle(title: String) {
         Log.i("Test", activity!!.findViewById<EditText>(R.id.Session_Title_EditText).getText().toString())
-        if(!activity!!.findViewById<EditText>(R.id.Session_Title_EditText).getText().toString().equals(title)) {
+        if (!activity!!.findViewById<EditText>(R.id.Session_Title_EditText).getText().toString().equals(title)) {
             activity!!.findViewById<EditText>(R.id.Session_Title_EditText).setText(title)
         }
     }

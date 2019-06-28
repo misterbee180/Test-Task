@@ -170,7 +170,7 @@ public class Details_Instance extends AppCompatActivity {
                                 }
 
                                 DatabaseAccess.mDatabase.setTransactionSuccessful();
-                                Intent intent = new Intent(getActivity(), Viewer_Tasklist.class);
+                                Intent intent = new Intent(getActivity(), Utilities.Companion.class);
                                 startActivity(intent);
                             } catch (Exception e){
                                 e.printStackTrace();

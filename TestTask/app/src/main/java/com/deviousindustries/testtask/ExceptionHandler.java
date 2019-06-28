@@ -52,7 +52,7 @@ public class ExceptionHandler implements
         errorReport += Build.VERSION.INCREMENTAL;
         errorReport += LINE_SEPARATOR;
 
-        Intent intent = new Intent(myContext, Viewer_Tasklist.class);
+        Intent intent = new Intent(myContext, Utilities.Companion.class);
         intent.putExtra("EXTRA_ERROR", errorReport.toString());
         myContext.startActivity(intent);
 

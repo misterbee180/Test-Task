@@ -10,7 +10,6 @@ import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
 import com.deviousindustries.testtask.Utilities;
-import com.deviousindustries.testtask.Viewer_Tasklist;
 
 import java.time.Duration;
 import java.util.Calendar;
@@ -229,7 +228,7 @@ public class Time {
         //This is important as you don't want to be evaluating dates already handled by a thru value.
         try(Cursor latestTimeInstance = DatabaseAccess.retrieveMostRecent("tblTimeInstance","flngTimeID", flngTimeID, "flngGenerationID")) {
             if (latestTimeInstance.moveToFirst()) {
-                Calendar temp = Viewer_Tasklist.getCalendar(latestTimeInstance.getLong(latestTimeInstance.getColumnIndex("fdtmPriority")));
+                Calendar temp = Utilities.Companion.getCalendar(latestTimeInstance.getLong(latestTimeInstance.getColumnIndex("fdtmPriority")));
                 temp.add(Calendar.DAY_OF_YEAR, latestTimeInstance.getInt(latestTimeInstance.getColumnIndex("fintThru")));
                 return temp.getTimeInMillis();
             }
@@ -240,11 +239,11 @@ public class Time {
     private long getNextPriority(boolean pblnTo){
         try(Cursor tblGeneration = DatabaseAccess.getValidGenerationPoints(true, false, flngTimeID)){
             if(tblGeneration.moveToFirst()){
-                Calendar calPri = Viewer_Tasklist.getCalendar(tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmPriority")));
+                Calendar calPri = Utilities.Companion.getCalendar(tblGeneration.getLong(tblGeneration.getColumnIndex("fdtmPriority")));
                 if(pblnTo){
                     calPri.add(Calendar.DAY_OF_YEAR,tblGeneration.getInt(tblGeneration.getColumnIndex("fintThru")));
                     if(fblnToTime){
-                        Calendar time = Viewer_Tasklist.getCalendar(fdtmTo);
+                        Calendar time = Utilities.Companion.getCalendar(fdtmTo);
                         calPri.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
                         calPri.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
                         calPri.set(Calendar.SECOND, time.get(Calendar.SECOND));
@@ -282,26 +281,26 @@ public class Time {
             //While we can still attempt to generate an upcoming task that should be generated before today and while the mTime isn't already exempt (complete)
             TimeInstance tGen = new TimeInstance(flngTimeID);
             boolean blnSaveGen = true;
-            if(getMaxUpcoming() <= Viewer_Tasklist.getEndCurrentDay().getTimeInMillis() && !fblnComplete){
+            if(getMaxUpcoming() <= Utilities.Companion.getEndCurrentDay().getTimeInMillis() && !fblnComplete){
                 if(fintRepetition != (long)0){
                     //establish what repetition tasks associated w/ and whether current date fits
                     switch(fintTimeframe){
                         case 0: //Day
-                            evaluateDayGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_day","1")), getLatestPriorityAndThru(), tGen);
+                            evaluateDayGeneration(Integer.parseInt(Utilities.preferences.getString("upcoming_day","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 1: //Week
-                            evaluateWeekGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_week","1")), getLatestPriorityAndThru(), tGen);
+                            evaluateWeekGeneration(Integer.parseInt(Utilities.preferences.getString("upcoming_week","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 2: //Month
-                            evaluateMonthGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_month","1")), getLatestPriorityAndThru(), tGen);
+                            evaluateMonthGeneration(Integer.parseInt(Utilities.preferences.getString("upcoming_month","1")), getLatestPriorityAndThru(), tGen);
                             break;
                         case 3: //Year
-                            evaluateYearGeneration(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_year","1")), getLatestPriorityAndThru(), tGen);
+                            evaluateYearGeneration(Integer.parseInt(Utilities.preferences.getString("upcoming_year","1")), getLatestPriorityAndThru(), tGen);
                             break;
                     }
                 } else {
                     if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only mTime
-                        evaluateDate(Integer.parseInt(Viewer_Tasklist.mPrefs.getString("upcoming_std","1")),tGen);
+                        evaluateDate(Integer.parseInt(Utilities.preferences.getString("upcoming_std","1")),tGen);
                     } else{
                         completeTime();
                         blnSaveGen = false; //Don't want to save a new mTime generation if all we did was complete the mTime.
@@ -316,12 +315,12 @@ public class Time {
 
     private void evaluateDate(int upcomingRange, TimeInstance pGen){
         pGen.fdtmPriority = fdtmFrom;
-        Calendar tempUp = Viewer_Tasklist.getCalendar(fdtmFrom);
+        Calendar tempUp = Utilities.Companion.getCalendar(fdtmFrom);
         tempUp.add(Calendar.DAY_OF_YEAR, -upcomingRange);
         pGen.fdtmUpcoming = tempUp.getTimeInMillis();
 
-        Calendar tempFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
-        Calendar tempTo = Viewer_Tasklist.getCalendar(fdtmTo);
+        Calendar tempFrom = Utilities.Companion.getCalendar(fdtmFrom);
+        Calendar tempTo = Utilities.Companion.getCalendar(fdtmTo);
         int diff = (int)Duration.between(tempFrom.toInstant(), tempTo.toInstant()).toDays();
         pGen.fintThru = diff > 0 ? diff : 0;
     }
@@ -330,16 +329,16 @@ public class Time {
                                        long pdtmOrigPriority,
                                        TimeInstance pGen) {
         Calendar calEvaluate;
-        Calendar calNow = Viewer_Tasklist.getCurrentCalendar();
+        Calendar calNow = Utilities.Companion.getCurrentCalendar();
 
         //Establishing starting date (either create + starting or prior priority)
         Calendar calBOD;
         boolean blnSet = false;
         if(pdtmOrigPriority != NULL_DATE){
-            calBOD = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
+            calBOD = Utilities.Companion.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
-            calBOD = Viewer_Tasklist.getCalendar(fdtmCreated);
+            calBOD = Utilities.Companion.getCalendar(fdtmCreated);
             //As we don't know when it was last generated the only way to know the starting week is to get on the proper frequency starting point is this way
             calBOD.add(Calendar.DAY_OF_YEAR, fintStarting);
         }
@@ -373,7 +372,7 @@ public class Time {
         }
 
         //Get from date cal and provide mTime details from it to calEvaluate
-        Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+        Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
         calEvaluate.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
         calEvaluate.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
         calEvaluate.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
@@ -389,16 +388,16 @@ public class Time {
                                         long pdtmOrigPriority,
                                         TimeInstance pGen){
         Calendar calEvaluate;
-        Calendar calNow = Viewer_Tasklist.getCurrentCalendar();
+        Calendar calNow = Utilities.Companion.getCurrentCalendar();
 
         //determine if calPriority is = the current day. If not (has to be before) use establish what a better starting week would be using starting and created details
         Calendar calBOW;
         boolean blnSet = false;
         if(pdtmOrigPriority != NULL_DATE){
-            calBOW = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
+            calBOW = Utilities.Companion.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
-            calBOW = Viewer_Tasklist.getCalendar(fdtmCreated);
+            calBOW = Utilities.Companion.getCalendar(fdtmCreated);
             //As we don't know when it was last generated the only way to know the starting week is to get on the proper frequency starting point is this way
             calBOW.add(Calendar.WEEK_OF_YEAR, fintStarting);
             calBOW.setWeekDate(calBOW.getWeekYear(), calBOW.get(Calendar.WEEK_OF_YEAR), Calendar.SUNDAY);
@@ -480,7 +479,7 @@ public class Time {
                     //Don't need to evaluate for days past.
                     if(calWeekday.after(calNow)){
                         //Make sure mTime details are represented in passed out dates.
-                        Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+                        Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                         calWeekday.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                         calWeekday.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
                         calWeekday.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
@@ -494,8 +493,8 @@ public class Time {
                         }
                         if(fblnThru){
                             if(!pblnFirst){
-                                if(Viewer_Tasklist.getCalendar(calWeekday.getTimeInMillis(),true, false)
-                                        .equals(Viewer_Tasklist.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
+                                if(Utilities.Companion.getCalendar(calWeekday.getTimeInMillis(),true, false)
+                                        .equals(Utilities.Companion.getCalendar(calEvaluate.getTimeInMillis(),true,false))){
                                     pGen.fintThru ++;
                                 } else {
                                     blnComplete = true;
@@ -539,16 +538,16 @@ public class Time {
                                          TimeInstance pGen) {
 
         Calendar calEvaluate;
-        Calendar calNow = Viewer_Tasklist.getCurrentCalendar();
+        Calendar calNow = Utilities.Companion.getCurrentCalendar();
 
         //Establishing starting date (either create + starting or prior priority)
         Calendar calBOM;
         boolean blnSet = false;
         if(pdtmOrigPriority != NULL_DATE){
-            calBOM = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
+            calBOM = Utilities.Companion.getCalendar(pdtmOrigPriority);
             blnSet = true;
         } else {
-            calBOM = Viewer_Tasklist.getCalendar(fdtmCreated);
+            calBOM = Utilities.Companion.getCalendar(fdtmCreated);
             //As we don't know when it was last generated the only way to know the starting week is to get on the proper frequency starting point is this way
             calBOM.add(Calendar.DAY_OF_YEAR, fintStarting);
             calBOM.set(Calendar.DAY_OF_MONTH, 1);
@@ -634,7 +633,7 @@ public class Time {
                                         (calMonth.get(Calendar.DAY_OF_MONTH) == calEOM.get(Calendar.DAY_OF_MONTH) &&
                                                 tblMonth.getLong(tblMonth.getColumnIndex("fblnLast")) == 1) ||
                                         //Middle
-                                        (calMonth.get(Calendar.DAY_OF_MONTH) == Integer.parseInt(Viewer_Tasklist.mPrefs.getString("middle_month","15")) &&
+                                        (calMonth.get(Calendar.DAY_OF_MONTH) == Integer.parseInt(Utilities.preferences.getString("middle_month","15")) &&
                                                 tblMonth.getLong(tblMonth.getColumnIndex("fblnMiddle")) == 1)) {
                             if (tblMonth.getLong(tblMonth.getColumnIndex("fblnAfterWkn")) == 1) {
                                 switch (calMonth.get(Calendar.DAY_OF_WEEK)) {
@@ -650,7 +649,7 @@ public class Time {
                             }
 
                             //Make sure mTime details are represented in passed out dates.
-                            Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+                            Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                             calMonth.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                             calMonth.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
                             calMonth.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
@@ -668,7 +667,7 @@ public class Time {
                         for (String strSpecificDay : strSpecificDays) {
                             if (calMonth.get(Calendar.DAY_OF_MONTH) == Long.parseLong(strSpecificDay.trim())) {
                                 //Make sure mTime details are represented in passed out dates.
-                                Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+                                Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                                 calMonth.set(Calendar.HOUR_OF_DAY, calFrom.get(Calendar.HOUR_OF_DAY));
                                 calMonth.set(Calendar.MINUTE, calFrom.get(Calendar.MINUTE));
                                 calMonth.set(Calendar.SECOND, calFrom.get(Calendar.SECOND));
@@ -682,8 +681,8 @@ public class Time {
                                 }
                                 if (fblnThru) {
                                     if (!pblnFirst) {
-                                        if (Viewer_Tasklist.getCalendar(calMonth.getTimeInMillis(), true, false)
-                                                .equals(Viewer_Tasklist.getCalendar(calEvaluate.getTimeInMillis(), true, false))) {
+                                        if (Utilities.Companion.getCalendar(calMonth.getTimeInMillis(), true, false)
+                                                .equals(Utilities.Companion.getCalendar(calEvaluate.getTimeInMillis(), true, false))) {
                                             pGen.fintThru++;
                                         } else {
                                             blnComplete = true;
@@ -738,16 +737,16 @@ public class Time {
     private void evaluateYearGeneration(int upcomingRange,
                                         long pdtmOrigPriority,
                                         TimeInstance pGen) {
-        Calendar calNow = Viewer_Tasklist.getCurrentCalendar();
+        Calendar calNow = Utilities.Companion.getCurrentCalendar();
 
         //determine if calPriority is = the current day. If not (has to be before) use establish what a better starting week would be using starting and created details
         Calendar calBOY;
         boolean blnSet = false;
         if(pdtmOrigPriority != NULL_DATE){
             blnSet = true;
-            calBOY = Viewer_Tasklist.getCalendar(pdtmOrigPriority);
+            calBOY = Utilities.Companion.getCalendar(pdtmOrigPriority);
         } else {
-            calBOY = Viewer_Tasklist.getCalendar(fdtmCreated);
+            calBOY = Utilities.Companion.getCalendar(fdtmCreated);
             //As we don't know when it was last generated the only way to know the starting week is to get on the proper frequency starting point is this way
             calBOY.set(Calendar.DAY_OF_YEAR, 1);
             calBOY.add(Calendar.YEAR, fintStarting);
@@ -783,14 +782,14 @@ public class Time {
                 }
 
                 //If the repetition point has already passed go to the next year
-                Calendar calTempFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+                Calendar calTempFrom = Utilities.Companion.getCalendar(fdtmFrom);
                 calTempFrom.set(Calendar.YEAR, calBOY.get(Calendar.YEAR));
                 if(calBOY.after(calTempFrom)){
                     calTempFrom.add(Calendar.YEAR,(int) fintRepetition);
                 }
 
                 //Make sure mTime details are represented in passed out dates.
-                Calendar calFrom = Viewer_Tasklist.getCalendar(fdtmFrom);
+                Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                 calTempFrom.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                 calTempFrom.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
                 calTempFrom.set(Calendar.SECOND,calFrom.get(Calendar.SECOND));
@@ -809,7 +808,7 @@ public class Time {
         return new Time(plngTimeID,
                 getNextPriority(false),
                 getNextPriority(true),
-                Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
+                Utilities.Companion.getCurrentCalendar().getTimeInMillis(),
                 fblnFromTime,
                 fblnToTime,
                 fblnToDate,
@@ -825,9 +824,9 @@ public class Time {
     public void generateInstance(long pdtmFrom,
                           long pdtmTo){
 
-        Calendar tempTo = Viewer_Tasklist.getCalendar(pdtmTo);
+        Calendar tempTo = Utilities.Companion.getCalendar(pdtmTo);
         if(fblnToTime){
-            Calendar time = Viewer_Tasklist.getCalendar(fdtmTo);
+            Calendar time = Utilities.Companion.getCalendar(fdtmTo);
             tempTo.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
             tempTo.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
             tempTo.set(Calendar.SECOND, time.get(Calendar.SECOND));
@@ -856,17 +855,17 @@ public class Time {
                         tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("flngGenerationID")) > flngGenerationID){ //after initial, we only want the instance generated when it hasn't already been generated
                     Calendar tempTo;
                     if(fblnThru){
-                        tempTo = Viewer_Tasklist.getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
+                        tempTo = Utilities.Companion.getCalendar(tblTimeInstance.getLong(tblTimeInstance.getColumnIndex("fdtmPriority")));
                         tempTo.add(Calendar.DAY_OF_YEAR,tblTimeInstance.getInt(tblTimeInstance.getColumnIndex("fintThru")));
                         if(fblnToTime){
-                            Calendar time = Viewer_Tasklist.getCalendar(fdtmTo);
+                            Calendar time = Utilities.Companion.getCalendar(fdtmTo);
                             tempTo.set(Calendar.HOUR_OF_DAY,time.get(Calendar.HOUR_OF_DAY));
                             tempTo.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
                             tempTo.set(Calendar.SECOND, time.get(Calendar.SECOND));
                             tempTo.set(Calendar.MILLISECOND, time.get(Calendar.MILLISECOND));
                         }
                     } else {
-                        tempTo = Viewer_Tasklist.getCalendar(fdtmTo);
+                        tempTo = Utilities.Companion.getCalendar(fdtmTo);
                     }
 
                     Task tempTask;

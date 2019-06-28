@@ -14,12 +14,11 @@
         android:hint="@string/TextBox_SessionTitle"
         android:inputType="textCapSentences"/>
 
-    <FrameLayout
-        android:id="@+id/container"
+    <fragment
+        android:id="@+id/timekeeper"
+        android:name="com.deviousindustries.testtask.timekeeper.TimekeeperFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:layout_gravity="top"/>
+        android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/Confirm_Button"

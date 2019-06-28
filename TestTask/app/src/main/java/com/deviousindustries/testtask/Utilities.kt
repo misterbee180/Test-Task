@@ -62,7 +62,7 @@ class Utilities(){
             }
         }
 
-        fun getCalendar(milliDate: Long,
+        @JvmOverloads fun getCalendar(milliDate: Long,
                         asBeginning: Boolean = false,
                         asEnd: Boolean = false): Calendar{
             return getCurrentCalendar().apply{

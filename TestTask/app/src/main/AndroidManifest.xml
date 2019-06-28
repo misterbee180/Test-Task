@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -26,26 +25,12 @@
             android:label="@string/title_activity_viewer_long_term"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Viewer_Tasklist"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
             android:name=".Details_Task"
             android:label="@string/title_activity_details_task" />
         <activity
             android:name=".Details_Session"
             android:label="@string/title_activity_details_session" />
         <activity android:name=".TimeKeeper" />
-        <activity
-            android:name=".session_viewer.SessionViewer"
-            android:label="@string/title_activity_viewer_session"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".session.Session"
             android:label="@string/title_activity_details_session"/>
@@ -58,9 +43,15 @@
             android:label="@string/title_activity_viewer_events"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".task_list.TaskListNew"
-            android:label="TaskListNew"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:name=".instance_display.MainActivity"
+            android:label="Test Task"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".Details_Event"
             android:label="@string/title_activity_details_event"

@@ -8,7 +8,8 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
-import com.deviousindustries.testtask.Viewer_Tasklist;
+import com.deviousindustries.testtask.Utilities;
+
 import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 @Entity(tableName = "tblTaskInstance")
@@ -100,9 +101,9 @@ public class TaskInstance {
         fblnToTime = pblnToTime;
         fblnToDate = pblnToDate;
         if(flngInstanceID == NULL_OBJECT){
-            fdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
+            fdtmCreated = Utilities.Companion.getCurrentCalendar().getTimeInMillis();
         } else {
-            fdtmEdited = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
+            fdtmEdited = Utilities.Companion.getCurrentCalendar().getTimeInMillis();
         }
         flngSessionID = plngSessionID;
 
@@ -134,6 +135,6 @@ public class TaskInstance {
                 "flngInstanceID",
                 flngInstanceID,
                 strCompleteType,
-                new Object[] {Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()});
+                new Object[] {Utilities.Companion.getCurrentCalendar().getTimeInMillis()});
     }
 }
