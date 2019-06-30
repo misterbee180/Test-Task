@@ -7,7 +7,7 @@ import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.constants.NULL_OBJECT
 
 @Entity(tableName = "tblMonth")
-class Month {
+class Month : Cloneable {
     @PrimaryKey(autoGenerate = true)
     var flngMonthID: Long = NULL_OBJECT
     var fblnFirst: Boolean = false
@@ -25,11 +25,19 @@ class Month {
                 return Month()
             }
         }
+
+        fun delete(id: Long){
+            DatabaseAccess.taskDatabaseDao.deleteMonth(Month().apply{ flngMonthID = id })
+        }
+    }
+
+    public override fun clone(): Any {
+        return super.clone()
     }
 }
 
 @Entity(tableName = "tblWeek")
-class Week {
+class Week : Cloneable {
     @PrimaryKey(autoGenerate = true)
     var flngWeekID: Long = NULL_OBJECT
     var fblnMonday: Boolean = false
@@ -48,6 +56,14 @@ class Week {
                 return Week()
             }
         }
+
+        fun delete(id: Long){
+            DatabaseAccess.taskDatabaseDao.deleteWeek(Week().apply{ flngWeekID = id })
+        }
+    }
+
+    public override fun clone(): Any {
+        return super.clone()
     }
 }
 
@@ -55,10 +71,23 @@ class Week {
 class Day {
     @PrimaryKey(autoGenerate = true)
     var flngDayID: Long = NULL_OBJECT
+
+    companion object{
+        fun delete(id: Long){
+            DatabaseAccess.taskDatabaseDao.deleteDay(Day().apply{ flngDayID = id })
+        }
+    }
+
 }
 
 @Entity(tableName = "tblYear")
 class Year {
     @PrimaryKey(autoGenerate = true)
     var flngYearID: Long = NULL_OBJECT
+
+    companion object{
+        fun delete(id: Long){
+            DatabaseAccess.taskDatabaseDao.deleteYear(Year().apply{ flngYearID = id })
+        }
+    }
 }

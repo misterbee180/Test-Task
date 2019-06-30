@@ -173,12 +173,21 @@ public class Time {
         }
     }
 
+    private void deleteOriginalTimeframe(){
+        switch (originalTimeframe) {
+            case 0 : Day.Companion.delete(flngTimeframeID);
+            case 1 : Week.Companion.delete(flngTimeframeID);
+            case 2 : Month.Companion.delete(flngTimeframeID);
+            case 3 : Year.Companion.delete(flngTimeframeID);
+        }
+    }
+
     private Long saveTimeframe() {
         Long returnTimeframeID = flngTimeframeID;
 
         //Establish what needs to be deleted if anything
         if (originalTimeframe != fintTimeframe && originalTimeframe != NULL_POSITION) {
-            //possibly delete
+            deleteOriginalTimeframe();
             //do not use original ID
             returnTimeframeID = NULL_OBJECT;
         }
@@ -224,7 +233,7 @@ public class Time {
     }
 
     private long getLatestPriorityAndThru(){
-        //Returns the latest mTime instance associated w/ a mTime w/ the inclusing on the thru value.
+        //Returns the latest time instance associated w/ a time w/ the inclusing on the thru value.
         //This is important as you don't want to be evaluating dates already handled by a thru value.
         try(Cursor latestTimeInstance = DatabaseAccess.retrieveMostRecent("tblTimeInstance","flngTimeID", flngTimeID, "flngGenerationID")) {
             if (latestTimeInstance.moveToFirst()) {
@@ -278,7 +287,7 @@ public class Time {
 
     public void buildTimeInstances(){
         while(true){
-            //While we can still attempt to generate an upcoming task that should be generated before today and while the mTime isn't already exempt (complete)
+            //While we can still attempt to generate an upcoming task that should be generated before today and while the time isn't already exempt (complete)
             TimeInstance tGen = new TimeInstance(flngTimeID);
             boolean blnSaveGen = true;
             if(getMaxUpcoming() <= Utilities.Companion.getEndCurrentDay().getTimeInMillis() && !fblnComplete){
@@ -299,11 +308,11 @@ public class Time {
                             break;
                     }
                 } else {
-                    if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only mTime
+                    if(!timeInstanceExist()){ //If not previously evaluated, evaluate for the first and only time
                         evaluateDate(Integer.parseInt(Utilities.preferences.getString("upcoming_std","1")),tGen);
                     } else{
                         completeTime();
-                        blnSaveGen = false; //Don't want to save a new mTime generation if all we did was complete the mTime.
+                        blnSaveGen = false; //Don't want to save a new time generation if all we did was complete the time.
                     }
                 }
                 if(blnSaveGen) tGen.save();
@@ -355,7 +364,7 @@ public class Time {
         calEOD.set(Calendar.SECOND,59);
         calEOD.set(Calendar.MILLISECOND,999);
 
-        //Move the bounds by the occurs metric until the ending bound occurs after the current day/mTime.
+        //Move the bounds by the occurs metric until the ending bound occurs after the current day/time.
         while(true){
             if(calEOD.before(calNow)){
                 calBOD.add(Calendar.DAY_OF_YEAR,(int) fintRepetition);
@@ -371,7 +380,7 @@ public class Time {
             }
         }
 
-        //Get from date cal and provide mTime details from it to calEvaluate
+        //Get from date cal and provide time details from it to calEvaluate
         Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
         calEvaluate.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
         calEvaluate.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -478,7 +487,7 @@ public class Time {
                 if(tblWeek.getInt(tblWeek.getColumnIndex("fbln" + columnName)) == 1){
                     //Don't need to evaluate for days past.
                     if(calWeekday.after(calNow)){
-                        //Make sure mTime details are represented in passed out dates.
+                        //Make sure time details are represented in passed out dates.
                         Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                         calWeekday.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                         calWeekday.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -569,7 +578,7 @@ public class Time {
         calEOM.set(Calendar.SECOND, 59);
         calEOM.set(Calendar.MILLISECOND, 999);
 
-        //Move the bounds by the occurs metric until the ending bound occurs after the current day/mTime.
+        //Move the bounds by the occurs metric until the ending bound occurs after the current day/time.
         while (true) {
             if (calEOM.before(calNow)) {
                 if(blnSet) calBOM.set(Calendar.DAY_OF_MONTH,1);//resets DOM to first so that adding month will continue from first
@@ -648,7 +657,7 @@ public class Time {
                                 }
                             }
 
-                            //Make sure mTime details are represented in passed out dates.
+                            //Make sure time details are represented in passed out dates.
                             Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                             calMonth.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                             calMonth.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -666,7 +675,7 @@ public class Time {
                         String[] strSpecificDays = tblMonth.getString(tblMonth.getColumnIndex("fstrSpecific")).split(",");
                         for (String strSpecificDay : strSpecificDays) {
                             if (calMonth.get(Calendar.DAY_OF_MONTH) == Long.parseLong(strSpecificDay.trim())) {
-                                //Make sure mTime details are represented in passed out dates.
+                                //Make sure time details are represented in passed out dates.
                                 Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                                 calMonth.set(Calendar.HOUR_OF_DAY, calFrom.get(Calendar.HOUR_OF_DAY));
                                 calMonth.set(Calendar.MINUTE, calFrom.get(Calendar.MINUTE));
@@ -788,7 +797,7 @@ public class Time {
                     calTempFrom.add(Calendar.YEAR,(int) fintRepetition);
                 }
 
-                //Make sure mTime details are represented in passed out dates.
+                //Make sure time details are represented in passed out dates.
                 Calendar calFrom = Utilities.Companion.getCalendar(fdtmFrom);
                 calTempFrom.set(Calendar.HOUR_OF_DAY,calFrom.get(Calendar.HOUR_OF_DAY));
                 calTempFrom.set(Calendar.MINUTE,calFrom.get(Calendar.MINUTE));
@@ -950,7 +959,7 @@ public class Time {
     public void deleteTime(){
         try{
             DatabaseAccess.mDatabase.beginTransaction();
-            //complete mTime
+            //complete time
             completeTime();
             //remove timeInstances
             clearGenerationPoints();
@@ -976,9 +985,19 @@ public class Time {
                 fintRepetition,
                 fintStarting,
                 fblnComplete,
-                NULL_OBJECT, //TODO: Once mTime instances generated this should be set to the corresponding mTime instance for the new mTime so that duplicated tasks aren't re-created.
+                NULL_OBJECT, //TODO: Once time instances generated this should be set to the corresponding time instance for the new time so that duplicated tasks aren't re-created.
                 fblnThru);
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Time newTime = (Time)super.clone();
+        newTime.week = (Week)week.clone();
+        newTime.month = (Month)month.clone();
+
+        return newTime;
+    }
+
     //endregion
 }
 

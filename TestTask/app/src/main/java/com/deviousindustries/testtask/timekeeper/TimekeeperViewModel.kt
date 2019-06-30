@@ -5,6 +5,7 @@ import android.os.AsyncTask
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.constants.*
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.classes.*
@@ -12,7 +13,7 @@ import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
-//Possible improvement: Used savedState details to pass mTime ID (or call VM factory to provide constructor values)
+//Possible improvement: Used savedState details to pass time ID (or call VM factory to provide constructor values)
 class TimekeeperViewModel : ViewModel() {
     val displaySpecificMonthly = MutableLiveData<Boolean>()
     val displayGeneralMonthly = MutableLiveData<Boolean>()
@@ -23,14 +24,12 @@ class TimekeeperViewModel : ViewModel() {
     val displayTimeframe = MutableLiveData<Boolean>()
     val displayStarting = MutableLiveData<Boolean>()
     val test = MutableLiveData<Boolean>().apply { this.value = false }
-    var mTime = MutableLiveData<Time>()
+    var time = MutableLiveData<Time>()
+    lateinit var oldTime : Time
     var timeID : Long = NULL_OBJECT
-
-    var week = MutableLiveData<Week>()
-    var month = MutableLiveData<Month>()
     var isSession = MutableLiveData<Boolean>()
 
-    //Indicators of what date or mTime values being set
+    //Indicators of what date or time values being set
     var settingDate = ""
     var settingTime = ""
 
@@ -67,21 +66,21 @@ class TimekeeperViewModel : ViewModel() {
         val calTime = Calendar.getInstance().apply { timeInMillis = timeMilli }
         when(settingTime){
             FROM_SOURCE -> {
-                mTime.value!!.fblnFromTime = true
-                mTime.value!!.fdtmFrom =
-                        (if(mTime.value!!.fdtmFrom == NULL_DATE) Utilities.getCurrentCalendar()
-                        else Utilities.getCalendar(mTime.value!!.fdtmFrom))
+                time.value!!.fblnFromTime = true
+                time.value!!.fdtmFrom =
+                        (if(time.value!!.fdtmFrom == NULL_DATE) Utilities.getCurrentCalendar()
+                        else Utilities.getCalendar(time.value!!.fdtmFrom))
                                 .apply {
                                     set(Calendar.HOUR_OF_DAY, calTime.get(Calendar.HOUR_OF_DAY))
                                     set(Calendar.MINUTE, calTime.get(Calendar.MINUTE))
                                 }.timeInMillis
             }
             TO_SOURCE -> {
-                mTime.value!!.fblnToTime = true
-                if(mTime.value!!.fdtmFrom == NULL_DATE) mTime.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
-                mTime.value!!.fdtmTo =
-                        (if(mTime.value!!.fdtmTo == NULL_DATE) Utilities.getCurrentCalendar()
-                        else Utilities.getCalendar(mTime.value!!.fdtmTo))
+                time.value!!.fblnToTime = true
+                if(time.value!!.fdtmFrom == NULL_DATE) time.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
+                time.value!!.fdtmTo =
+                        (if(time.value!!.fdtmTo == NULL_DATE) Utilities.getCurrentCalendar()
+                        else Utilities.getCalendar(time.value!!.fdtmTo))
                                 .apply {
                                     set(Calendar.HOUR_OF_DAY, calTime.get(Calendar.HOUR_OF_DAY))
                                     set(Calendar.MINUTE, calTime.get(Calendar.MINUTE))
@@ -94,16 +93,16 @@ class TimekeeperViewModel : ViewModel() {
         val calDate = Calendar.getInstance().apply { timeInMillis = timeMilli }
         when (settingDate) {
             FROM_SOURCE -> {
-                mTime.value!!.fdtmFrom = Utilities.getCalendar(mTime.value!!.fdtmFrom).apply{
+                time.value!!.fdtmFrom = Utilities.getCalendar(time.value!!.fdtmFrom).apply{
                     set(Calendar.YEAR, calDate.get(Calendar.YEAR))
                     set(Calendar.MONTH, calDate.get(Calendar.MONTH))
                     set(Calendar.DAY_OF_MONTH, calDate.get(Calendar.DAY_OF_MONTH))
                 }.timeInMillis
             }
             TO_SOURCE -> {
-                mTime.value!!.fblnToDate = true
-                if(mTime.value!!.fdtmFrom == NULL_DATE) mTime.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
-                mTime.value!!.fdtmTo = Utilities.getCalendar(mTime.value!!.fdtmTo).apply{
+                time.value!!.fblnToDate = true
+                if(time.value!!.fdtmFrom == NULL_DATE) time.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
+                time.value!!.fdtmTo = Utilities.getCalendar(time.value!!.fdtmTo).apply{
                     set(Calendar.YEAR, calDate.get(Calendar.YEAR))
                     set(Calendar.MONTH, calDate.get(Calendar.MONTH))
                     set(Calendar.DAY_OF_MONTH, calDate.get(Calendar.DAY_OF_MONTH))
@@ -150,7 +149,7 @@ class TimekeeperViewModel : ViewModel() {
             //set correct time value
             var repValue = position
             if(isSession.value!!) repValue += 1
-            mTime.value?.fintRepetition = repValue
+            time.value?.fintRepetition = repValue
             displayTimeframeAndStarting(repValue)
         }
     }
@@ -208,14 +207,14 @@ class TimekeeperViewModel : ViewModel() {
     var timeframe = MutableLiveData<Int>()
     fun setTimeframe(position: Int){
         timeframe.value = if(position == NULL_POSITION) BASE_POSITION else position
-        mTime.value!!.fintTimeframe = position
+        time.value!!.fintTimeframe = position
         determineTimeframeVisibility(timeframe.value!!)
     }
 
     var starting = MutableLiveData<Int>()
     fun setStarting(position: Int){
         starting.value = if(position == NULL_POSITION) BASE_POSITION else position
-        mTime.value?.fintStarting = starting.value
+        time.value?.fintStarting = starting.value
     }
     var monthSpecificRadio = MutableLiveData<Boolean>()
     var monthSpecificArray = arrayOf(false, false, false, false, false, false, false,
@@ -252,21 +251,22 @@ class TimekeeperViewModel : ViewModel() {
         override fun onPostExecute(result: Time) {
             super.onPostExecute(result)
 
-            mTime.value = result
+            time.value = result
+            oldTime = result.clone() as Time
             if(timeID != NULL_OBJECT){
-                if(mTime.value!!.fblnFromTime) fromTime.value = getTimeString(mTime.value!!.fdtmFrom)
-                if(mTime.value!!.fblnToTime) toTime.value = getTimeString(mTime.value!!.fdtmTo)
-                loadRepetition(mTime.value!!.fintRepetition)
-                setTimeframe(mTime.value!!.fintTimeframe)
-                setStarting(mTime.value!!.fintStarting)
+                if(time.value!!.fblnFromTime) fromTime.value = getTimeString(time.value!!.fdtmFrom)
+                if(time.value!!.fblnToTime) toTime.value = getTimeString(time.value!!.fdtmTo)
+                loadRepetition(time.value!!.fintRepetition)
+                setTimeframe(time.value!!.fintTimeframe)
+                setStarting(time.value!!.fintStarting)
                 establishMonthRadio()
             }
         }
     }
 
     private fun establishMonthRadio(){
-        monthSpecificRadio.value = mTime.value!!.month.fstrSpecific != ""
-        if(monthSpecificRadio.value!!) loadMonthArray(mTime.value!!.month.fstrSpecific)
+        monthSpecificRadio.value = time.value!!.month.fstrSpecific != ""
+        if(monthSpecificRadio.value!!) loadMonthArray(time.value!!.month.fstrSpecific)
     }
 
     private fun loadMonthArray(specific: String){
@@ -277,7 +277,7 @@ class TimekeeperViewModel : ViewModel() {
     }
 
     fun saveTimekeeper(): Time{
-        return mTime.value!!.apply{ saveTime()}
+        return time.value!!.apply{saveTime()}
     }
 
     fun updateSpecific(){
@@ -293,16 +293,16 @@ class TimekeeperViewModel : ViewModel() {
             }
         }
         monthSpecificString.value = stringBuilder.toString()
-        mTime.value!!.month.fstrSpecific = stringBuilder.toString()
+        time.value!!.month.fstrSpecific = stringBuilder.toString()
     }
 
     fun removeDate(source: String){
         when(source){
             FROM_SOURCE ->{
-                if(mTime.value!!.fblnToDate){
-                    if(mTime.value!!.fblnFromTime){
-                        mTime.value!!.fdtmFrom = Utilities.getCurrentCalendar().let{
-                            with(Utilities.getCalendar(mTime.value!!.fdtmFrom)){
+                if(time.value!!.fblnToDate){
+                    if(time.value!!.fblnFromTime){
+                        time.value!!.fdtmFrom = Utilities.getCurrentCalendar().let{
+                            with(Utilities.getCalendar(time.value!!.fdtmFrom)){
                                 it.set(Calendar.HOUR_OF_DAY, this.get(Calendar.HOUR_OF_DAY))
                                 it.set(Calendar.MINUTE, this.get(Calendar.MINUTE))
                                 it.set(Calendar.SECOND, this.get(Calendar.SECOND))
@@ -311,17 +311,17 @@ class TimekeeperViewModel : ViewModel() {
                             }
                         }
                     } else {
-                        mTime.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
+                        time.value!!.fdtmFrom = Utilities.getCurrentCalendar().timeInMillis
                     }
                 } else {
-                    mTime.value!!.fdtmFrom = NULL_DATE
+                    time.value!!.fdtmFrom = NULL_DATE
                 }
             }
             TO_SOURCE ->{
-                mTime.value!!.fblnToDate = false
-                if(mTime.value!!.fblnToTime){
-                    mTime.value!!.fdtmTo = Utilities.getCurrentCalendar().let{
-                        with(Utilities.getCalendar(mTime.value!!.fdtmTo)){
+                time.value!!.fblnToDate = false
+                if(time.value!!.fblnToTime){
+                    time.value!!.fdtmTo = Utilities.getCurrentCalendar().let{
+                        with(Utilities.getCalendar(time.value!!.fdtmTo)){
                             it.set(Calendar.HOUR_OF_DAY, this.get(Calendar.HOUR_OF_DAY))
                             it.set(Calendar.MINUTE, this.get(Calendar.MINUTE))
                             it.set(Calendar.SECOND, this.get(Calendar.SECOND))
@@ -330,7 +330,7 @@ class TimekeeperViewModel : ViewModel() {
                         }
                     }
                 } else {
-                    mTime.value!!.fdtmTo = NULL_DATE
+                    time.value!!.fdtmTo = NULL_DATE
                 }
             }
         }
@@ -339,11 +339,11 @@ class TimekeeperViewModel : ViewModel() {
     fun removeTime(source: String){
         when(source){
             FROM_SOURCE -> {
-                mTime.value!!.fblnFromTime = false
+                time.value!!.fblnFromTime = false
                 fromTime.value = getTimeString(NULL_DATE)
             }
             TO_SOURCE -> {
-                mTime.value!!.fblnToTime = false
+                time.value!!.fblnToTime = false
                 toTime.value = getTimeString(NULL_DATE)
             }
         }
@@ -358,7 +358,7 @@ class TimekeeperViewModel : ViewModel() {
     }
 
     //region OLD Code
-    //lateinit var mTime: Time
+    //lateinit var time: Time
 //    lateinit var week: Week
 //    lateinit var month: Month
 
@@ -414,18 +414,18 @@ class TimekeeperViewModel : ViewModel() {
 //        monthSpecificArray.value = false
 //    }
 
-//    private fun loadTimeKeeper(mTime: Time) {
-//        fromDate.value = mTime.fdtmFrom
-//        toDate.value = mTime.fdtmTo
-//        hasFromTime = mTime.fblnFromTime
-//        hasToTime = mTime.fblnToTime
-//        hasToDate = mTime.fblnToDate
-//        isThru.value = mTime.fblnThru
+//    private fun loadTimeKeeper(time: Time) {
+//        fromDate.value = time.fdtmFrom
+//        toDate.value = time.fdtmTo
+//        hasFromTime = time.fblnFromTime
+//        hasToTime = time.fblnToTime
+//        hasToDate = time.fblnToDate
+//        isThru.value = time.fblnThru
 //
-//        loadRepetitionDetails(mTime.fintRepetition,
-//                mTime.fintTimeframe,
-//                mTime.flngTimeframeID,
-//                mTime.fintStarting)
+//        loadRepetitionDetails(time.fintRepetition,
+//                time.fintTimeframe,
+//                time.flngTimeframeID,
+//                time.fintStarting)
 //    }
 //
 //    private fun loadRepetitionDetails(pintRepetition: Int,
@@ -439,8 +439,8 @@ class TimekeeperViewModel : ViewModel() {
 //            starting.value = pintStarting
 //        }
 //
-//        when(mTime.fintTimeframe){
-//            1 -> {week = DatabaseAccess.taskDatabaseDao.loadWeek(mTime.flngTimeframeID);
+//        when(time.fintTimeframe){
+//            1 -> {week = DatabaseAccess.taskDatabaseDao.loadWeek(time.flngTimeframeID);
 //                loadWeekDetails(week.fblnMonday,
 //                    week.fblnTuesday,
 //                    week.fblnWednesday,
@@ -448,7 +448,7 @@ class TimekeeperViewModel : ViewModel() {
 //                    week.fblnFriday,
 //                    week.fblnSaturday,
 //                    week.fblnSunday)}
-//            2 -> {month = DatabaseAccess.taskDatabaseDao.loadMonth(mTime.flngTimeframeID)
+//            2 -> {month = DatabaseAccess.taskDatabaseDao.loadMonth(time.flngTimeframeID)
 //                loadMonthDetails(month.fblnFirst, month.fblnMiddle, month.fblnLast, month.fblnAfterWkn, month.fstrSpecific)
 //            }
 //        }

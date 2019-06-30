@@ -10,10 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.deviousindustries.testtask.constants.*
 import com.deviousindustries.testtask.R
@@ -92,14 +90,14 @@ class TimekeeperFragment : Fragment(),
 
         binding.StartingSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                viewModel.mTime.value?.fintStarting = position
+                viewModel.time.value?.fintStarting = position
             }
             override fun onNothingSelected(parent: AdapterView<*>) {
             }
         }
 
         binding.ThruCheckBox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value?.fblnThru = isChecked
+            viewModel.time.value?.fblnThru = isChecked
         }
 
         binding.FromDateAddButton.setOnClickListener{
@@ -141,25 +139,25 @@ class TimekeeperFragment : Fragment(),
 
     private fun setWeekEvents(){
         binding.MondayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnMonday = isChecked
+            viewModel.time.value!!.week.fblnMonday = isChecked
         }
         binding.TuesdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnTuesday = isChecked
+            viewModel.time.value!!.week.fblnTuesday = isChecked
         }
         binding.WednesdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnWednesday = isChecked
+            viewModel.time.value!!.week.fblnWednesday = isChecked
         }
         binding.ThursdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnThursday = isChecked
+            viewModel.time.value!!.week.fblnThursday = isChecked
         }
         binding.FridayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnFriday = isChecked
+            viewModel.time.value!!.week.fblnFriday = isChecked
         }
         binding.SaturdayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnSaturday = isChecked
+            viewModel.time.value!!.week.fblnSaturday = isChecked
         }
         binding.SundayCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.mTime.value!!.week.fblnSunday = isChecked
+            viewModel.time.value!!.week.fblnSunday = isChecked
         }
     }
 
@@ -171,16 +169,16 @@ class TimekeeperFragment : Fragment(),
                     viewModel.setupMonthView(true)
                 }
         binding.FirstMonthCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                    viewModel.mTime.value!!.month.fblnFirst = isChecked
+                    viewModel.time.value!!.month.fblnFirst = isChecked
                 }
         binding.MiddleMonthCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                    viewModel.mTime.value!!.month.fblnMiddle = isChecked
+                    viewModel.time.value!!.month.fblnMiddle = isChecked
                 }
         binding.LastMonthCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                    viewModel.mTime.value!!.month.fblnLast = isChecked
+                    viewModel.time.value!!.month.fblnLast = isChecked
                 }
         binding.AfterWeekCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                    viewModel.mTime.value!!.month.fblnAfterWkn = isChecked
+                    viewModel.time.value!!.month.fblnAfterWkn = isChecked
                 }
         binding.SpecificAddButton.setOnClickListener{
                     NumberPickerFragment().show(childFragmentManager, "numberPicker")
