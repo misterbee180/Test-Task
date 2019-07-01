@@ -19,7 +19,7 @@ import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 //Todo: remove session detail id and replace w/ title column. No reason to have task detail if record isn't copied over and over to other places
 
 @Entity(tableName = "tblTime")
-public class Time {
+public class Time implements Cloneable {
     @PrimaryKey(autoGenerate = true)
     public long flngTimeID;
     public long fdtmFrom;

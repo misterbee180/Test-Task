@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.deviousindustries.testtask.AlarmReceiver
 import com.deviousindustries.testtask.DatabaseAccess
+import com.deviousindustries.testtask.PriorityGroupInstanceTools.PriorityGroupInstanceElement
+import com.deviousindustries.testtask.PriorityGroupInstanceTools.PriorityGroupInstanceListAdapter
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.Utilities.Companion.getCalendar
 import com.deviousindustries.testtask.Utilities.Companion.getCurrentCalendar
@@ -14,15 +16,6 @@ import com.deviousindustries.testtask.classes.*
 import com.deviousindustries.testtask.constants.*
 import java.util.*
 import kotlin.collections.HashMap
-
-enum class ElementType {
-    Instance, Group, Priority;
-
-    companion object {
-        private val map = values().associateBy { it.ordinal }
-        fun fromInt(type: Int) = map[type]
-    }
-}
 
 class TaskListViewModel : ViewModel() {
 
@@ -34,23 +27,23 @@ class TaskListViewModel : ViewModel() {
         Priority, Today, Standard, Upcoming;
     }
 
-    val recordList = MutableLiveData<MutableList<GeneralListItem>>()
-    val createShortPriorityFragment = MutableLiveData<Boolean>()
-    val createShortSessionFragment = MutableLiveData<Boolean>()
-    val createShortInstanceFragment = MutableLiveData<Boolean>()
+    val recordList = MutableLiveData<MutableList<PriorityGroupInstanceElement>>()
+    val createPriorityCompleteFragment = MutableLiveData<Boolean>()
+    val createSessionCompleteFragment = MutableLiveData<Boolean>()
+    val createInstanceCompleteFragment = MutableLiveData<Boolean>()
     val setupInitialAlert = MutableLiveData<Boolean>()
     val viewSession = MutableLiveData<Boolean>()
     val viewInstance = MutableLiveData<Boolean>()
-    var activeRecord : GeneralListItem? = null
-    var activePosition : Int = NULL_INT
+    var activeRecord: PriorityGroupInstanceElement? = null
+    var activePosition: Int = NULL_INT
 
     private val groupMap = HashMap<Triple<Int, Long, String>, Int>()
 
     init {
         recordList.value = mutableListOf()
-        createShortPriorityFragment.value = false
-        createShortInstanceFragment.value = false
-        createShortSessionFragment.value = false
+        createPriorityCompleteFragment.value = false
+        createInstanceCompleteFragment.value = false
+        createSessionCompleteFragment.value = false
         viewSession.value = false
         viewInstance.value = false
         setupInitialAlert.value = false
@@ -65,10 +58,10 @@ class TaskListViewModel : ViewModel() {
     }
 
     fun resume() {
-         loadRecordList()
+        loadRecordList()
     }
 
-    fun setupAlert(applicationContext : Context) {
+    fun setupAlert(applicationContext: Context) {
         //Cancel any alarms which may already be set up to run
         val intent = Intent(applicationContext, AlarmReceiver::class.java)
         intent.action = "com.deviousindustries.testtask.SYNC"
@@ -86,12 +79,12 @@ class TaskListViewModel : ViewModel() {
         )
     }
 
-    private fun determineListForTask(pdtmFrom: Long?,
-                                     pdtmTo: Long?,
-                                     pblnFromTimeSet: Boolean?,
-                                     pblnToTimeSet: Boolean?,
-                                     pblnToDateSet: Boolean?,
-                                     pdtmCreated: Long?): Int {
+    private fun determineListForTask(fromDateTime: Long,
+                                     toDateTime: Long,
+                                     isFromTimeSet: Boolean,
+                                     isToTimeSet: Boolean,
+                                     isToDateSet: Boolean,
+                                     createdDateTime: Long): Int {
 
         //Todo: redesign to not use as many booleans. Make considerations for thru tasks.
         val result: Int
@@ -101,22 +94,22 @@ class TaskListViewModel : ViewModel() {
         val calFrom: Calendar //represents the from mTime of a task
         val calTo: Calendar //represents the to mTime of a task
         val calCreate = getCurrentCalendar() //represents when the task was created
-        calCreate.timeInMillis = pdtmCreated!!
+        calCreate.timeInMillis = createdDateTime
 
         //start: Set General From Details
-        if (pdtmFrom != NULL_OBJECT) {
-            calFrom = getCalendar(pdtmFrom!!)
+        if (fromDateTime != NULL_OBJECT) {
+            calFrom = getCalendar(fromDateTime)
         } else {
             calFrom = calCreate.clone() as Calendar
         }
 
         //start: Set General To Details
-        if (pdtmTo != NULL_DATE && pblnToDateSet!!)
-            calTo = getCalendar(pdtmTo!!)
+        if (toDateTime != NULL_DATE && isToDateSet)
+            calTo = getCalendar(toDateTime)
         else {
             calTo = calFrom.clone() as Calendar
-            if (pblnToTimeSet!!) {
-                val temp = getCalendar(pdtmTo!!)
+            if (isToTimeSet) {
+                val temp = getCalendar(toDateTime)
                 calTo.set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY))
                 calTo.set(Calendar.MINUTE, temp.get(Calendar.MINUTE))
                 calTo.set(Calendar.SECOND, temp.get(Calendar.SECOND))
@@ -125,9 +118,9 @@ class TaskListViewModel : ViewModel() {
         }
 
         //if mTime details exists we need to make sure from and to w/ mTime details are populated
-        if (pblnFromTimeSet!! || pblnToTimeSet!!) {
+        if (isFromTimeSet || isToTimeSet) {
             calFromWithTime = calFrom.clone() as Calendar
-            if (pblnToTimeSet!!) {
+            if (isToTimeSet) {
                 calToWithTime = calTo.clone() as Calendar
             } else {
                 calToWithTime = calFrom.clone() as Calendar
@@ -154,13 +147,13 @@ class TaskListViewModel : ViewModel() {
         //this will handle cases both are set and where only one or the other is set
 
         //Evaluate Time Details
-        if (!pblnFromTimeSet && pblnToTimeSet //Just to mTime set
+        if (!isFromTimeSet && isToTimeSet //Just to mTime set
                 && calNow.after(calFrom) && calNow.before(calToWithTime)) {
             result = PriorityQueues.Priority.ordinal
-        } else if (pblnFromTimeSet && !pblnToTimeSet && //Just from mTime set
+        } else if (isFromTimeSet && !isToTimeSet && //Just from mTime set
                 calNow.after(calFromWithTime) && calNow.before(calTo)) { //Exists w/i mTime bounds
             result = PriorityQueues.Priority.ordinal
-        } else if (pblnFromTimeSet && pblnToTimeSet && //Time details exist
+        } else if (isFromTimeSet && isToTimeSet && //Time details exist
                 calNow.after(calFromWithTime) && calNow.before(calToWithTime)) { //Exists w/i mTime bounds
             result = PriorityQueues.Priority.ordinal
         } else if (calNow.after(calFrom) && calNow.before(calTo) || calNow == calFrom) {
@@ -209,33 +202,24 @@ class TaskListViewModel : ViewModel() {
 
     private fun loadRecordList() {
 
-        val loadedRecordList = mutableListOf<GeneralListItem>()
+        val loadedRecordList = mutableListOf<PriorityGroupInstanceElement>()
         groupMap.clear()
 
         //Add all priorities to the list
-         val functions = object : ShortLongClick {
-            override fun regClick(position: Int) {
-                setupForDialogFragment(position)
-                createShortPriorityFragment.value = true
-                //completePriority(position)
-            }
-
-            override fun longClick(position: Int) {
-                //Nothing to do
-            }
-
-        }
-        PriorityQueues.values().forEach {
+        PriorityQueues.values().forEach { priority ->
             //loadedRecordList.add(PrioritySeparator(it.ordinal, it.name, functions))
-            loadedRecordList.add(GeneralListItem(
-                    it.ordinal,
+            loadedRecordList.add(PriorityGroupInstanceElement(
+                    priority.ordinal,
                     NULL_INT,
                     NULL_OBJECT,
-                    it.name,
-                    ElementType.Priority.name,
-                    RecordTypes.Priority.name,
-                    functions
-            ))
+                    priority.name,
+                    PriorityGroupInstanceListAdapter.ElementType.Priority.name,
+                    RecordTypes.Priority.name).also { element ->
+                element.onClick = {
+                    setupForDialogFragment(loadedRecordList.indexOf(element))
+                    createPriorityCompleteFragment.value = true
+                }
+            })
         }
 
         for (instance in DatabaseAccess.taskDatabaseDao.loadInstancesForTasklist()) {
@@ -246,7 +230,7 @@ class TaskListViewModel : ViewModel() {
                     instance.hasToDate,
                     instance.fdtmCreated)
 
-            val instance: InstanceListItemBuilder<GeneralListItem> = TodoItemBuilder(instance.flngInstanceID,
+            val instance: InstanceListItemBuilder<PriorityGroupInstanceElement> = TodoItemBuilder(instance.flngInstanceID,
                     instance.fstrTitle,
                     instance.flngGroupKey,
                     instance.fstrGroupTitle,
@@ -257,19 +241,6 @@ class TaskListViewModel : ViewModel() {
 
         loadedRecordList.sortWith(compareBy({ it.priorityId }, { it.groupId }))
         recordList.value = loadedRecordList
-    }
-
-    interface ShortLongClick {
-        fun regClick(position: Int)
-        fun longClick(position: Int)
-    }
-
-    fun recordClicked(position: Int) {
-        recordList.value!![position].callOnClick(position)
-    }
-
-    fun recordLongClicked(position: Int) {
-        recordList.value!![position].callOnLongClick(position)
     }
 
     fun completeInstance(position: Int) {
@@ -294,38 +265,6 @@ class TaskListViewModel : ViewModel() {
         loadRecordList()
     }
 
-    fun viewInstance(position: Int) {
-        //Navigate to instance
-    }
-
-    fun viewGroup(position: Int) {
-        //Navigate to session (or what ever group element it is)
-    }
-
-    class GeneralListItem(val priorityId: Int,
-                          val groupId: Int,
-                          val recordId: Long,
-                          val title: String,
-                          val element: String,
-                          val type: String,
-                          private val onClickMethods: ShortLongClick) : InstanceListAdapter.OnInstanceItemClick{
-        override fun onInstanceClick(position: Int) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun onInstanceLongClick(position: Int) {
-
-        }
-
-        fun callOnClick(position: Int) {
-            onClickMethods.regClick(position)
-        }
-
-        fun callOnLongClick(position: Int) {
-            onClickMethods.longClick(position)
-        }
-    }
-
     private interface InstanceListItemBuilder<T> {
         fun getDisplayRecords(): List<T>
     }
@@ -334,11 +273,11 @@ class TaskListViewModel : ViewModel() {
                                 private val title: String,
                                 private val sessionID: Long,
                                 private val sessionTitle: String,
-                                private val priorityID: Int) : InstanceListItemBuilder<GeneralListItem> {
+                                private val priorityID: Int) : InstanceListItemBuilder<PriorityGroupInstanceElement> {
 
-        private val displayRecords = mutableListOf<GeneralListItem>()
+        private val displayRecords = mutableListOf<PriorityGroupInstanceElement>()
 
-        override fun getDisplayRecords(): List<GeneralListItem> {
+        override fun getDisplayRecords(): List<PriorityGroupInstanceElement> {
             val groupID = if (sessionID == NULL_OBJECT) NULL_INT else getSessionGroup()
             addTodoItem(groupID)
 
@@ -346,29 +285,22 @@ class TaskListViewModel : ViewModel() {
         }
 
         private fun addTodoItem(groupID: Int) {
-            val functions = object : ShortLongClick {
-                override fun regClick(position: Int) {
-                    setupForDialogFragment(position)
-                    createShortInstanceFragment.value = true
-                    //completeInstance(position)
-                }
-
-                override fun longClick(position: Int) {
-                    setupForDialogFragment(position)
-                    viewInstance.value = true
-                    //viewInstance(position)
-                }
-            }
-
-            displayRecords.add(GeneralListItem(
+            displayRecords.add(PriorityGroupInstanceElement(
                     priorityID,
                     groupID,
                     instanceID,
                     title,
-                    ElementType.Instance.name,
-                    RecordTypes.TodoInstance.name,
-                    functions
-            ))
+                    PriorityGroupInstanceListAdapter.ElementType.Instance.name,
+                    RecordTypes.TodoInstance.name).also {
+                it.onClick = {
+                    setupForDialogFragment(recordList.value!!.indexOf(it))
+                    createInstanceCompleteFragment.value = true
+                }
+                it.onClickLong = {
+                    setupForDialogFragment(recordList.value!!.indexOf(it))
+                    viewInstance.value = true
+                }
+            })
         }
 
         private fun getSessionGroup(): Int {
@@ -385,29 +317,23 @@ class TaskListViewModel : ViewModel() {
         }
 
         private fun addSessionItem(sectionID: Int, sessionID: Long) {
-            val functions = object : ShortLongClick {
-                override fun regClick(position: Int) {
-                    setupForDialogFragment(position)
-                    createShortSessionFragment.value = true
-                    //completeGroup(position)
-                }
-
-                override fun longClick(position: Int) {
-                    setupForDialogFragment(position)
-                    viewSession.value = true
-                    //viewGroup(position)
-                }
-            }
-
             displayRecords.add(
-                    GeneralListItem(
+                    PriorityGroupInstanceElement(
                             priorityID,
                             sectionID,
                             sessionID,
-                            "Session: $sessionTitle",
-                            ElementType.Group.name,
-                            RecordTypes.Session.name,
-                            functions))
+                            "--Session: $sessionTitle--",
+                            PriorityGroupInstanceListAdapter.ElementType.Group.name,
+                            RecordTypes.Session.name).also{
+                        it.onClick = {
+                            setupForDialogFragment(recordList.value!!.indexOf(it))
+                            createSessionCompleteFragment.value = true
+                        }
+                        it.onClickLong = {
+                            setupForDialogFragment(recordList.value!!.indexOf(it))
+                            viewSession.value = true
+                        }
+                    })
         }
     }
 }

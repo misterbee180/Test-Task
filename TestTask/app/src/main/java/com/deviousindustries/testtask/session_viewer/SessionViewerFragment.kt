@@ -4,6 +4,7 @@ package com.deviousindustries.testtask.session_viewer
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.deviousindustries.testtask.GeneralDialogFragment
 
 import com.deviousindustries.testtask.R
 import com.deviousindustries.testtask.constants.NULL_OBJECT
@@ -100,11 +102,13 @@ class SessionViewerFragment : Fragment() {
                                 .commit()
                     })
                     convertView.setOnLongClickListener(View.OnLongClickListener {
-                        DeleteSessionFragment().apply {
-                            arguments = Bundle().apply {
-                                putLong("SessionID", getItemId(position))
-                            }
-                        }.show(fragmentManager!!, "DeleteSession")
+                        GeneralDialogFragment("Delete Session?",
+                                DialogInterface.OnClickListener{ dialog, id ->
+                                    val viewModel = ViewModelProviders.of(activity!!).get(SessionViewerViewModel::class.java)
+                                    viewModel.deleteSession(getItemId(position))
+                                    viewModel.loadSessionList()
+                                },
+                                null).show(fragmentManager!!, "DeleteSession")
                         true
                     })
                     return convertView

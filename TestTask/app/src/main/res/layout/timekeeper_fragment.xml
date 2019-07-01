@@ -337,21 +337,21 @@
         app:layout_constraintTop_toBottomOf="@id/Timeframe_Frame" />
 
     <TextView
-        android:id="@+id/fromTime_Description_Text"
+        android:id="@+id/FromTime_Description_Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/TimeKeeper_From_Time"
-        app:layout_constraintBaseline_toBaselineOf="@+id/fromTime_Add_Button"
-        app:layout_constraintStart_toEndOf="@+id/fromTime_Add_Button" />
+        app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Add_Button"
+        app:layout_constraintStart_toEndOf="@+id/FromTime_Add_Button" />
 
     <TextView
-        android:id="@+id/fromTime_Text"
+        android:id="@+id/FromTime_Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/fromTime_Add_Button"
-        app:layout_constraintStart_toEndOf="@+id/fromTime_Description_Text"
+        app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Add_Button"
+        app:layout_constraintStart_toEndOf="@+id/FromTime_Description_Text"
         android:text="@{viewmodel.fromTime}"
         tools:text="Sample From Time" />
 
@@ -361,7 +361,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/Remove"
-        app:layout_constraintBaseline_toBaselineOf="@+id/fromTime_Text"
+        app:layout_constraintBaseline_toBaselineOf="@+id/FromTime_Text"
         app:layout_constraintStart_toEndOf="@+id/barrier4"
         android:visibility='@{viewmodel.fromTime == "" ? View.GONE : View.VISIBLE}'/>
 
@@ -372,7 +372,7 @@
         android:layout_marginStart="8dp"
         android:text="@string/Add"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/fromTime_Add_Button" />
+        app:layout_constraintTop_toBottomOf="@id/FromTime_Add_Button" />
 
     <TextView
         android:id="@+id/ToTime_Text"
@@ -418,7 +418,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="right"
-        app:constraint_referenced_ids="ToTime_Text,fromTime_Text"
+        app:constraint_referenced_ids="ToTime_Text,FromTime_Text"
         tools:layout_editor_absoluteX="411dp" />
 
     <!--<TextView-->

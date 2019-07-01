@@ -1,4 +1,4 @@
-package com.deviousindustries.testtask.instance_display
+package com.deviousindustries.testtask
 
 import android.app.AlertDialog
 import android.app.Dialog

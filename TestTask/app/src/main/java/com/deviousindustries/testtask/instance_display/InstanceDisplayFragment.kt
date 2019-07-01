@@ -1,27 +1,21 @@
 package com.deviousindustries.testtask.instance_display
 
 
-import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.*
-import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.deviousindustries.testtask.*
-import com.deviousindustries.testtask.classes.TaskDetail
-import com.deviousindustries.testtask.classes.TaskInstance
-import com.deviousindustries.testtask.classes.Time
+import com.deviousindustries.testtask.PriorityGroupInstanceTools.PriorityGroupInstanceListAdapter
 import com.deviousindustries.testtask.session.SessionFragment
 import com.deviousindustries.testtask.session_viewer.SessionViewerFragment
-import com.deviousindustries.testtask.task.TaskFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class InstanceDisplayFragment : Fragment(), InstanceListAdapter.OnInstanceItemClick {
+class InstanceDisplayFragment : Fragment(), PriorityGroupInstanceListAdapter.OnElementItemClick {
     companion object {
         fun newInstance() = InstanceDisplayFragment()
     }
@@ -44,9 +38,9 @@ class InstanceDisplayFragment : Fragment(), InstanceListAdapter.OnInstanceItemCl
     }
 
     private fun setupObservables() {
-        viewModel.createShortPriorityFragment.observe(this, Observer { display ->
+        viewModel.createPriorityCompleteFragment.observe(this, Observer { display ->
             if (display) {
-                viewModel.createShortPriorityFragment.value = false
+                viewModel.createPriorityCompleteFragment.value = false
                 GeneralDialogFragment("Complete all instances under ${viewModel.activeRecord!!.title} queue?",
                         positive = DialogInterface.OnClickListener { _, _ ->
                             viewModel.completePriority(viewModel.activePosition)
@@ -55,9 +49,9 @@ class InstanceDisplayFragment : Fragment(), InstanceListAdapter.OnInstanceItemCl
             }
         })
 
-        viewModel.createShortInstanceFragment.observe(this, Observer { display ->
+        viewModel.createInstanceCompleteFragment.observe(this, Observer { display ->
             if (display){
-                viewModel.createShortInstanceFragment.value = false
+                viewModel.createInstanceCompleteFragment.value = false
                 GeneralDialogFragment("Complete ${viewModel.activeRecord!!.title}?",
                         positive = DialogInterface.OnClickListener { _, _ ->
                             viewModel.completeInstance(viewModel.activePosition)
@@ -66,9 +60,9 @@ class InstanceDisplayFragment : Fragment(), InstanceListAdapter.OnInstanceItemCl
             }
         })
 
-        viewModel.createShortSessionFragment.observe(this, Observer { display ->
+        viewModel.createSessionCompleteFragment.observe(this, Observer { display ->
             if (display){
-                viewModel.createShortSessionFragment.value = false
+                viewModel.createSessionCompleteFragment.value = false
                 GeneralDialogFragment("Complete all instances under ${viewModel.activeRecord!!.title}?",
                         positive = DialogInterface.OnClickListener { _, _ ->
                             viewModel.completeGroup(viewModel.activePosition)
@@ -128,18 +122,24 @@ class InstanceDisplayFragment : Fragment(), InstanceListAdapter.OnInstanceItemCl
         viewModel.resume()
     }
 
-    override fun onInstanceLongClick(position: Int) {
-        viewModel.recordLongClicked(position)
+    override fun onLongClick(position: Int) {
+        viewModel.recordList.value!![position].callOnLongClick()
     }
 
-    override fun onInstanceClick(position: Int) {
-        viewModel.recordClicked(position)
+    override fun onClick(position: Int) {
+        viewModel.recordList.value!![position].callOnClick()
     }
 
     private fun setupTaskList() {
-        activity!!.findViewById<RecyclerView>(R.id.InstanceList_Recycle).adapter = InstanceListAdapter(this)
+        activity!!.findViewById<RecyclerView>(R.id.InstanceList_Recycle).adapter = PriorityGroupInstanceListAdapter(
+                this,
+                R.layout.seperator_item1,
+                R.layout.task_group1,
+                R.layout.task_item1,
+                R.id.title_text
+        )
         viewModel.recordList.observe(this, Observer { records ->
-            (activity!!.findViewById<RecyclerView>(R.id.InstanceList_Recycle).adapter as InstanceListAdapter).data = records
+            (activity!!.findViewById<RecyclerView>(R.id.InstanceList_Recycle).adapter as PriorityGroupInstanceListAdapter).data = records
         })
     }
 

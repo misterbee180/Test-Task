@@ -1,9 +1,10 @@
-package com.deviousindustries.testtask.instance_display;
+package com.deviousindustries.testtask;
 
 import android.os.Bundle;
 
 import com.deviousindustries.testtask.R;
 import com.deviousindustries.testtask.Utilities;
+import com.deviousindustries.testtask.instance_display.InstanceDisplayFragment;
 import com.deviousindustries.testtask.session_viewer.SessionViewerFragment;
 
 import androidx.appcompat.app.AppCompatActivity;

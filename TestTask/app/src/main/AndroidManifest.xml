@@ -43,7 +43,7 @@
             android:label="@string/title_activity_viewer_events"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".instance_display.MainActivity"
+            android:name=".MainActivity"
             android:label="Test Task"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>

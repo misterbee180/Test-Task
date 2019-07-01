@@ -5,7 +5,6 @@ import android.os.AsyncTask
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.deviousindustries.testtask.DatabaseAccess
 import com.deviousindustries.testtask.constants.*
 import com.deviousindustries.testtask.Utilities
 import com.deviousindustries.testtask.classes.*
