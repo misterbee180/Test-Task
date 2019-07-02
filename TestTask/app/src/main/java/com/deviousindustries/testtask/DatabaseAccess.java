@@ -22,14 +22,16 @@ import static com.deviousindustries.testtask.constants.ConstantsKt.*;
  */
 
 public class DatabaseAccess {
-    private static SQLiteDatabase temp = null;
     public static SupportSQLiteDatabase mDatabase = null;
     public static TaskDatabaseDao taskDatabaseDao = null;
 
     public static void getInstance(Context context){
         if(mDatabase == null) {
-            temp = new OldSQLiteHelper(context).oldDatabase;
-            temp.close();
+            OldSQLiteHelper oldHelp = new OldSQLiteHelper(context);
+            if(oldHelp.downgradedFrom != NULL_INT) {
+                oldHelp.oldDatabase.setVersion(oldHelp.downgradedFrom);
+            }
+            oldHelp.oldDatabase.close();
             mDatabase = TaskDatabase.Companion.getInstance(context).getOpenHelper().getWritableDatabase();
             taskDatabaseDao = TaskDatabase.Companion.getInstance(context).getTaskDatabaseDao();
         }

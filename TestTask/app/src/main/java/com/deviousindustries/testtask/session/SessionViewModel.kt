@@ -32,7 +32,7 @@ class SessionViewModel : ViewModel() {
         SaveSession().execute()
     }
 
-    inner class SaveSession():AsyncTask<Unit, Unit, Unit>(){
+    inner class SaveSession :AsyncTask<Unit, Unit, Unit>(){
         override fun doInBackground(vararg params: Unit?) {
             DatabaseAccess.mDatabase.beginTransaction()
             try{

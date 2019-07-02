@@ -11,39 +11,43 @@ import com.deviousindustries.testtask.classes.Time;
 
 import java.util.Calendar;
 
+import static com.deviousindustries.testtask.constants.ConstantsKt.NULL_INT;
+
 public class OldSQLiteHelper extends SQLiteOpenHelper {
 
-    public static SQLiteDatabase oldDatabase;
+    public SQLiteDatabase oldDatabase;
+    public int downgradedFrom = NULL_INT;
     
     public OldSQLiteHelper(Context context) {
-        super(context, "TaskDatabase.db", null, 25);
+        super(context, "TaskDatabase.db", null, 21);
         oldDatabase = this.getWritableDatabase();
     }
 
-    private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY , flngTaskDetailID INTEGER NOT NULL DEFAULT -1, " +
+    //region TableCreate
+    private static final String CREATE_TASK_TABLE = "CREATE TABLE tblTask (flngTaskID INTEGER PRIMARY KEY NOT NULL, flngTaskDetailID INTEGER NOT NULL DEFAULT -1, " +
             "flngTimeID INTEGER NOT NULL DEFAULT -1, fintTaskType INTEGER NOT NULL DEFAULT 0, flngTaskTypeID INTEGER NOT NULL DEFAULT -1," +
             "fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), fdtmDeleted INTEGER NOT NULL DEFAULT -1, flngOneOff INTEGER NOT NULL DEFAULT -1)";
 
-    final String CREATE_TASKDETAIL_TABLE = "CREATE TABLE tblTaskDetail (flngTaskDetailID INTEGER PRIMARY KEY, fstrTitle NOT NULL DEFAULT '', fstrDescription NOT NULL DEFAULT '')";
+    final String CREATE_TASKDETAIL_TABLE = "CREATE TABLE tblTaskDetail (flngTaskDetailID INTEGER PRIMARY KEY NOT NULL, fstrTitle NOT NULL DEFAULT '', fstrDescription NOT NULL DEFAULT '')";
 
-    private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY, flngTaskID INTEGER NOT NULL DEFAULT -1," +
+    private static final String CREATE_TASKINSTANCE_TABLE = "CREATE TABLE tblTaskInstance (flngInstanceID INTEGER PRIMARY KEY NOT NULL, flngTaskID INTEGER NOT NULL DEFAULT -1," +
             "flngTaskDetailID INTEGER NOT NULL DEFAULT -1, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
             "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
             "fdtmCompleted INTEGER NOT NULL DEFAULT -1, fdtmSystemCompleted INTEGER NOT NULL DEFAULT -1, fdtmDeleted INTEGER NOT NULL DEFAULT -1, fdtmEdited INTEGER NOT NULL DEFAULT -1," +
             "flngSessionID INTEGER NOT NULL DEFAULT -1)";
 
-    private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
+    private static final String CREATE_TIME_TABLE = "CREATE TABLE tblTime (flngTimeID INTEGER PRIMARY KEY NOT NULL, fdtmFrom INTEGER NOT NULL DEFAULT -1, fdtmTo INTEGER NOT NULL DEFAULT -1, " +
             "fblnFromTime INTEGER NOT NULL DEFAULT 0, fblnToTime INTEGER NOT NULL DEFAULT 0, fblnToDate INTEGER NOT NULL DEFAULT 0, fintTimeframe INTEGER NOT NULL DEFAULT -1, " +
             "flngTimeframeID INTEGER NOT NULL DEFAULT -1, flngRepetition INTEGER NOT NULL DEFAULT -1, fdtmCreated INTEGER NOT NULL DEFAULT (strftime('%s','now')*1000), " +
             "fintStarting INTEGER NOT NULL DEFAULT 0, fblnComplete INTEGER NOT NULL DEFAULT 0, flngGenerationID INTEGER NOT NULL DEFAULT -1, fblnThru INTEGER NOT NULL DEFAULT 0, " +
             "fblnSession INTEGER NOT NULL DEFAULT 0, fstrTitle TEXT NOT NULL DEFAULT '')";
 
-    private static final String CREATE_TIME_INSTANCE_TABLE = "CREATE TABLE tblTimeInstance (flngGenerationID INTEGER PRIMARY KEY, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
+    private static final String CREATE_TIME_INSTANCE_TABLE = "CREATE TABLE tblTimeInstance (flngGenerationID INTEGER PRIMARY KEY NOT NULL, flngTimeID INTEGER NOT NULL DEFAULT -1, " +
             "fdtmUpcoming INTEGER NOT NULL DEFAULT -1, fdtmPriority INTEGER NOT NULL DEFAULT -1, fintThru INTEGER NOT NULL DEFAULT 0)";
 
-    private static final String CREATE_EVENT_TABLE = "CREATE TABLE tblEvent (flngEventID INTEGER PRIMARY KEY , fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
+    private static final String CREATE_EVENT_TABLE = "CREATE TABLE tblEvent (flngEventID INTEGER PRIMARY KEY NOT NULL, fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
 
-    private static final String CREATE_WEEK_TABLE = "CREATE TABLE tblWeek (flngWeekID INTEGER PRIMARY KEY , fblnMonday INTEGER , fblnTuesday INTEGER , fblnWednesday INTEGER , " +
+    private static final String CREATE_WEEK_TABLE = "CREATE TABLE tblWeek (flngWeekID INTEGER PRIMARY KEY NOT NULL, fblnMonday INTEGER , fblnTuesday INTEGER , fblnWednesday INTEGER , " +
             "fblnThursday INTEGER , fblnFriday INTEGER , fblnSaturday INTEGER , fblnSunday INTEGER )";
 
     private static final String CREATE_DAY_TABLE = "CREATE TABLE `tblDay` ( `flngDayID` INTEGER NOT NULL DEFAULT 0, `fdtmFromDate` INTEGER, `fdtmToDate` INTEGER, PRIMARY KEY(`flngDayID`))";
@@ -53,7 +57,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_YEAR_TABLE = "CREATE TABLE `tblYear` ( `flngYearID` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`flngYearID`))";
 
-    private static final String CREATE_GROUP_TABLE = "CREATE TABLE tblGroup (flngGroupID INTEGER PRIMARY KEY , fstrTitle TEXT )";
+    private static final String CREATE_GROUP_TABLE = "CREATE TABLE tblGroup (flngGroupID INTEGER PRIMARY KEY NOT NULL , fstrTitle TEXT )";
 
     private static final String CREATE_LONGTERM_TABLE = "CREATE TABLE tblLongTerm (flngLongTermID INTEGER PRIMARY KEY, fstrTitle TEXT NOT NULL , fstrDescription TEXT NOT NULL )";
     //endregion
@@ -240,7 +244,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                             int oldVersion,
                             int newVersion) {
 
-        if (newVersion == 998) {
+        downgradedFrom = oldVersion;
+        if (newVersion == 999) {
             db.execSQL(TRUNCATE_TASK_TABLE);
             db.execSQL(TRUNCATE_TASKINSTANCE_TABLE);
             db.execSQL(TRUNCATE_SESSION_TABLE);
@@ -256,6 +261,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
         }
     }
 
+    //region migrations
     private void upgradeToV2(SQLiteDatabase db) {
         db.execSQL(CREATE_EVENT_TABLE);
         db.execSQL("CREATE TABLE `tblTaskTmp` (\n" +
@@ -562,7 +568,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
             if (blnToDate) {
                 lngDateTo = calToDate.getTimeInMillis();
             }
-            updateRecordFromTable("tblTime", "flngTimeID", cursor.getInt(cursor.getColumnIndex("flngTimeID"))
+            updateRecordFromTable(db, "tblTime", "flngTimeID", cursor.getInt(cursor.getColumnIndex("flngTimeID"))
                     , new String[]{"fdtmFrom",
                             "fdtmTo",
                             "fblnFromTimeSet",
@@ -717,7 +723,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                                     "fdtmCompleted", "fdtmSystemCompleted", "fdtmDeleted", "fdtmEdited"},
                             new Object[]{tblInstance.getLong(tblInstance.getColumnIndex("flngInstanceID")),
                                     tblInstance.getLong(tblInstance.getColumnIndex("flngTaskID")),
-                                    addRecordToTable("tblTaskDetail",
+                                    addRecordToTable(db, "tblTaskDetail",
                                             new String[]{"fstrTitle", "fstrDescription"},
                                             new Object[]{tblTask_OLD.getString(tblTask_OLD.getColumnIndex("fstrTitle")),
                                                     tblTask_OLD.getString(tblTask_OLD.getColumnIndex("fstrDescription"))}),
@@ -744,7 +750,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
             String strTitle = tblTask_OLD.getString(tblTask_OLD.getColumnIndex("fstrTitle"));
             String strDescription = tblTask_OLD.getString(tblTask_OLD.getColumnIndex("fstrDescription"));
             long lngTaskID = tblTask_OLD.getLong(tblTask_OLD.getColumnIndex("flngTaskID"));
-            long lngDetailID = addRecordToTable("tblTaskDetail",
+            long lngDetailID = addRecordToTable(db, "tblTaskDetail",
                     new String[]{"fstrTitle", "fstrDescription"},
                     new Object[]{strTitle, strDescription});
 
@@ -1087,7 +1093,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                         throw new Exception("test");
                     }
 
-                    updateRecordFromTable("tblTask", "flngTaskID", tblTask.getLong(tblTask.getColumnIndex("flngTaskID"))
+                    updateRecordFromTable(db, "tblTask", "flngTaskID", tblTask.getLong(tblTask.getColumnIndex("flngTaskID"))
                             , new String[]{"flngTimeID", "flngOneOff"}
                             , new Object[]{lngNewTimeID, lngTimeID});
 
@@ -1172,9 +1178,9 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
     private void upgradeToV16(SQLiteDatabase db) throws Exception {
         db.execSQL(CREATE_TIME_INSTANCE_TABLE);
 
-        Cursor tblTime = getRecordsFromTable("tblTime");
+        Cursor tblTime = getRecordsFromTable(db, "tblTime");
         while (tblTime.moveToNext()) {
-            addRecordToTable("tblTimeInstance",
+            addRecordToTable(db, "tblTimeInstance",
                     new String[]{"flngTimeID", "fdtmUpcoming", "fdtmPriority"},
                     new Object[]{tblTime.getLong(tblTime.getColumnIndex("flngTimeID")),
                             tblTime.getLong(tblTime.getColumnIndex("fdtmUpcoming")),
@@ -1214,7 +1220,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
         addColumn(db, "tblTime", "fblnSession", 99, true, "0");
         addColumn(db, "tblTime", "flngSessionDetailID", 99, true, "-1");
 
-        Cursor session = getRecordsFromTable("tblSession");
+        Cursor session = getRecordsFromTable(db, "tblSession");
 
         while (session.moveToNext()) {
             Time tblTime = Time.getInstance(session.getLong(session.getColumnIndex("flngTimeID")));
@@ -1231,26 +1237,26 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
 
         addColumn(db, "tblTime", "fstrTitle", 99, true, "''");
         addColumn(db, "tblTaskInstance", "flngSessionID", 99, true, "-1");
-        Cursor tblTime = getRecordsFromTable("tblTime", "fblnSession = 1", null);
+        Cursor tblTime = getRecordsFromTable(db, "tblTime", "fblnSession = 1", null);
 
         while (tblTime.moveToNext()) {
-            Cursor td = getRecordsFromTable("tblTaskDetail", "flngTaskDetailID"
+            Cursor td = getRecordsFromTable(db,"tblTaskDetail", "flngTaskDetailID"
                     , tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")));
 
             td.moveToFirst();
 
             //Replace time session IDs w/ Titles
-            updateRecordFromTable("tblTime", "flngTimeID",
+            updateRecordFromTable(db, "tblTime", "flngTimeID",
                     tblTime.getLong(tblTime.getColumnIndex("flngTimeID")),
                     new String[]{"fstrTitle"}, new Object[]{td.getString(td.getColumnIndex("fstrTitle"))});
 
             //Replace instance session ID's w/ Time ID's
-            updateRecordFromTable("tblTaskInstance", "flngSessionDetailID",
+            updateRecordFromTable(db, "tblTaskInstance", "flngSessionDetailID",
                     tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")),
                     new String[]{"flngSessionID"}, new Object[]{tblTime.getLong(tblTime.getColumnIndex("flngTimeID"))});
 
             //Delete the unnecessary session detail ID
-            deleteRecordFromTable("tblTaskDetail", "flngTaskDetailID",
+            deleteRecordFromTable(db, "tblTaskDetail", "flngTaskDetailID",
                     tblTime.getLong(tblTime.getColumnIndex("flngSessionDetailID")));
         }
         tblTime.close();
@@ -1262,7 +1268,9 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
             throw new Exception("Exit and Rollback Debug");
         }
     }
+    //endregion
 
+    //region helper functions
     private void addColumn(SQLiteDatabase db,
                            String pstrTableName,
                            String pstrColumnName,
@@ -1579,8 +1587,11 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
         return values;
     }
 
+    //endregion
+
     //region GENERIC FUNCTIONS
-    public static Cursor getRecordsFromTable(String pstrTableName,
+    public static Cursor getRecordsFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName,
                                              String pstrIDColumn,
                                              long plngID) {
         String selection = pstrIDColumn + " = ?";
@@ -1595,7 +1606,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                 null);
     }
 
-    public static Cursor getRecordsFromTable(String pstrTableName,
+    public static Cursor getRecordsFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName,
                                              String pstrIDColumn,
                                              Long plngID,
                                              String pstrOrderBy) {
@@ -1611,7 +1623,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                 pstrOrderBy);
     }
 
-    public static Cursor getRecordsFromTable(String pstrTableName) {
+    public static Cursor getRecordsFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName) {
         return oldDatabase.query(pstrTableName,
                 null,
                 null,
@@ -1621,7 +1634,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                 null);
     }
 
-    public static Cursor getRecordsFromTable(String pstrTableName,
+    public static Cursor getRecordsFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName,
                                              String pstrSelection,
                                              Object[] pobjArguemnts) {
 
@@ -1673,14 +1687,16 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
         return values;
     }
 
-    public static long addRecordToTable(String pstrTableName,
+    public static long addRecordToTable(SQLiteDatabase oldDatabase,
+                                        String pstrTableName,
                                         String[] pstrAddColumns,
                                         Object[] pobjAddValues) {
 
-        return addRecordToTable(pstrTableName, pstrAddColumns, pobjAddValues, "", -1);
+        return addRecordToTable(oldDatabase, pstrTableName, pstrAddColumns, pobjAddValues, "", -1);
     }
 
-    public static long addRecordToTable(String pstrTableName,
+    public static long addRecordToTable(SQLiteDatabase oldDatabase,
+                                        String pstrTableName,
                                         String[] pstrAddColumns,
                                         Object[] pobjAddValues,
                                         String pstrColumnID,
@@ -1692,7 +1708,7 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
 
         if (blnUpdate) {
             values.put(pstrColumnID, plngID);
-            deleteRecordFromTable(pstrTableName, pstrColumnID, plngID);
+            deleteRecordFromTable(oldDatabase, pstrTableName, pstrColumnID, plngID);
         }
 
         if (values.size() >= 1) {
@@ -1706,7 +1722,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
         }
     }
 
-    public static long updateRecordFromTable(String pstrTableName,
+    public static long updateRecordFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName,
                                              String pstrIDColumn,
                                              long plngID,
                                              String[] pstrUpdateColumns,
@@ -1723,7 +1740,8 @@ public class OldSQLiteHelper extends SQLiteOpenHelper {
                 selectionArgs);
     }
 
-    public static long deleteRecordFromTable(String pstrTableName,
+    public static long deleteRecordFromTable(SQLiteDatabase oldDatabase,
+                                             String pstrTableName,
                                              String pstrIDColumn,
                                              Long plngID) {
         String whereClause = pstrIDColumn + " = ?";

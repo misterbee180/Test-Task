@@ -6,7 +6,12 @@ data class Session(
         @ColumnInfo(name = "fstrTitle") var title: String,
         //@ColumnInfo(name="fstrDescription") var description: String,
         @ColumnInfo(name = "flngTimeID") var timeID: Long
-)
+
+) {
+    override fun toString(): String {
+        return title
+    }
+}
 
 class TaskListInstances(
         val flngInstanceID: Long,

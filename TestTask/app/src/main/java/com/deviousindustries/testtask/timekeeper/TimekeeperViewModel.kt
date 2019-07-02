@@ -235,7 +235,6 @@ class TimekeeperViewModel : ViewModel() {
         toTime.value = ""
     }
 
-
     fun loadTimekeeper(timeID: Long){
         this.timeID = timeID
         LoadTimekeeper().execute(timeID)
@@ -277,6 +276,10 @@ class TimekeeperViewModel : ViewModel() {
 
     fun saveTimekeeper(): Time{
         return time.value!!.apply{saveTime()}
+    }
+
+    fun isAnyTimeInfoSet(): Boolean {
+        return time.value!!.fdtmFrom != NULL_DATE
     }
 
     fun updateSpecific(){

@@ -13,6 +13,7 @@ import com.deviousindustries.testtask.*
 import com.deviousindustries.testtask.PriorityGroupInstanceTools.PriorityGroupInstanceListAdapter
 import com.deviousindustries.testtask.session.SessionFragment
 import com.deviousindustries.testtask.session_viewer.SessionViewerFragment
+import com.deviousindustries.testtask.task.TaskFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class InstanceDisplayFragment : Fragment(), PriorityGroupInstanceListAdapter.OnElementItemClick {

@@ -163,7 +163,7 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblMonth WHERE flngMonthID = :ID")
     fun loadMonth(ID: Long): Month
 
-    @Query("SELECT fstrTitle, flngTimeID FROM tblTime WHERE fblnSession = 1 and fblnComplete = $NULL_OBJECT")
+    @Query("SELECT fstrTitle, flngTimeID FROM tblTime WHERE fblnSession = $TRUE_INT and fblnComplete = $NULL_OBJECT")
     fun loadActiveSessions(): List<Session>
 
     @Query("SELECT * FROM tblTask WHERE flngTimeID = :ID and fdtmDeleted = $NULL_DATE")

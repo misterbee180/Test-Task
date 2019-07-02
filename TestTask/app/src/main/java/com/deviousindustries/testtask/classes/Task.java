@@ -157,11 +157,8 @@ public class Task {
     }
 
     public void replaceTimeId(long plngTimeId){
-        DatabaseAccess.updateRecordFromTable("tblTask",
-                "flngTaskID",
-                flngTaskID,
-                new String[]{"flngTimeID"},
-                new Object[]{plngTimeId});
+        flngTimeID = plngTimeId;
+        DatabaseAccess.taskDatabaseDao.updateTask(this);
     }
 
     public void updateOneOff(long plngOneOff){
