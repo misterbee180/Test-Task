@@ -38,7 +38,7 @@ class SessionFragment() : Fragment() {
         viewModel.start(arguments?.getLong("SESSION_ID", NULL_OBJECT) ?: NULL_OBJECT)
 
         setObservables()
-        setEvents()
+        //setEvents()
 
         viewModel.timekeeperViewModel.loadTimekeeper(viewModel.sessionID)
     }
@@ -64,7 +64,7 @@ class SessionFragment() : Fragment() {
         }
     }
 
-    private fun setEvents() {
+private fun setEvents() {
         activity!!.findViewById<EditText>(R.id.Session_Title_EditText)
                 .addTextChangedListener(onTextChanged = { s, start, before, count ->
                     viewModel.title.value = s.toString()

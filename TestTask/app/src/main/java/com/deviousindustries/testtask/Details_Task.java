@@ -359,8 +359,10 @@ public class Details_Task extends AppCompatActivity {
             DatabaseAccess.mDatabase.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally{
+            DatabaseAccess.mDatabase.endTransaction();
         }
-        DatabaseAccess.mDatabase.endTransaction();
+
     }
     //endregion
 
