@@ -56,7 +56,7 @@ public class Viewer_Task extends AppCompatActivity {
                 }
             });
 
-            mTaskView = findViewById(R.id.lsvTaskList);
+            mTaskView = findViewById(R.id.InstanceList_Recycle);
             mSorting = Sorting.Ascending;
             mContext = this;
         } catch (Exception e) {
@@ -175,7 +175,7 @@ public class Viewer_Task extends AppCompatActivity {
 //                break;
         }
         mAdapter = new CustomAdapter(mContext);
-        Calendar calCreated = Viewer_Tasklist.getCurrentCalendar();
+        Calendar calCreated = Utilities.Companion.getCurrentCalendar();
         calCreated.add(Calendar.DAY_OF_YEAR,1);
         Calendar calNewCreated;
         String fstrSession = "";
@@ -189,7 +189,7 @@ public class Viewer_Task extends AppCompatActivity {
                         mAdapter.addItem(curTaskList.getString(curTaskList.getColumnIndex("fstrTitle")),curTaskList.getLong(curTaskList.getColumnIndex("flngTaskID")));
                         break;
                     case Created:
-                        calNewCreated = Viewer_Tasklist.getCurrentCalendar();
+                        calNewCreated = Utilities.Companion.getCurrentCalendar();
                         calNewCreated.setTimeInMillis(curTaskList.getLong(curTaskList.getColumnIndex("fdtmCreated")));
                         if (calNewCreated.get(Calendar.DAY_OF_YEAR) != calCreated.get(Calendar.DAY_OF_YEAR) ||
                                 calNewCreated.get(Calendar.YEAR) != calCreated.get(Calendar.YEAR)){

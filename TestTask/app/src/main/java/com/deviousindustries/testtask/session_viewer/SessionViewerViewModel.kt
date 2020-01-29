@@ -6,32 +6,25 @@ import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.deviousindustries.testtask.session.Session
 import com.deviousindustries.testtask.DatabaseAccess
-import com.deviousindustries.testtask.classes.Time
+import com.deviousindustries.testtask.data.Session
 
 class SessionViewerViewModel : ViewModel() {
 
-    var sessionList = MutableLiveData<List<com.deviousindustries.testtask.classes.Session>>()
+    var sessionList = MutableLiveData<List<Session>>()
 
     init {
         sessionList.value = listOf()
-        Log.i("SessionViewerViewModel", "SessionViewer View Model Created!")
+        Log.i("SessionViewerViewModel", "MainActivity View Model Created!")
     }
 
     override fun onCleared() {
-        Log.i("SessionViewerViewModel", "SessionViewer View Model Destroyed!")
+        Log.i("SessionViewerViewModel", "MainActivity View Model Destroyed!")
         super.onCleared()
     }
 
     fun loadSessionList() {
         sessionList.value = DatabaseAccess.taskDatabaseDao.loadActiveSessions()
-    }
-
-    fun createSession(context: Context){
-        startActivity(context,
-                Intent(context, Session::class.java),
-                null)
     }
 
     fun deleteSession(sessionID: Long){

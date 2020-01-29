@@ -7,7 +7,8 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.deviousindustries.testtask.DatabaseAccess;
-import com.deviousindustries.testtask.Viewer_Tasklist;
+import com.deviousindustries.testtask.Utilities;
+
 import static com.deviousindustries.testtask.constants.ConstantsKt.*;
 
 @Entity(tableName = "tblTask")
@@ -32,7 +33,7 @@ public class Task {
         flngTaskID = NULL_OBJECT;
         flngTimeID = NULL_OBJECT;
         flngTaskDetailID = NULL_OBJECT;
-        fdtmCreated = Viewer_Tasklist.getCurrentCalendar().getTimeInMillis();
+        fdtmCreated = Utilities.Companion.getCurrentCalendar().getTimeInMillis();
         fdtmDeleted = NULL_DATE;
         fintTaskType = 0;
         flngTaskTypeID = NULL_OBJECT;
@@ -106,7 +107,7 @@ public class Task {
                     "flngTaskID",
                     flngTaskID,
                     new String[]{"fdtmDeleted"},
-                    new Object[]{Viewer_Tasklist.getCurrentCalendar().getTimeInMillis()});
+                    new Object[]{Utilities.Companion.getCurrentCalendar().getTimeInMillis()});
 
             finishActiveInstances(3);
 

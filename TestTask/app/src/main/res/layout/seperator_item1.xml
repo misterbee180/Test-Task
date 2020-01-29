@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/title_text"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textAlignment="viewStart"
-    android:textAllCaps="true"
-    android:textStyle="bold" />
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingTop="5dp"
+    android:paddingLeft="5dp">
+
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textAlignment="viewStart"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        tools:ignore="MissingConstraints"
+        tools:text="Test Separator" />
+</androidx.constraintlayout.widget.ConstraintLayout>

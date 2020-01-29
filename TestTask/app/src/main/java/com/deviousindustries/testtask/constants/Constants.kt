@@ -6,6 +6,7 @@ const val NULL_POSITION = -1 //Position Not Specified
 const val BASE_POSITION = 0 //Position 0 Set
 const val FALSE_INT = 0
 const val TRUE_INT= 1
+const val NULL_INT = -1
 
 //Calendar Stuff
 const val BEGIN_HOUR = 0

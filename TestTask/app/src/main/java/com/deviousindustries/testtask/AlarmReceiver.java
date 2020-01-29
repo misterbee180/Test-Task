@@ -17,6 +17,8 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.deviousindustries.testtask.classes.TaskInstance;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Calendar;
 
 import static android.content.Context.ALARM_SERVICE;
@@ -115,7 +117,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public static void generatePush(Context pContext, String pTitle, String pDesc){
         createNotificationChannel(pContext);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(pContext, 0, new Intent(pContext, Viewer_Tasklist.class), 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(pContext, 0, new Intent(pContext, Utilities.Companion.class), 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(pContext, "STANDARD")
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(pTitle)//

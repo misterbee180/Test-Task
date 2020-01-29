@@ -226,8 +226,8 @@ class TimekeeperViewModel : ViewModel() {
     var monthSpecificString = MutableLiveData<String>()
 
     init{
-        monthSpecificRadio.value = false;
-        isSession.value = false;
+        monthSpecificRadio.value = false
+        isSession.value = false
         monthSpecificString.value = ""
         timeframe.value = BASE_POSITION
         starting.value = BASE_POSITION

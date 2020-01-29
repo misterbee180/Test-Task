@@ -344,7 +344,7 @@ public class Details_Task extends AppCompatActivity {
                     }
                     mTask = new Task(mTask.flngTaskID, //need this because effectively calling new object function
                             mTime.flngTimeID,
-                            Viewer_Tasklist.getCurrentCalendar().getTimeInMillis(),
+                            Utilities.Companion.getCurrentCalendar().getTimeInMillis(),
                             getTaskTitle(),
                             getTaskDesc(),
                             NULL_DATE,

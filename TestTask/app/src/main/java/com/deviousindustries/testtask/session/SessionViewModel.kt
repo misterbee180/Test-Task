@@ -19,7 +19,7 @@ class SessionViewModel : ViewModel() {
         eventComplete.value = false
     }
 
-    fun Start(sessionID: Long){
+    fun start(sessionID: Long){
         this.sessionID = sessionID
         timekeeperViewModel.isSession.value = true
         if(sessionID != NULL_OBJECT){

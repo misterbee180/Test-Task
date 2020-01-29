@@ -31,7 +31,7 @@ class TimekeeperFragment : Fragment(),
         fun newInstance() = TimekeeperFragment()
     }
 
-    private lateinit var viewModel: TimekeeperViewModel
+    lateinit var viewModel: TimekeeperViewModel
     private lateinit var binding: TimekeeperFragmentBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -49,9 +49,10 @@ class TimekeeperFragment : Fragment(),
         binding.viewmodel = viewModel
 
         val bundle = arguments
-        if (bundle != null) {
-            viewModel.loadTimekeeper(bundle.getLong("TIME_ID", NULL_OBJECT))
-        }
+        viewModel.loadTimekeeper(bundle?.getLong("TIME_ID", NULL_OBJECT)?: NULL_OBJECT)
+//        if (bundle != null) {
+//            viewModel.loadTimekeeper(bundle.getLong("TIME_ID", NULL_OBJECT))
+//        }
 
         setEvents()
         setWeekEvents()

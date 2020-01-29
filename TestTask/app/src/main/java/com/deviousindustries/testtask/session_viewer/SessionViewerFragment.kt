@@ -19,9 +19,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.deviousindustries.testtask.classes.Session
 
 import com.deviousindustries.testtask.R
+import com.deviousindustries.testtask.constants.NULL_OBJECT
+import com.deviousindustries.testtask.data.Session
+import com.deviousindustries.testtask.session.SessionFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class SessionViewerFragment : Fragment() {
@@ -38,7 +40,7 @@ class SessionViewerFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        Log.i("SessionViewer", "View Model Provider Called")
+        Log.i("MainActivity", "View Model Provider Called")
         viewModel = ViewModelProviders.of(activity!!).get(SessionViewerViewModel::class.java)
         setupFab()
         setupSessionList()
@@ -51,47 +53,66 @@ class SessionViewerFragment : Fragment() {
 
     private fun setupFab() {
         val fab = activity!!.findViewById(R.id.AddSession_FAB) as FloatingActionButton
-        fab.setOnClickListener { viewModel.createSession(context!!) }
+        fab.setOnClickListener {
+            fragmentManager!!
+                    .beginTransaction()
+                    .replace(R.id.contentFrame, SessionFragment.newInstance())
+                    .commitNow()
+        }
     }
 
-    private fun setupSessionList(){
+    private fun setupSessionList() {
         val application = requireNotNull(this.activity).application
         sessionList = activity!!.findViewById(R.id.lsvSessionList)
         viewModel.sessionList.observe(this, Observer<List<Session>> { sessions ->
             val sessionAdapter = object : ArrayAdapter<Session>(application,
                     R.layout.task_item1,
                     sessions) {
+
+                override fun getItem(position: Int): Session? {
+                    return viewModel.sessionList.value!![position]
+                }
+
+                override fun getCount(): Int {
+                    return viewModel.sessionList.value!!.count()
+                }
+
                 override fun getItemId(position: Int): Long {
-                    return getItem(position).timeID
+                    return viewModel.sessionList.value!![position].timeID
                 }
 
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                     var convertView = convertView
                     if (convertView == null) {
-                        convertView = (application.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(R.layout.task_item1, null)
+                        convertView = layoutInflater.inflate(R.layout.task_item1, parent, false)
                     }
 
-                    (convertView!!.findViewById(R.id.title_text) as TextView).text = getItem(position).title
+                    (convertView!!.findViewById(R.id.title_text) as TextView).text = getItem(position)!!.title
+                    convertView.setOnClickListener(View.OnClickListener {
+                        fragmentManager!!
+                                .beginTransaction()
+                                .replace(R.id.contentFrame, SessionFragment().apply {
+                                    this.arguments = Bundle().apply {
+                                        putLong("SESSION_ID", getItemId(position))
+                                    }
+                                }, "Session")
+                                .addToBackStack(null)
+                                .commit()
+                    })
+                    convertView.setOnLongClickListener(View.OnLongClickListener {
+                        DeleteSessionFragment().apply {
+                            arguments = Bundle().apply {
+                                putLong("SessionID", getItemId(position))
+                            }
+                        }.show(fragmentManager!!, "DeleteSession")
+                        true
+                    })
                     return convertView
                 }
             }
 
             sessionList.setAdapter(sessionAdapter)
         })
-
-        sessionList.setOnItemClickListener{ parent, view, position, id ->
-            val intent = Intent(context, com.deviousindustries.testtask.session.Session::class.java)
-            intent.putExtra("SESSION_ID", id)
-            ContextCompat.startActivity(activity!!, intent, null)
-        }
-
-        sessionList.setOnItemLongClickListener{ parent, view, position, id ->
-            DeleteSessionFragment().apply {
-                arguments = Bundle().apply {
-                    putLong("SessionID", id)}}
-                    .show(childFragmentManager, "Delete Session")
-                true
-        }
     }
 
     class DeleteSessionFragment : DialogFragment() {

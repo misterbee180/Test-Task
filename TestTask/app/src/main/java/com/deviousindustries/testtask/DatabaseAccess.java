@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder;
 
 import com.deviousindustries.testtask.classes.Task;
 import com.deviousindustries.testtask.classes.Time;
+import com.deviousindustries.testtask.data.OldSQLiteHelper;
 import com.deviousindustries.testtask.data.TaskDatabase;
 import com.deviousindustries.testtask.data.TaskDatabaseDao;
 import static com.deviousindustries.testtask.constants.ConstantsKt.*;
@@ -21,11 +22,14 @@ import static com.deviousindustries.testtask.constants.ConstantsKt.*;
  */
 
 public class DatabaseAccess {
+    private static SQLiteDatabase temp = null;
     public static SupportSQLiteDatabase mDatabase = null;
     public static TaskDatabaseDao taskDatabaseDao = null;
 
     public static void getInstance(Context context){
         if(mDatabase == null) {
+            temp = new OldSQLiteHelper(context).oldDatabase;
+            temp.close();
             mDatabase = TaskDatabase.Companion.getInstance(context).getOpenHelper().getWritableDatabase();
             taskDatabaseDao = TaskDatabase.Companion.getInstance(context).getTaskDatabaseDao();
         }
@@ -326,12 +330,12 @@ public class DatabaseAccess {
         String strSelection = "flngTimeID = " + plngTimeID;
         String orderBy = null;
         if(pblnAll) {
-            strSelection += " and fdtmUpcoming <= " + Viewer_Tasklist.getEndCurrentDay().getTimeInMillis();
+            strSelection += " and fdtmUpcoming <= " + Utilities.Companion.getEndCurrentDay().getTimeInMillis();
         } else {
             orderBy = "fdtmPriority LIMIT 1";
         }
-        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + Viewer_Tasklist.getBeginningCurentDay().getTimeInMillis();
-        else strSelection += " and fdtmPriority >= " + Viewer_Tasklist.getBeginningCurentDay().getTimeInMillis();
+        if(pblnIncludeThru) strSelection += " and fdtmPriority + 86400000 * fintThru >= " + Utilities.Companion.getBeginningCurentDay().getTimeInMillis();
+        else strSelection += " and fdtmPriority >= " + Utilities.Companion.getBeginningCurentDay().getTimeInMillis();
 
         return DatabaseAccess.mDatabase.query(
                 SupportSQLiteQueryBuilder.builder("tblTimeInstance")
