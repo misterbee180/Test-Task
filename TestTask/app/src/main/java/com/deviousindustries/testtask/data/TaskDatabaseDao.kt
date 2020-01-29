@@ -154,6 +154,9 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tblGroup WHERE flngGroupID = :ID")
     fun loadGroup(ID: Long): Cursor
 
+    @Query("SELECT * FROM tblGroup")
+    fun loadActiveGroups(): List<Group>
+
     @Query("SELECT * FROM tblLongTerm WHERE flngLongTermID = :ID")
     fun loadLongTerm(ID: Long): Cursor
 
