@@ -111,8 +111,8 @@ public class TaskInstance {
 
     private void createTaskInstance(){
         flngInstanceID = DatabaseAccess.addRecordToTable("tblTaskInstance",
-                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionID"},
-                new Object[] {flngTaskID, flngTaskDetailID, fdtmFrom, fdtmTo, fblnFromTime, fblnToTime, fblnToDate, fdtmCreated, fdtmEdited, flngSessionID},
+                new String[] {"flngTaskID", "flngTaskDetailID", "fdtmFrom", "fdtmTo", "fblnFromTime", "fblnToTime", "fblnToDate", "fdtmCreated", "fdtmEdited", "flngSessionID", "fdtmCompleted", "fdtmSystemCompleted", "fdtmDeleted"},
+                new Object[] {flngTaskID, flngTaskDetailID, fdtmFrom, fdtmTo, fblnFromTime, fblnToTime, fblnToDate, fdtmCreated, fdtmEdited, flngSessionID, fdtmCompleted, fdtmSystemCompleted, fdtmDeleted},
                 "flngInstanceID",
                 flngInstanceID);
     }

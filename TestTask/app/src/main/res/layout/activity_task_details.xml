@@ -88,10 +88,10 @@
         android:id="@+id/btnTaskConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_gravity="right"
+        android:layout_marginTop="8dp"
         android:onClick="CreateTask"
-        android:text="@string/Button_Confirm"/>
+        android:text="@string/Button_Confirm" />
 
     <!--<Button-->
         <!--android:id="@+id/bntTaskCancel"-->

@@ -42,7 +42,7 @@ class SessionFragment() : Fragment() {
         }
 
         setObservables()
-        setEvents()
+        //setEvents()
 
         //Add timekeeper fragment
         childFragmentManager
@@ -77,10 +77,10 @@ class SessionFragment() : Fragment() {
     }
 
     fun setEvents(){
-        activity!!.findViewById<EditText>(R.id.Session_Title_EditText)
-                .addTextChangedListener(onTextChanged = { s, start, before, count ->
-            viewModel.title.value = s.toString()
-        })
+//        activity!!.findViewById<EditText>(R.id.Session_Title_EditText)
+//                .addTextChangedListener(onTextChanged = { s, start, before, count ->
+//            viewModel.title.value = s.toString()
+//        })
 
         activity!!.findViewById<Button>(R.id.Confirm_Button).setOnClickListener{_ ->
             viewModel.saveSession()
